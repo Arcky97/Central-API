@@ -1,0 +1,7 @@
+version: "3"
+
+services:
+  central-api:
+    image: ghcr.io/arcky97/central-api:main
+    ports:
+      - "3020:3000"
