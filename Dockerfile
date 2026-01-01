@@ -14,6 +14,6 @@ COPY . .
 RUN npm run build 
 
 # Expose API port
-EXPOSE 3000
+EXPOSE 3012
 
 CMD ["node", "dist/server.js"]
