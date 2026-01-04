@@ -11,5 +11,8 @@ export const env = {
   DB_USER: required("DB_USER"),
   DB_PASS: required("DB_PASS"),
   DB_NAME: required("DB_NAME"),
-  DB_PORT: Number(process.env.DB_PORT ?? 3306)
+  DB_PORT: Number(process.env.DB_PORT ?? 3306),
+
+  API_KEY_WEBSITE: process.env.API_KEY_WEBSITE,
+  API_KEY_DISCORD: process.env.API_KEY_DISCORD
 };
