@@ -5,6 +5,7 @@ import { getDatabasePool } from "./database/pool";
 import { requireApiKey } from "./middleware/apiKey";
 import rateLimit from "express-rate-limit";
 import cors from "cors";
+import { requestLogger } from "./middleware/requestLogger";
 
 const apiLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -23,14 +24,15 @@ app.use(express.json());
 app.use(
   cors({
     origin: [
-      "https://arcky-tech.be"
+      "https://arcky-tech.be",
+      "http://localhost:3000",
     ],
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type", "x-api-key"]
   })
 );
 
-app.use("/api", apiLimiter, requireApiKey, routes);
+app.use("/api", apiLimiter, requireApiKey, requestLogger, routes);
 
 app.get("/health", async (req, res) => {
   try {

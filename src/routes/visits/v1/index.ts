@@ -1,10 +1,13 @@
 import express from "express";
-import { query } from "../../database";
+import { query } from "../../../database";
+import { requireScope } from "../../../middleware/requireScope";
 
 const router = express.Router();
 
+router.use(requireScope("website", "admin"));
+
 // Log a page visit
-router.post("/visit", async (req, res) => {
+router.post("/", async (req, res) => {
   const { path, ip, userAgent, referrer } = req.body;
 
   if (!path) return res.status(400).json({ error: "Path is required" });
@@ -22,7 +25,7 @@ router.post("/visit", async (req, res) => {
 });
 
 // Get all visits or all visits for a path
-router.get("/visits/all", async (req, res) => {
+router.get("/", async (req, res) => {
   const path = req.query.path as string | undefined;
 
   try {
@@ -45,7 +48,7 @@ router.get("/visits/all", async (req, res) => {
 });
 
 // Get all visits by ip
-router.get("/visits/by-ip", async (req, res) => {
+router.get("/by-ip", async (req, res) => {
   const ip = req.query.ip as string | undefined;
   if (!ip) return res.status(400).json({ error: "IP parameter is required" });
 
@@ -59,7 +62,7 @@ router.get("/visits/by-ip", async (req, res) => {
 });
 
 // Get Recent visits
-router.get("/visits/latest", async (req, res) => {
+router.get("/latest", async (req, res) => {
   const limit = Number(req.query.limit ?? 50);
   if (isNaN(limit) || limit <= 0) return res.status(400).json({ error: "Invalid limit parameter" });
 
@@ -73,7 +76,7 @@ router.get("/visits/latest", async (req, res) => {
 });
 
 // Get Visits per day for a given period, default 30 days, optional for a given path.
-router.get("/visits/stats/daily", async (req, res) => {
+router.get("/stats/daily", async (req, res) => {
   const path = req.query.path as string | undefined;
   const days = Number(req.query.days ?? 30);
 
@@ -104,7 +107,7 @@ router.get("/visits/stats/daily", async (req, res) => {
 });
 
 // Get Visits per path for a given period, default 30 days.
-router.get("/visits/stats/path", async (req, res) => {
+router.get("/stats/path", async (req, res) => {
   const days = Number(req.query.days ?? 30);
 
   if (isNaN(days) || days <= 0) return res.status(400).json({ error: "Invalid days parameter" });

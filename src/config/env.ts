@@ -14,5 +14,6 @@ export const env = {
   DB_PORT: Number(process.env.DB_PORT ?? 3306),
 
   API_KEY_WEBSITE: process.env.API_KEY_WEBSITE,
-  API_KEY_DISCORD: process.env.API_KEY_DISCORD
+  API_KEY_DISCORD: process.env.API_KEY_DISCORD,
+  API_KEY_ADMIN: process.env.API_KEY_ADMIN
 };
