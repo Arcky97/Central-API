@@ -33,7 +33,7 @@ app.use(
   })
 );
 
-app.options("/api/*", cors());
+app.options("*", cors());
 
 app.use("/api", apiLimiter, requireApiKey, requestLogger, routes);
 
