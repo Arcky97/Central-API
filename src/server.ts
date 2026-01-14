@@ -33,8 +33,6 @@ app.use(
   })
 );
 
-app.options("*", cors());
-
 app.use("/api", apiLimiter, requireApiKey, requestLogger, routes);
 
 app.get("/health", async (req, res) => {
