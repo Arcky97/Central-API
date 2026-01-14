@@ -33,6 +33,10 @@ export function requireApiKey(
   res: Response, 
   next: NextFunction 
 ) {
+  if (req.method === "OPTIONS") {
+    return next();
+  }
+  
   const key = req.header("X-api-key");
 
   if (!key) {

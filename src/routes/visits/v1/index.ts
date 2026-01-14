@@ -14,7 +14,7 @@ router.post("/", async (req, res) => {
 
   try {
     await query(
-      "INSERT INTO PageVisits (path, ip, userAgent, referrer) VALUES (?, ?, ?)",
+      "INSERT INTO PageVisits (path, ip, userAgent, referrer) VALUES (?, ?, ?, ?)",
       [path, ip ?? null, userAgent ?? null, referrer ?? null]
     );
     res.json({ success: true });

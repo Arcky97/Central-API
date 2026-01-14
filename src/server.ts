@@ -24,13 +24,16 @@ app.use(express.json());
 app.use(
   cors({
     origin: [
-      "https://arcky-tech.be",
-      "http://localhost:3000",
+      "https://www.arcky-tech.be",
+      "https://arcky-tech.be"
     ],
-    methods: ["GET", "POST"],
-    allowedHeaders: ["Content-Type", "x-api-key"]
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "x-api-key"],
+    credentials: false
   })
 );
+
+app.options("/api/*", cors());
 
 app.use("/api", apiLimiter, requireApiKey, requestLogger, routes);
 
