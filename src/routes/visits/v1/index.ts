@@ -12,10 +12,12 @@ router.post("/", async (req, res) => {
 
   if (!path) return res.status(400).json({ error: "Path is required" });
 
+  const useIp = ip || "0.0.0.0";
+
   try {
     await query(
       "INSERT INTO PageVisits (path, ip, userAgent, referrer) VALUES (?, ?, ?, ?)",
-      [path, ip ?? null, userAgent ?? null, referrer ?? null]
+      [path, ip, userAgent ?? null, referrer ?? null]
     );
     res.json({ success: true });
   } catch (err) {
