@@ -12,13 +12,18 @@ export function requestLogger(
   res.on("finish", async () => {
     const duration = Date.now() - start;
 
+    const ip =
+      req.ip ||
+      req.socket?.remoteAddress ||
+      "0.0.0.0";
+
     const log = {
       time: new Date(),
       method: req.method,
       route: req.originalUrl,
       status: res.statusCode,
       durationMs: duration,
-      ip: req.ip,
+      ip,
       scope: req.apiScope ?? "unknown",
       userAgent: req.get("user-agent") ?? "unknown"
     };
@@ -29,7 +34,7 @@ export function requestLogger(
 
     try {
       await query(
-        `ÌNSERT INTO ApiRequestLogs
+        `INSERT INTO ApiRequestLogs
           (timestamp, method, route, status, durationMs, ip, scope, userAgent)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [
