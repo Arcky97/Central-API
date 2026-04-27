@@ -9,8 +9,10 @@ router.use(requireScope("website", "admin"));
 router.post("/", async (req, res) => {
   const { updates } = req.body;
 
+  console.log(updates);
+
   if (!Array.isArray(updates) || updates.length === 0) {
-    return res.status(400).json({ error: "Updates arraya is required" });
+    return res.status(400).json({ error: "Updates array is required" });
   }
 
   try {
