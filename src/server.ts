@@ -25,7 +25,8 @@ app.use(
   cors({
     origin: [
       "https://www.arcky-tech.be",
-      "https://arcky-tech.be"
+      "https://arcky-tech.be",
+      "https://docs.arcky-tech.be"
     ],
     methods: ["GET", "POST", "OPTIONS"],
     allowedHeaders: ["Content-Type", "x-api-key"],
