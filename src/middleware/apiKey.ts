@@ -17,6 +17,8 @@ export interface ScopedRequest extends Request {
 function isLocalRequest(req: Request): boolean {
   const ip = req.ip;
 
+  console.log(ip);
+
   if (!ip) return false;
 
   return (
@@ -41,6 +43,7 @@ export function requireApiKey(
 
   if (!key) {
     LogAuthFailure(req, "missing_key");
+    console.log("Log Auth Failure: Missing key!")
     return res.status(401).json({ error: "Missing API key" });
   }
 
@@ -48,6 +51,7 @@ export function requireApiKey(
 
   if (!scope) {
     LogAuthFailure(req, "invalid_key");
+    console.log("Log Auth Failure: Invalid key!")
     return res.status(401).json({ error: "Invalid API key" });
   }
 
