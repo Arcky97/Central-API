@@ -25,8 +25,8 @@ router.post("/", async (req, res) => {
         `INSERT INTO ProjectUpdates (project, date, title, excerpt, slug)
         VALUES(?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE
-          title = VALUES(title)
-          excerpt = VALUES(excerpt)
+          title = VALUES(title),
+          excerpt = VALUES(excerpt),
           date = VALUES(date)`,
         [project, date, title, excerpt, slug]
       );
