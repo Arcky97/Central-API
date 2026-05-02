@@ -46,7 +46,7 @@ router.get("/latest", async (req, res) => {
           MAX(date) as maxDate FROM ProjectUpdates GROUP BY project 
         ) latest ON pu.project = latest.project AND 
           pu.date = latest.maxDate ORDER BY pu.date DESC LIMIT ? 
-      )`, [Number(limit)]
+      `, [limit]
     );
     res.json(results);
   } catch (error) {
