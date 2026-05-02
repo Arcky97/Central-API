@@ -38,7 +38,7 @@ router.post("/", async (req, res) => {
 });
 
 router.get("/latest", async (req, res) => {
-  const { limit = 3 } = req.query;
+  const limit = Number(req.query.limit) || 3;
   try {
     const results = await query(
       `SELECT pu.* FROM ProjectUpdates pu INNER JOIN ( 
