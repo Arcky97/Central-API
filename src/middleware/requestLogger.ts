@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import { ScopedRequest } from "./apiKey";
-import { query } from "../database";
+import { query } from "../database/query";
 
 export function requestLogger(
   req: ScopedRequest,
@@ -33,7 +33,7 @@ export function requestLogger(
     );
 
     try {
-      await query(
+      await query("analytics",
         `INSERT INTO ApiRequestLogs
           (timestamp, method, route, status, durationMs, ip, scope, userAgent)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,

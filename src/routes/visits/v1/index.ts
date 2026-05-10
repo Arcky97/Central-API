@@ -1,8 +1,10 @@
 import express from "express";
-import { query } from "../../../database";
+import { query } from "../../../database/query";
 import { requireScope } from "../../../middleware/requireScope";
 
 const router = express.Router();
+
+const useDB = "analytics";
 
 router.use(requireScope("website", "admin"));
 
@@ -15,7 +17,7 @@ router.post("/", async (req, res) => {
   const useIp = ip || "0.0.0.0";
 
   try {
-    await query(
+    await query(useDB,
       "INSERT INTO PageVisits (path, ip, userAgent, referrer) VALUES (?, ?, ?, ?)",
       [path, useIp, userAgent ?? null, referrer ?? null]
     );
@@ -41,7 +43,7 @@ router.get("/", async (req, res) => {
 
     sql += " ORDER BY visitedAt DESC";
 
-    const visits = await query(sql);
+    const visits = await query(useDB, sql);
     res.json(visits);
   } catch (err) {
     console.error(err);
@@ -55,7 +57,7 @@ router.get("/by-ip", async (req, res) => {
   if (!ip) return res.status(400).json({ error: "IP parameter is required" });
 
   try {
-    const visits = await query("SELECT * FROM PageVisits WHERE ip = ? ORDER BY visitedAt DESC", [ip]);
+    const visits = await query(useDB, "SELECT * FROM PageVisits WHERE ip = ? ORDER BY visitedAt DESC", [ip]);
     res.json(visits);
   } catch (err) {
     console.error(err);
@@ -69,7 +71,7 @@ router.get("/latest", async (req, res) => {
   if (isNaN(limit) || limit <= 0) return res.status(400).json({ error: "Invalid limit parameter" });
 
   try {
-    const visits = await query(`SELECT * FROM PageVisits ORDER BY visitedAt DESC LIMIT ?`, [limit]);
+    const visits = await query(useDB, `SELECT * FROM PageVisits ORDER BY visitedAt DESC LIMIT ?`, [limit]);
     res.json(visits);
   } catch (err) {
     console.error(err);
@@ -100,7 +102,7 @@ router.get("/stats/daily", async (req, res) => {
 
     sql += " GROUP BY day ORDER BY day ASC"
 
-    const stats = await query<{ day: string; count: number}[]>(sql, params);
+    const stats = await query<{ day: string; count: number}[]>(useDB, sql, params);
     res.json(stats);
   } catch (err) {
     console.error(err);
@@ -122,7 +124,7 @@ router.get("/stats/path", async (req, res) => {
       GROUP BY path
       ORDER BY count DESC
     `;
-    const stats = await query<{ path: String; count: number}[]>(sql, [days]);
+    const stats = await query<{ path: String; count: number}[]>(useDB, sql, [days]);
     res.json(stats);
   } catch (err) {
     console.error(err);

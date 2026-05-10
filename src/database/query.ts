@@ -1,14 +1,14 @@
-import type { RowDataPacket, ResultSetHeader } from "mysql2/promise";
-import { getDatabasePool } from "./pool";
+import type { RowDataPacket } from "mysql2/promise";
 
-/**
- * Execute a SQL query using the shared pool
- */
+import { getPool } from "./pools";
+import type { DatabaseName } from "./types/schema";
+
 export async function query<T = RowDataPacket[]>(
+  database: DatabaseName,
   sql: string,
   params: unknown[] = []
 ): Promise<T> {
-  const pool = getDatabasePool();
+  const pool = getPool(database);
   const connection = await pool.getConnection();
 
   try {

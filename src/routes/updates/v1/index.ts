@@ -1,8 +1,10 @@
 import express from "express";
-import { query } from "../../../database";
 import { requireScope } from "../../../middleware/requireScope";
+import { query } from "../../../database/query";
 
 const router = express.Router();
+
+const useDB = "core";
 
 router.use(requireScope("website", "admin"));
 
@@ -20,6 +22,7 @@ router.post("/", async (req, res) => {
       if (!project || !date || !slug) continue;
 
       await query(
+        useDB,
         `INSERT INTO ProjectUpdates (project, date, title, excerpt, slug)
         VALUES(?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE
@@ -40,7 +43,7 @@ router.post("/", async (req, res) => {
 router.get("/latest", async (req, res) => {
   const limit = Number(req.query.limit) || 3;
   try {
-    const results = await query(
+    const results = await query(useDB,
       `SELECT pu.* FROM ProjectUpdates pu INNER JOIN ( 
         SELECT project, 
           MAX(date) as maxDate FROM ProjectUpdates GROUP BY project 
@@ -60,7 +63,7 @@ router.get("/", async (req, res) => {
 
   try {
     if (project) {
-      const results = await query(
+      const results = await query(useDB,
         `SELECT * FROM ProjectUpdates WHERE project = ? ORDER BY date DESC LIMIT ?`,
         [project, Number(limit)]
       );
@@ -68,7 +71,7 @@ router.get("/", async (req, res) => {
       return res.json(results);
     }
 
-    const results = await query(
+    const results = await query(useDB,
       `SELECT *
       FROM ProjectUpdates
       ORDER BY date DESC

@@ -1,5 +1,5 @@
 import { Request } from "express";
-import { query } from "../database";
+import { query } from "../database/query";
 
 export function LogAuthFailure(
   req: Request,
@@ -19,7 +19,7 @@ export function LogAuthFailure(
   );
 
   try {
-    query(
+    query("auth",
     `INSERT INTO ApiAuthFailures
       (timestamp, reason, method, route, ip, userAgent)
       VALUES(?, ?, ?, ?, ?, ?)`,
