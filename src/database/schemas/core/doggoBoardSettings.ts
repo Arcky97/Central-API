@@ -21,22 +21,22 @@ export const doggoBoardSettingsSchema: TableSchema = {
       default: "NULL"
     },
     requiredReactions: {
-      type: "INT(3)",
+      type: "TINYINT",
       unsigned: true,
       default: "3"
     },
     messageAgeHour: {
-      type: "INT(3)",
+      type: "TINYINT",
       unsigned: true,
       default: "1"
     },
     pinAgeDay: {
-      type: "INT(3)",
+      type: "TINYINT",
       unsigned: true,
       default: "1"
     },
     updateTimeMin: {
-      type: "INT(3)",
+      type: "TINYINT",
       unsigned: true,
       default: "1"
     },

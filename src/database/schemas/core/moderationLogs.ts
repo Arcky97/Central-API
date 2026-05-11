@@ -7,7 +7,7 @@ export const moderationLogsSchema: TableSchema = {
   table: "moderationLogs",
   columns: {
     id: {
-      type: "INT(11)",
+      type: "BIGINT",
       autoIncrement: true,
       primaryKey: true
     },

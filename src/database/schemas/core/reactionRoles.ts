@@ -26,12 +26,12 @@ export const reactionRolesSchema: TableSchema = {
       default: "NULL"
     },
     maxRoles: {
-      type: "INT(3)",
+      type: "TINYINT",
       unsigned: true,
       default: "0"
     },
     maxReactions: {
-      type: "INT(3)", 
+      type: "TINYINT", 
       unsigned: true,
       default: "0"
     },

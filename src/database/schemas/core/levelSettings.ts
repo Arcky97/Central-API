@@ -12,7 +12,8 @@ export const levelSettingsSchema: TableSchema = {
       primaryKey: true
     },
     global_multiplier: {
-      type: "INT(10)",
+      type: "INT",
+      unsigned: true,
       default: "100"
     },
     level_roles: {
@@ -60,7 +61,7 @@ export const levelSettingsSchema: TableSchema = {
       default: "NULL"
     },
     xp_cooldown: {
-      type: "INT(5)",
+      type: "INT",
       unsigned: true,
       default: "30"
     },
@@ -81,12 +82,12 @@ export const levelSettingsSchema: TableSchema = {
       default: "0"
     },
     voice_multiplier: {
-      type: "INT(5)",
+      type: "SMALLINT",
       unsigned: true,
       default: "100"
     },
     voice_cooldown: {
-      type: "INT(5)",
+      type: "SMALLINT",
       unsigned: true,
       default: "2"
     },

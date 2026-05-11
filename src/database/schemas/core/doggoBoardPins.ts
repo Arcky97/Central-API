@@ -21,7 +21,7 @@ export const doggoBoardPinsSchema: TableSchema = {
       default: "NULL"
     },
     reactionAmount: {
-      type: "INT(3)",
+      type: "SMALLINT",
       unsigned: true,
       default: "3"
     },
