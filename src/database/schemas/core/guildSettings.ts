@@ -4,89 +4,89 @@ export const guildSettingsSchema: TableSchema = {
   version: 1,
   strict: true, 
   database: "core",
-  table: "guild_settings",
+  table: "guildSettings",
   columns: {
-    guild_id: {
+    guildId: {
       type: "VARCHAR(20)",
       nullable: false,
       primaryKey: true
     },
-    chatting_channel: {
+    chattingChannel: {
       type: "VARCHAR(20)",
       default: "NULL"
     },
-    message_logging: {
+    messageLogging: {
       type: "VARCHAR(20)",
       default: "NULL"
     },
-    message_config: {
+    messageConfig: {
       type: "LONGTEXT",
       default: "NULL"
     },
-    member_logging: {
+    memberLogging: {
       type: "VARCHAR(20)",
       default: "NULL"
     },
-    member_config: {
+    memberConfig: {
       type: "LONGTEXT",
       default: "NULL"
     },
-    server_logging: {
+    serverLogging: {
       type: "VARCHAR(20)",
       default: "NULL"
     },
-    server_config: {
+    serverConfig: {
       type: "LONGTEXT",
       default: "NULL"
     },
-    voice_logging: {
+    voiceLogging: {
       type: "VARCHAR(20)",
       default: "NULL"
     },
-    voice_config: {
+    voiceConfig: {
       type: "LONGTEXT",
       default: "NULL"
     },
-    join_leave_logging: {
+    joinLeaveLogging: {
       type: "VARCHAR(20)",
       default: "NULL"
     },
-    join_leave_config: {
+    joinLeaveConfig: {
       type: "LONGTEXT",
       default: "NULL"
     },
-    moderation_logging: {
+    moderationLogging: {
       type: "VARCHAR(20)",
       default: "NULL"
     },
-    moderation_config: {
+    moderationConfig: {
       type: "LONGTEXT",
       default: "NULL"
     },
-    report_logging: {
+    reportLogging: {
       type: "VARCHAR(20)",
       default: "NULL"
     },
-    ignore_logging: {
+    ignoreLogging: {
       type: "LONGTEXT",
       default: "NULL"
     },
-    mute_roles: {
+    muteRoles: {
       type: "LONGTEXT",
       default: "NULL"
     },
-    join_roles: {
+    joinRoles: {
       type: "LONGTEXT",
       default: "NULL"
     },
-    deletion_date: {
+    deletionDate: {
       type: "TIMESTAMP"
     }
   },
   indexes: [
     {
       name: "idx_deletion_date",
-      columns: ["deletion_date"]
+      columns: ["deletionDate"]
     }
   ]
 }

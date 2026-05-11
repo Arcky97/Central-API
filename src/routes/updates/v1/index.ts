@@ -23,12 +23,16 @@ router.post("/", async (req, res) => {
 
       await query(
         useDB,
-        `INSERT INTO ProjectUpdates (project, date, title, excerpt, slug)
-        VALUES(?, ?, ?, ?, ?)
-        ON DUPLICATE KEY UPDATE
-          title = VALUES(title),
-          excerpt = VALUES(excerpt),
-          date = VALUES(date)`,
+        { 
+          sql: `
+            INSERT INTO ProjectUpdates (project, date, title, excerpt, slug)
+            VALUES(?, ?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE
+              title = VALUES(title),
+              excerpt = VALUES(excerpt),
+              date = VALUES(date)
+          `
+        },
         [project, date, title, excerpt, slug]
       );
     }
@@ -43,13 +47,14 @@ router.post("/", async (req, res) => {
 router.get("/latest", async (req, res) => {
   const limit = Number(req.query.limit) || 3;
   try {
-    const results = await query(useDB,
-      `SELECT pu.* FROM ProjectUpdates pu INNER JOIN ( 
+    const results = await query(useDB, {
+      sql: `
+        SELECT pu.* FROM ProjectUpdates pu INNER JOIN ( 
         SELECT project, 
           MAX(date) as maxDate FROM ProjectUpdates GROUP BY project 
         ) latest ON pu.project = latest.project AND 
           pu.date = latest.maxDate ORDER BY pu.date DESC LIMIT ? 
-      `, [limit]
+      `}, [limit]
     );
     res.json(results);
   } catch (error) {
@@ -63,19 +68,19 @@ router.get("/", async (req, res) => {
 
   try {
     if (project) {
-      const results = await query(useDB,
-        `SELECT * FROM ProjectUpdates WHERE project = ? ORDER BY date DESC LIMIT ?`,
-        [project, Number(limit)]
+      const results = await query(useDB, { sql: 
+        `SELECT * FROM ProjectUpdates WHERE project = ? ORDER BY date DESC LIMIT ?` },
+        [String(project), Number(limit)]
       );
 
       return res.json(results);
     }
 
-    const results = await query(useDB,
+    const results = await query(useDB, { sql: 
       `SELECT *
       FROM ProjectUpdates
       ORDER BY date DESC
-      LIMIT ?`,
+      LIMIT ?` },
       [Number(limit)]
     );
 

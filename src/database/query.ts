@@ -1,12 +1,12 @@
-import type { RowDataPacket } from "mysql2/promise";
+import type { ExecuteValues, QueryOptions, RowDataPacket } from "mysql2/promise";
 
 import { getPool } from "./pools";
 import type { DatabaseName } from "./types/schema";
 
 export async function query<T = RowDataPacket[]>(
   database: DatabaseName,
-  sql: string,
-  params: unknown[] = []
+  sql: QueryOptions,
+  params: ExecuteValues[] = []
 ): Promise<T> {
   const pool = getPool(database);
   const connection = await pool.getConnection();

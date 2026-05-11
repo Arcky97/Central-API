@@ -16,7 +16,9 @@ export async function syncIndexes(
 
   const indexes = await query<IndexRow[]>(
     schema.database,
-    `SHOW INDEX FROM \`${schema.table}\``
+    { 
+      sql: `SHOW INDEX FROM \`${schema.table}\`` 
+    }
   );
 
   const existingIndexes = new Set(
@@ -40,10 +42,12 @@ export async function syncIndexes(
 
     await query(
       schema.database,
-      `
-      CREATE ${unique} INDEX \`${index.name}\`
-      ON \`${schema.table}\` (${columns})
-      `
+      { 
+        sql: `
+          CREATE ${unique} INDEX \`${index.name}\`
+          ON \`${schema.table}\` (${columns})
+        `
+      }
     );
 
     logSuccess(

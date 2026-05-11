@@ -4,7 +4,7 @@ export const projectUpdatesSchema: TableSchema = {
   version: 1,
   strict: true,
   database: "core",
-  table: "project_updates",
+  table: "projectUpdates",
   columns: {
     id: {
       type: "INT(10)",
@@ -34,11 +34,11 @@ export const projectUpdatesSchema: TableSchema = {
       nullable: false,
       unique: true
     },
-    created_at: {
+    createdAt: {
       type: "TIMESTAMP",
       default: "CURRENT_TIMESTAMP"
     },
-    updated_at: {
+    updatedAt: {
       type: "TIMESTAMP",
       default: "CURRENT_TIMESTAMP",
       onUpdate: "CURRENT_TIMESTAMP"

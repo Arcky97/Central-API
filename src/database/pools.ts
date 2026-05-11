@@ -3,9 +3,9 @@ import { env } from "../config/env";
 import type { DatabaseName } from "./types/schema";
 
 export const databaseNames: Record<DatabaseName, string> = {
-  core: "arcky_tech_core",
-  analytics: "arcky_tech_analytics",
-  auth: "arcky_tech_auth"
+  core: "arckyTechCore",
+  analytics: "arckyTechAnalytics",
+  auth: "arckyTechAuth"
 };
 
 const pools: Record<DatabaseName, Pool> = {

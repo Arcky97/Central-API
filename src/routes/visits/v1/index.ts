@@ -1,6 +1,7 @@
 import express from "express";
 import { query } from "../../../database/query";
 import { requireScope } from "../../../middleware/requireScope";
+import { ExecuteValues } from "mysql2";
 
 const router = express.Router();
 
@@ -17,8 +18,8 @@ router.post("/", async (req, res) => {
   const useIp = ip || "0.0.0.0";
 
   try {
-    await query(useDB,
-      "INSERT INTO PageVisits (path, ip, userAgent, referrer) VALUES (?, ?, ?, ?)",
+    await query(useDB, { sql: 
+      "INSERT INTO PageVisits (path, ip, userAgent, referrer) VALUES (?, ?, ?, ?)" },
       [path, useIp, userAgent ?? null, referrer ?? null]
     );
     res.json({ success: true });
@@ -34,7 +35,7 @@ router.get("/", async (req, res) => {
 
   try {
     let sql = "SELECT * FROM PageVisits";
-    const params: unknown[] = [];
+    const params: ExecuteValues[] = [];
 
     if (path) {
       sql += " where path = ?";
@@ -43,7 +44,7 @@ router.get("/", async (req, res) => {
 
     sql += " ORDER BY visitedAt DESC";
 
-    const visits = await query(useDB, sql);
+    const visits = await query(useDB, { sql }, params);
     res.json(visits);
   } catch (err) {
     console.error(err);
@@ -57,7 +58,7 @@ router.get("/by-ip", async (req, res) => {
   if (!ip) return res.status(400).json({ error: "IP parameter is required" });
 
   try {
-    const visits = await query(useDB, "SELECT * FROM PageVisits WHERE ip = ? ORDER BY visitedAt DESC", [ip]);
+    const visits = await query(useDB, { sql: "SELECT * FROM PageVisits WHERE ip = ? ORDER BY visitedAt DESC" }, [ip]);
     res.json(visits);
   } catch (err) {
     console.error(err);
@@ -71,7 +72,7 @@ router.get("/latest", async (req, res) => {
   if (isNaN(limit) || limit <= 0) return res.status(400).json({ error: "Invalid limit parameter" });
 
   try {
-    const visits = await query(useDB, `SELECT * FROM PageVisits ORDER BY visitedAt DESC LIMIT ?`, [limit]);
+    const visits = await query(useDB, { sql: `SELECT * FROM PageVisits ORDER BY visitedAt DESC LIMIT ?` }, [limit]);
     res.json(visits);
   } catch (err) {
     console.error(err);
@@ -93,7 +94,7 @@ router.get("/stats/daily", async (req, res) => {
       WHERE visitedAt >= NOW() - INTERVAL ? DAY
     `;
 
-    const params: unknown[] = [days];
+    const params: ExecuteValues[] = [days];
 
     if (path) {
       sql += " AND path = ?";
@@ -102,7 +103,7 @@ router.get("/stats/daily", async (req, res) => {
 
     sql += " GROUP BY day ORDER BY day ASC"
 
-    const stats = await query<{ day: string; count: number}[]>(useDB, sql, params);
+    const stats = await query<{ day: string; count: number}[]>(useDB, { sql }, params);
     res.json(stats);
   } catch (err) {
     console.error(err);
@@ -124,7 +125,7 @@ router.get("/stats/path", async (req, res) => {
       GROUP BY path
       ORDER BY count DESC
     `;
-    const stats = await query<{ path: String; count: number}[]>(useDB, sql, [days]);
+    const stats = await query<{ path: String; count: number}[]>(useDB, { sql }, [days]);
     res.json(stats);
   } catch (err) {
     console.error(err);

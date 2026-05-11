@@ -10,7 +10,7 @@ export function LogAuthFailure(
     reason,
     method: req.method,
     route: req.originalUrl,
-    ip: req.ip,
+    ip: req.ip || "unknown IP",
     userAgent: req.get("user-agent") ?? "unknown"
   };
 
@@ -20,9 +20,9 @@ export function LogAuthFailure(
 
   try {
     query("auth",
-    `INSERT INTO ApiAuthFailures
+     { sql: `INSERT INTO ApiAuthFailures
       (timestamp, reason, method, route, ip, userAgent)
-      VALUES(?, ?, ?, ?, ?, ?)`,
+      VALUES(?, ?, ?, ?, ?, ?)` },
       [log.time, log.reason, log.method, log.route, log.ip, log.userAgent]
     )
   } catch (error) {

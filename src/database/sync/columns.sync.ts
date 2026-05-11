@@ -21,16 +21,18 @@ export async function syncColumns(
 ) {
   const columns = await query<ColumnRow[]>(
     schema.database,
-    `
-    SELECT
-      COLUMN_NAME,
-      COLUMN_TYPE,
-      IS_NULLABLE,
-      COLUMN_DEFAULT
-    FROM information_schema.columns
-    WHERE table_schema = DATABASE()
-     AND table_name = ?
-    `,
+    { 
+      sql: `
+        SELECT
+          COLUMN_NAME,
+          COLUMN_TYPE,
+          IS_NULLABLE,
+          COLUMN_DEFAULT
+        FROM information_schema.columns
+        WHERE table_schema = DATABASE()
+        AND table_name = ?
+      `
+    },
     [schema.table]
   );
 
@@ -64,7 +66,7 @@ export async function syncColumns(
         sql += ` DEFAULT ${definition.default}`;
       }
 
-      await query(schema.database, sql);
+      await query(schema.database, { sql });
 
       logSuccess(
         `Added column ${name}`

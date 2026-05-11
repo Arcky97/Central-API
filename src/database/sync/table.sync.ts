@@ -21,12 +21,14 @@ export async function syncTable(
 
   const rows = await query<TableExistsRow[]>(
     schema.database,
-    `
-    SELECT COUNT(*) as count
-    FROM information_schema.tables
-    WHERE table_schema = DATABASE()
-      AND table_name = ?
-    `,
+    {
+      sql: `
+        SELECT COUNT(*) as count
+        FROM information_schema.tables
+        WHERE table_schema = DATABASE()
+          AND table_name = ?
+      `
+    },
     [schema.table]
   );
 
@@ -35,7 +37,7 @@ export async function syncTable(
   if (!exists) {
     const sql = buildCreateTableSQL(schema);
 
-    await query(schema.database, sql);
+    await query(schema.database, { sql });
 
     logSuccess(
       `Created table ${schema.table}`

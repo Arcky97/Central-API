@@ -4,7 +4,7 @@ export const levelSettingsSchema: TableSchema = {
   version: 1,
   strict: true,
   database: "core",
-  table: "level_settings",
+  table: "levelSettings",
   columns: {
     guild_id: {
       type: "VARCHAR(20)",

@@ -4,7 +4,7 @@ export const pageVisitsSchema: TableSchema = {
   version: 1,
   strict: true,
   database: "analytics",
-  table: "page_visits",
+  table: "pageVisits",
   columns: {
     id: {
       type: "INT",
@@ -21,7 +21,7 @@ export const pageVisitsSchema: TableSchema = {
       type: "VARCHAR(45)",
       nullable: false
     },
-    user_agent: {
+    userAgent: {
       type: "VARCHAR(512)",
       default: "NULL"
     },
@@ -29,7 +29,7 @@ export const pageVisitsSchema: TableSchema = {
       type: "VARCHAR(512)",
       default: "NULL"
     },
-    created_at: {
+    createdAt: {
       type: "TIMESTAMP",
       default: "CURRENT_TIMESTAMP"
     }
@@ -41,7 +41,7 @@ export const pageVisitsSchema: TableSchema = {
     },
     {
       name: "idx_created_at",
-      columns: ["created_at"]
+      columns: ["createdAt"]
     }
   ]
 }

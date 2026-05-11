@@ -1,12 +1,17 @@
 import { TableSchema } from "../../types/schema";
 
-export const levelSystemSchema: TableSchema = {
+export const reactionRolesSchema: TableSchema = {
   version: 1,
   strict: true,
   database: "core",
-  table: "levelSystem",
+  table: "reactionRoles",
   columns: {
     guildId: {
+      type: "VARCHAR(20)",
+      nullable: false,
+      primaryKey: true 
+    },
+    channelId: {
       type: "VARCHAR(20)",
       nullable: false,
       primaryKey: true
@@ -16,24 +21,23 @@ export const levelSystemSchema: TableSchema = {
       nullable: false,
       primaryKey: true
     },
-    level: {
-      type: "INT",
+    emojiRolePairs: {
+      type: "LONGTEXT",
+      default: "NULL"
+    },
+    maxRoles: {
+      type: "INT(3)",
       unsigned: true,
       default: "0"
     },
-    xp: {
-      type: "BIGINT",
+    maxReactions: {
+      type: "INT(3)", 
       unsigned: true,
       default: "0"
     },
-    oldXp: {
-      type: "BIGINT",
-      unsigned: true,
-      default: "0"
-    },
-    color: {
-      type: "VARCHAR(10)",
-      default: "#f97316"
+    type: {
+      type: "VARCHAR(128)",
+      default: "NULL"
     },
     deletionDate: {
       type: "TIMESTAMP"
@@ -41,11 +45,7 @@ export const levelSystemSchema: TableSchema = {
   },
   indexes: [
     {
-      name: "idx_lookup",
-      columns: ["memberId", "guildId"]
-    },
-    {
-      name: "idx_deletion_date",
+      name: "idx_deletionDate",
       columns: ["deletionDate"]
     }
   ]

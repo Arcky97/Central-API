@@ -34,9 +34,12 @@ export function requestLogger(
 
     try {
       await query("analytics",
-        `INSERT INTO ApiRequestLogs
-          (timestamp, method, route, status, durationMs, ip, scope, userAgent)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        { sql: `
+            INSERT INTO ApiRequestLogs
+            (timestamp, method, route, status, durationMs, ip, scope, userAgent)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          `
+        },
         [
           log.time,
           log.method,
