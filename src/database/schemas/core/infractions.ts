@@ -1,10 +1,10 @@
 import { TableSchema } from "../../types/schema";
 
-export const moderationLogsSchema: TableSchema = {
+export const infractionsSchema: TableSchema = {
   version: 1,
   strict: true, 
   database: "core",
-  table: "moderationLogs",
+  table: "infractions",
   columns: {
     id: {
       type: "BIGINT",

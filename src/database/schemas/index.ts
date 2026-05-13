@@ -9,7 +9,7 @@ import { guildSettingsSchema } from "./core/guildSettings";
 import { levelEmbedsSchema } from "./core/levelEmbeds";
 import { levelSettingsSchema } from "./core/levelSettings";
 import { levelSystemSchema } from "./core/levelSystem";
-import { moderationLogsSchema } from "./core/moderationLogs";
+import { infractionsSchema } from "./core/infractions";
 import { premiumSubscriptionsSchema } from "./core/premiumSubscriptions";
 import { projectUpdatesSchema } from "./core/projectUpdates";
 import { reactionRolesSchema } from "./core/reactionRoles";
@@ -26,7 +26,7 @@ export const schemas = [
   levelEmbedsSchema,
   levelSettingsSchema,
   levelSystemSchema,
-  moderationLogsSchema,
+  infractionsSchema,
   premiumSubscriptionsSchema,
   projectUpdatesSchema,
   reactionRolesSchema,

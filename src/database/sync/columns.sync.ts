@@ -8,6 +8,8 @@ import {
   logSuccess,
   logWarning
 } from "./logger";
+import { normalizeColumnType } from "../utils/normalizeColumnType";
+import { buildColumnType } from "../utils/buildColumnType";
 
 interface ColumnRow extends RowDataPacket {
   COLUMN_NAME: string;
@@ -75,8 +77,8 @@ export async function syncColumns(
       continue;
     }
 
-    const actualType = existing.COLUMN_TYPE.toUpperCase();
-    const expectedType = definition.type.toUpperCase();
+    const actualType = normalizeColumnType(existing.COLUMN_TYPE);
+    const expectedType = normalizeColumnType(buildColumnType(definition));
 
     if (actualType !== expectedType) {
       logWarning(
