@@ -6,10 +6,15 @@ export const levelEmbedsSchema: TableSchema = {
   database: "core",
   table: "levelEmbeds",
   columns: {
+    id: {
+      type: "INT",
+      unsigned: true,
+      autoIncrement: true,
+      primaryKey: true
+    },
     guildId: {
       type: "VARCHAR(20)",
-      nullable: false,
-      primaryKey: true
+      nullable: false
     },
     type: {
       type: "VARCHAR(10)",
@@ -20,33 +25,9 @@ export const levelEmbedsSchema: TableSchema = {
       unsigned: true,
       default: "NULL"
     },
-    color: {
-      type: "VARCHAR(10)",
-      default: "NULL",
-    },
-    title: {
-      type: "VARCHAR(256)",
-      default: "NULL"
-    },
-    description: {
-      type: "VARCHAR(2048)",
-      default: "NULL"
-    },
-    imageUrl: {
-      type: "VARCHAR(512)",
-      default: "NULL"
-    },
-    thumnailUrl: {
-      type: "VARCHAR(512)",
-      default: "NULL"
-    },
-    footer: {
+    config: {
       type: "LONGTEXT",
-      default: "NULL"
-    },
-    timeStamp: {
-      type: "TINYINT(1)",
-      default: "0"
+      nullable: false
     },
     deletionDate: {
       type: "TIMESTAMP"
@@ -56,6 +37,10 @@ export const levelEmbedsSchema: TableSchema = {
     {
       name: "idx_lookup",
       columns: ["guildId", "type", "level"]
+    },
+    {
+      name: "idx_guild",
+      columns: ["guildId"]
     },
     {
       name: "idx_deletion_date",

@@ -22,7 +22,7 @@ export const reactionRolesSchema: TableSchema = {
       primaryKey: true
     },
     emojiRolePairs: {
-      type: "LONGTEXT",
+      type: "TEXT",
       default: "NULL"
     },
     maxRoles: {

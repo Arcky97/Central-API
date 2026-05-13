@@ -7,10 +7,9 @@ export const generatedEmbedsSchema: TableSchema = {
   table: "generatedEmbeds",
   columns: {
     id: {
-      type: "INT(10)",
+      type: "INT",
       unsigned: true,
       autoIncrement: true,
-      nullable: false,
       primaryKey: true
     },
     guildId: {
@@ -19,74 +18,34 @@ export const generatedEmbedsSchema: TableSchema = {
     },
     channelId: {
       type: "VARCHAR(20)",
-      nullable: false
+      default: "NULL"
     },
     messageId: {
       type: "VARCHAR(20)",
+      default: "NULL"
+    },
+    config: {
+      type: "TEXT",
       nullable: false
     },
-    type: {
-      type: "VARCHAR(15)",
-      nullable: false,
-      primaryKey: true
-    },
-    message: {
-      type: "VARCHAR(2048)",
+    createdBy: {
+      type: "VARCHAR(30)",
       default: "NULL"
     },
-    color: {
-      type: "VARCHAR(10)",
-      default: "NULL"
+    createdAt: {
+      type: "TIMESTAMP",
+      default: "CURRENT_TIMESTAMP"
     },
-    author: {
-      type: "LONGTEXT",
-      default: "NULL"
-    },
-    title: {
-      type: "VARCHAR(256)",
-      default: "NULL"
-    },
-    url: {
-      type: "VARCHAR(512)",
-      default: "NULL"
-    },
-    description: {
-      type: "VARCHAR(2048)",
-      default: "NULL"
-    },
-    fields: {
-      type: "LONGTEXT",
-      default: "NULL"
-    },
-    imageUrl: {
-      type: "VARCHAR(512)",
-      default: "NULL"
-    },
-    thumbnailUrl: {
-      type: "VARCHAR(512)",
-      default: "NULL"
-    },
-    footer: {
-      type: "LONGTEXT",
-      default: "NULL"
-    },
-    timeStamp: {
-      type: "TINYINT(1)",
-      default: "1"
+    updatedAt: {
+      type: "TIMESTAMP",
+      default: "CURRENT_TIMESTAMP",
+      onUpdate: "CURRENT_TIMESTAMP"
     },
     deletionDate: {
       type: "TIMESTAMP"
     }
   },
   indexes: [
-    {
-      name: "idx_guild_message",
-      columns: ["guildId", "messageId"]
-    },
-    {
-      name: "idx_guild_channel",
-      columns: ["guildId", "channelId"]
-    },
     {
       name: "idx_deletion_date",
       columns: ["deletionDate"]

@@ -1,10 +1,10 @@
-import { TableSchema } from "../../types/schema";
+import type { TableSchema } from "../../types/schema";
 
-export const doggoBoardSettingsSchema: TableSchema = {
+export const guildLoggingSchema: TableSchema = {
   version: 1,
-  strict: true,
+  strict: true, 
   database: "core",
-  table: "doggoBoardSettings",
+  table: "guildLogging",
   columns: {
     guildId: {
       type: "VARCHAR(20)",
@@ -18,5 +18,11 @@ export const doggoBoardSettingsSchema: TableSchema = {
     deletionDate: {
       type: "TIMESTAMP"
     }
-  }
+  },
+  indexes: [
+    {
+      name: "idx_deletion_date",
+      columns: ["deletionDate"]
+    }
+  ]
 }

@@ -17,11 +17,11 @@ export const userStatsSchema: TableSchema = {
       primaryKey: true
     },
     attemps: {
-      type: "LONGTEXT",
+      type: "TEXT",
       default: "NULL"
     },
     commands: {
-      type: "LONGTEXT",
+      type: "TEXT",
       default: "NULL"
     }
   }

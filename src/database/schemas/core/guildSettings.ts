@@ -11,73 +11,21 @@ export const guildSettingsSchema: TableSchema = {
       nullable: false,
       primaryKey: true
     },
-    chattingChannel: {
-      type: "VARCHAR(20)",
-      default: "NULL"
+    logging: {
+      type: "TINYINT(1)",
+      default: "0"
     },
-    messageLogging: {
-      type: "VARCHAR(20)",
-      default: "NULL"
+    leveling: {
+      type: "TINYINT(1)",
+      default: "1"
     },
-    messageConfig: {
-      type: "LONGTEXT",
-      default: "NULL"
+    doggoBoard: {
+      type: "TINYINT(1)",
+      default: "0"
     },
-    memberLogging: {
-      type: "VARCHAR(20)",
-      default: "NULL"
-    },
-    memberConfig: {
-      type: "LONGTEXT",
-      default: "NULL"
-    },
-    serverLogging: {
-      type: "VARCHAR(20)",
-      default: "NULL"
-    },
-    serverConfig: {
-      type: "LONGTEXT",
-      default: "NULL"
-    },
-    voiceLogging: {
-      type: "VARCHAR(20)",
-      default: "NULL"
-    },
-    voiceConfig: {
-      type: "LONGTEXT",
-      default: "NULL"
-    },
-    joinLeaveLogging: {
-      type: "VARCHAR(20)",
-      default: "NULL"
-    },
-    joinLeaveConfig: {
-      type: "LONGTEXT",
-      default: "NULL"
-    },
-    moderationLogging: {
-      type: "VARCHAR(20)",
-      default: "NULL"
-    },
-    moderationConfig: {
-      type: "LONGTEXT",
-      default: "NULL"
-    },
-    reportLogging: {
-      type: "VARCHAR(20)",
-      default: "NULL"
-    },
-    ignoreLogging: {
-      type: "LONGTEXT",
-      default: "NULL"
-    },
-    muteRoles: {
-      type: "LONGTEXT",
-      default: "NULL"
-    },
-    joinRoles: {
-      type: "LONGTEXT",
-      default: "NULL"
+    reactionRoles: {
+      type: "TINYINT(1)",
+      default: "0"
     },
     deletionDate: {
       type: "TIMESTAMP"

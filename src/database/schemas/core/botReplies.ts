@@ -12,11 +12,11 @@ export const botRepliesSchema: TableSchema = {
       primaryKey: true
     },
     triggers: {
-      type: "LONGTEXT",
+      type: "TEXT",
       default: "NULL"
     },
     responses: {
-      type: "LONGTEXT",
+      type: "TEXT",
       default: "NULL"
     }
   }

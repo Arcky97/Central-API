@@ -12,19 +12,19 @@ export const botStatsSchema: TableSchema = {
       primaryKey: true
     },
     totalCount: {
-      type: "LONGTEXT",
+      type: "TEXT",
       default: "NULL"
     },
     eventCount: {
-      type: "LONGTEXT",
+      type: "TEXT",
       default: "NULL"
     },
     commandCount: {
-      type: "LONGTEXT",
+      type: "TEXT",
       default: "NULL"
     },
     levelSystemCount: {
-      type: "LONGTEXT",
+      type: "TEXT",
       default: "NULL"
     }
   }

@@ -5,6 +5,7 @@ import { doggoBoardPinsSchema } from "./core/doggoBoardPins";
 import { doggoBoardSettingsSchema } from "./core/doggoBoardSettings";
 import { eventEmbedsSchema } from "./core/eventEmbeds";
 import { generatedEmbedsSchema } from "./core/generatedEmbeds";
+import { guildLoggingSchema } from "./core/guildLogging";
 import { guildSettingsSchema } from "./core/guildSettings";
 import { levelEmbedsSchema } from "./core/levelEmbeds";
 import { levelSettingsSchema } from "./core/levelSettings";
@@ -22,11 +23,12 @@ export const schemas = [
   doggoBoardSettingsSchema,
   eventEmbedsSchema,
   generatedEmbedsSchema,
+  guildLoggingSchema,
   guildSettingsSchema,
+  infractionsSchema,
   levelEmbedsSchema,
   levelSettingsSchema,
   levelSystemSchema,
-  infractionsSchema,
   premiumSubscriptionsSchema,
   projectUpdatesSchema,
   reactionRolesSchema,
