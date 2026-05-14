@@ -18,7 +18,7 @@ export const projectUpdatesSchema: TableSchema = {
       nullable: false,
     },
     date: {
-      type: "DATE",
+      type: "TIMESTAMP",
       nullable: false
     },
     title: {

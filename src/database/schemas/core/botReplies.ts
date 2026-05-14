@@ -6,7 +6,7 @@ export const botRepliesSchema: TableSchema = {
   database: "core",
   table: "botReplies",
   columns: {
-    id: {
+    uuid: {
       type: "VARCHAR(100)",
       nullable: false,
       primaryKey: true
@@ -18,6 +18,15 @@ export const botRepliesSchema: TableSchema = {
     responses: {
       type: "TEXT",
       default: "NULL"
+    },
+    createdAt: {
+      type: "TIMESTAMP",
+      default: "CURRENT_TIMESTAMP"
+    },
+    updatedAt: {
+      type: "TIMESTAMP",
+      default: "CURRENT_TIMESTAMP",
+      onUpdate: "CURRENT_TIMESTAMP"
     }
   }
 }

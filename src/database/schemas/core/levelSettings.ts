@@ -15,7 +15,7 @@ export const levelSettingsSchema: TableSchema = {
       type: "TEXT",
       nullable: false
     },
-    deletion_date: {
+    deletionDate: {
       type: "TIMESTAMP",
     }
   },

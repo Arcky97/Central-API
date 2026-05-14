@@ -17,8 +17,6 @@ export interface ScopedRequest extends Request {
 function isLocalRequest(req: Request): boolean {
   const ip = req.ip;
 
-  console.log(ip);
-
   if (!ip) return false;
 
   return (
