@@ -1,0 +1,10 @@
+export const API_ERRORS = {
+  INVALID_API_KEY: "INVALID_API_KEY",
+  MISSING_SCOPE: "MISSING_SCOPE",
+  INVALID_INPUT: "INVALID_INPUT",
+  INTERNAL_ERROR: "INTERNAL_ERROR",
+  NOT_FOUND: "NOT_FOUND"
+} as const;
+
+export type ApiErrorCode = 
+  typeof API_ERRORS[keyof typeof API_ERRORS];
