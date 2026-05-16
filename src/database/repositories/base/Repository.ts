@@ -1,7 +1,7 @@
 import { query } from "../../query";
 import { DatabaseName } from "../../types/schema";
 
-export class Repository {
+export class Repository<DBRow, Domain = DBRow> {
   tableName: string;
   db: DatabaseName;
 
@@ -10,21 +10,34 @@ export class Repository {
     this.db = db;
   }
 
-  async getAll() {
-    return query(
+  protected mapRow(row: DBRow): Domain {
+    return row as unknown as Domain;
+  }
+
+  async getAll(): Promise<Domain[]> {
+    const result = await query<DBRow[]>(
       this.db, { 
         sql: 
           `SELECT * FROM ${this.tableName}` 
         }
     );
+
+    return result.map(row => this.mapRow(row));
   }
 
-  async getByGuildId(guildId: string) {
-    return query(
-      this.db, {
-        sql:
-          `SELECT * FROM ${this.tableName} WHERE guildId = ?`
-      }, [guildId]
-    )
+  async getByGuildId(guildId: string): Promise<Domain | null> {
+    const result = await query<DBRow[]>(
+      this.db, 
+      {
+        sql: `SELECT * FROM ${this.tableName} WHERE guildId = ?`
+      }, 
+      [guildId]
+    );
+
+    const row = result[0];
+
+    if (!row) return null;
+
+    return this.mapRow(row);
   }
 }
