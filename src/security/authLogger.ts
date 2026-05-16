@@ -19,7 +19,7 @@ export function LogAuthFailure(
   );
 
   try {
-    query("auth",
+    query("analytics",
      { sql: `INSERT INTO ApiAuthFailures
       (timestamp, reason, method, route, ip, userAgent)
       VALUES(?, ?, ?, ?, ?, ?)` },

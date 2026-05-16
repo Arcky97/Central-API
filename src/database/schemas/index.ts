@@ -15,6 +15,8 @@ import { premiumSubscriptionsSchema } from "./core/premiumSubscriptions";
 import { projectUpdatesSchema } from "./core/projectUpdates";
 import { reactionRolesSchema } from "./core/reactionRoles";
 import { userStatsSchema } from "./core/userStats";
+import { apiAuthFailuresSchema } from "./analytics/apiAuthFailures";
+import { apiRequestsSchema } from "./analytics/apiRequests";
 
 export const schemas = [
   botRepliesSchema,
@@ -34,5 +36,7 @@ export const schemas = [
   reactionRolesSchema,
   userStatsSchema,
   
+  apiAuthFailuresSchema,
+  apiRequestsSchema,
   pageVisitsSchema
 ];

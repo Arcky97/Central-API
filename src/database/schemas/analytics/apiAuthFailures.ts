@@ -1,11 +1,9 @@
-import { truncate } from "node:fs";
 import { TableSchema } from "../../types/schema";
-import { timeStamp } from "node:console";
 
 export const apiAuthFailuresSchema: TableSchema = {
   version: 1,
   strict: true,
-  database: "auth",
+  database: "analytics",
   table: "apiAuthFailures",
   columns: {
     id: {

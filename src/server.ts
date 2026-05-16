@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { env } from "./config/env";
 import app from "./app";
 import { initializeDatabases } from "./database/init";

@@ -1,13 +1,23 @@
 import { query } from "../../query";
 import { DatabaseName } from "../../types/schema";
 
-export class Repository<DBRow, Domain = DBRow> {
+export class Repository<DBRow, Domain = DBRow, CreateInput = Partial<DBRow>> {
   tableName: string;
   db: DatabaseName;
 
   constructor(tableName: string, db: DatabaseName) {
     this.tableName = tableName;
     this.db = db;
+  }
+
+  async create(data: CreateInput) {
+    return query(
+      this.db,
+      {
+        sql: `INSERT INTO ${this.tableName} SET ?`
+      },
+      [data]
+    )
   }
 
   protected mapRow(row: DBRow): Domain {

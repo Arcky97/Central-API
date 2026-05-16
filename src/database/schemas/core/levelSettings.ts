@@ -22,7 +22,7 @@ export const levelSettingsSchema: TableSchema = {
   indexes: [
     {
       name: "idx_deletion_date",
-      columns: ["deletion_date"]
+      columns: ["deletionDate"]
     }
   ]
 }
