@@ -16,8 +16,22 @@ export class Repository<DBRow, Domain = DBRow, CreateInput = Partial<DBRow>> {
       {
         sql: `INSERT INTO ${this.tableName} SET ?`
       },
-      [data]
-    )
+      data
+    );
+  }
+
+  async bulkCreate(rows: CreateInput[]) {
+    for (const row of rows) {
+      await query(
+        this.db,
+        {
+          sql: `INSERT INTO ${this.tableName} SET ?`
+        },
+        row
+      );
+    }
+
+
   }
 
   protected mapRow(row: DBRow): Domain {

@@ -10,6 +10,8 @@ import { requireApiKey } from "./middleware/apiKey";
 import { requestLogger } from "./middleware/requestLogger";
 import { errorHandler } from "./middleware/errorHandler";
 
+import "./workers";
+
 const app = express();
 
 app.set("trust proxy", 1);
