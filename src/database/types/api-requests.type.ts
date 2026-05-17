@@ -1,6 +1,6 @@
 export interface ApiRequest {
   id: number;
-  time: Date;
+  timeStamp: string;
   method: string;
   route: string;
   status: number;

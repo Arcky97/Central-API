@@ -10,7 +10,6 @@ export function requestLogger(
   const start = Date.now();
 
   res.on("finish", async () => {
-    console.log("log request triggered");
     const duration = Date.now() - start;
 
     const ip =
@@ -18,8 +17,13 @@ export function requestLogger(
       req.socket?.remoteAddress ||
       "0.0.0.0";
 
+    const time = new Date()
+      .toISOString()
+      .slice(0, 19)
+      .replace("T", " ");
+
     const log = {
-      time: new Date(),
+      timeStamp: time,
       method: req.method,
       route: req.originalUrl,
       status: res.statusCode,
@@ -35,9 +39,9 @@ export function requestLogger(
 
     try {
       await apiRequestsQueue.add("api-requests", log);
-      console.log("QUEUE ADD SUCCESS");
+      console.log("[SUCCESS] api-request queue add.");
     } catch (err) {
-      console.error("QUEUE ADD FAILED:", err);
+      console.error("[FAILED] api-request queue add:", err);
     }
   });
 

@@ -13,7 +13,7 @@ const FLUSH_INTERVAL = 5000;
 async function flush() {
   if (buffer.length === 0) return;
 
-  console.log(`flushing ${buffer.length} request(s)`);
+  console.log(`[SUCCESS] flushing ${buffer.length} page-visit request(s)`);
 
   const batch = buffer.splice(0, buffer.length);
 
@@ -29,7 +29,7 @@ setInterval(() => {
 export const pageVisitsWorker = new Worker<CreatePageVisit>(
   "page-visits",
   async job => {
-    console.log("job received for page-visits");
+    console.log("[SUCCESS] job received for page-visits");
     buffer.push(job.data);
 
     if (buffer.length >= FLUSH_SIZE) {

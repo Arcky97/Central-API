@@ -13,7 +13,7 @@ const FLUSH_INTERVAL = 5000;
 async function flush() {
   if (buffer.length === 0) return;
 
-  console.log(`flushing ${buffer.length} request(s)`, buffer);
+  console.log(`[SUCCESS] flushing ${buffer.length} api-requests request(s)`);
 
   const batch = buffer.splice(0, buffer.length);
 
@@ -29,7 +29,7 @@ setInterval(() => {
 export const apiRequestsWorker = new Worker<CreateApiRequest>(
   "api-requests",
   async job => {
-    console.log("job received for api-requests");
+    console.log("[SUCCESS] job received for api-requests");
     buffer.push(job.data);
 
     if (buffer.length >= FLUSH_SIZE) {
