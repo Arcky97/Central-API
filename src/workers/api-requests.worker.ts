@@ -3,17 +3,17 @@ import { ApiRequestRepository } from "../database/repositories/analytics/ApiRequ
 import { CreateApiRequest } from "../database/types/api-requests.type";
 import { redis } from "../redis";
 
-
-
 const repo = new ApiRequestRepository();
 
 const buffer: CreateApiRequest[] = [];
 
-const FLUSH_SIZE = 50;
-const FLUSH_INTERVAL = 3000;
+const FLUSH_SIZE = 100;
+const FLUSH_INTERVAL = 5000;
 
 async function flush() {
   if (buffer.length === 0) return;
+
+  console.log(`flushing ${buffer.length} request(s)`, buffer);
 
   const batch = buffer.splice(0, buffer.length);
 
@@ -22,13 +22,14 @@ async function flush() {
 
 setInterval(() => {
   flush().catch(err => {
-    console.error("failed to flush api requests batch:", err);
+    console.error("Failed to flush api requests batch:", err);
   });
 }, FLUSH_INTERVAL);
 
 export const apiRequestsWorker = new Worker<CreateApiRequest>(
   "api-requests",
   async job => {
+    console.log("job received for api-requests");
     buffer.push(job.data);
 
     if (buffer.length >= FLUSH_SIZE) {

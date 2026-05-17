@@ -3,7 +3,7 @@ import { env } from "./config/env";
 import app from "./app";
 import { initializeDatabases } from "./database/init";
 
-const PORT = env.DB_PORT;
+const PORT = env.PORT;
 
 async function bootstrap() {
   try {

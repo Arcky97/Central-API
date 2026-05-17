@@ -10,6 +10,7 @@ export function requestLogger(
   const start = Date.now();
 
   res.on("finish", async () => {
+    console.log("log request triggered");
     const duration = Date.now() - start;
 
     const ip =
@@ -32,9 +33,12 @@ export function requestLogger(
       `[REQUEST LOG] ${log.status} ${log.method} ${log.route} | ip=${log.ip} | scope=${log.scope} | ${log.durationMs}ms`
     );
 
-    await apiRequestsQueue.add("request", log);
-
-    res.json({ success: true });
+    try {
+      await apiRequestsQueue.add("api-requests", log);
+      console.log("QUEUE ADD SUCCESS");
+    } catch (err) {
+      console.error("QUEUE ADD FAILED:", err);
+    }
   });
 
   next();
