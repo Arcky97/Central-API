@@ -39,10 +39,9 @@ app.use(
 );
 
 app.use(
-  "/api",
   apiLimiter,
-  requireApiKey,
-  requestLogger,
+  requireApiKey, // handles auth failures logging
+  requestLogger, // handles requests logging
   routes
 );
 

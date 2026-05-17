@@ -1,14 +1,16 @@
 import { Worker } from "bullmq";
-import { PageVisitsRepository } from "../database/repositories/analytics/PageVisitsRepository";
-import { CreatePageVisit } from "../database/types/page-visits.type";
+import { ApiRequestRepository } from "../database/repositories/analytics/ApiRequestsRepository";
+import { CreateApiRequest } from "../database/types/api-requests.type";
 import { redis } from "../redis";
 
-const repo = new PageVisitsRepository();
 
-const buffer: CreatePageVisit[] = [];
 
-const FLUSH_SIZE = 100;
-const FLUSH_INTERVAL = 5000;
+const repo = new ApiRequestRepository();
+
+const buffer: CreateApiRequest[] = [];
+
+const FLUSH_SIZE = 50;
+const FLUSH_INTERVAL = 3000;
 
 async function flush() {
   if (buffer.length === 0) return;
@@ -20,12 +22,12 @@ async function flush() {
 
 setInterval(() => {
   flush().catch(err => {
-    console.error("Failed to flush page visits batch:", err);
+    console.error("failed to flush api requests batch:", err);
   });
 }, FLUSH_INTERVAL);
 
-export const pageVisitsWorker = new Worker<CreatePageVisit>(
-  "page-visits",
+export const apiRequestsWorker = new Worker<CreateApiRequest>(
+  "api-requests",
   async job => {
     buffer.push(job.data);
 

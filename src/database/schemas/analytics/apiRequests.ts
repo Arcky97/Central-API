@@ -4,7 +4,7 @@ export const apiRequestsSchema: TableSchema = {
   version: 1,
   strict: true,
   database: "analytics",
-  table: "ApiRequests",
+  table: "apiRequests",
   columns: {
     id: {
       type: "INT",

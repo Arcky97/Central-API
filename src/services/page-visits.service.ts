@@ -1,3 +1,4 @@
+// For now this file is unused, but later we'll use it using getVisits and other class functions specifically for pageVisits
 import { PageVisitsRepository } from "../database/repositories/analytics/PageVisitsRepository";
 
 const pageVisitsRepo = new PageVisitsRepository();

@@ -21,17 +21,13 @@ export class Repository<DBRow, Domain = DBRow, CreateInput = Partial<DBRow>> {
   }
 
   async bulkCreate(rows: CreateInput[]) {
-    for (const row of rows) {
-      await query(
-        this.db,
-        {
+    await Promise.all(
+      rows.map(row =>
+        query(this.db, {
           sql: `INSERT INTO ${this.tableName} SET ?`
-        },
-        row
-      );
-    }
-
-
+        }, row)
+      )
+    );
   }
 
   protected mapRow(row: DBRow): Domain {

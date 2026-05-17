@@ -1,8 +1,7 @@
-import { CreatePageVisits, PageVisitsRow } from "../../types/page-visits.types";
+import { CreatePageVisit, PageVisit } from "../../types/page-visits.type";
 import { Repository } from "../base/Repository";
 
-
-export class PageVisitsRepository extends Repository<PageVisitsRow, PageVisitsRow, CreatePageVisits> {
+export class PageVisitsRepository extends Repository<PageVisit, PageVisit, CreatePageVisit> {
   constructor() {
     super("pageVisits", "analytics");
   } 

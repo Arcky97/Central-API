@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { PageVisitsService } from "../services/page-visits.service";
+//import { PageVisitsService } from "../services/page-visits.service";
 import { getPageVisitsSchema } from "../schema/page-visits.schema";
 import { pageVisitsQueue } from "../queue/page-visits.queue";
 

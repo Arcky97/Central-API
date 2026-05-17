@@ -1,13 +1,7 @@
 import { Queue } from "bullmq";
 import { redis } from "../redis";
+import { CreatePageVisit } from "../database/types/page-visits.type";
 
-export type PageVisitEvent = {
-  path: string;
-  ip: string;
-  userAgent: string | null;
-  referrer: string | null;
-};
-
-export const pageVisitsQueue = new Queue<PageVisitEvent>("page-visits", { 
+export const pageVisitsQueue = new Queue<CreatePageVisit>("page-visits", { 
   connection: redis 
 });

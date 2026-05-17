@@ -1,11 +1,8 @@
-import express from "express";
-import visitsRouterV1 from "./visits/v1"
-import updateRouterV1 from "./updates/v1"
+import { Router } from "express";
+import v1Routes from "./v1";
 
-const router = express.Router();
+const router = Router();
 
-// Mount the visits router
-router.use("/visits/v1", visitsRouterV1);
-router.use("/updates/v1", updateRouterV1);
+router.use("/v1", v1Routes);
 
 export default router;

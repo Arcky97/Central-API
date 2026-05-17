@@ -1,5 +1,5 @@
 import { toBoolean } from "../../mapper/toBoolean";
-import { GuildSettings, GuildSettingsRow } from "../../types/guild-settings.types";
+import { GuildSettings, GuildSettingsRow } from "../../types/guild-settings.type";
 
 import { Repository } from "../base/Repository";
 

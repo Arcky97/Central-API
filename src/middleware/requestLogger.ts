@@ -1,6 +1,6 @@
 import { Response, NextFunction } from "express";
 import { ScopedRequest } from "./apiKey";
-import { query } from "../database/query";
+import { apiRequestsQueue } from "../queue/api-requests.queue";
 
 export function requestLogger(
   req: ScopedRequest,
@@ -32,28 +32,9 @@ export function requestLogger(
       `[REQUEST LOG] ${log.status} ${log.method} ${log.route} | ip=${log.ip} | scope=${log.scope} | ${log.durationMs}ms`
     );
 
-    try {
-      await query("analytics",
-        { sql: `
-            INSERT INTO ApiRequestLogs
-            (timestamp, method, route, status, durationMs, ip, scope, userAgent)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-          `
-        },
-        [
-          log.time,
-          log.method,
-          log.route,
-          log.status,
-          log.durationMs,
-          log.ip,
-          log.scope,
-          log.userAgent
-        ]
-      );
-    } catch (error) {
-      console.error("Failed to log request to database:", error);
-    }
+    await apiRequestsQueue.add("request", log);
+
+    res.json({ success: true });
   });
 
   next();
