@@ -1,6 +1,7 @@
 import { Response, NextFunction } from "express";
 import { ScopedRequest } from "./apiKey";
 import { apiRequestsQueue } from "../queue/api-requests.queue";
+import { getStringifiedTimeStamp } from "../utils/dateTimeStringifier";
 
 export function requestLogger(
   req: ScopedRequest,
@@ -23,7 +24,7 @@ export function requestLogger(
       .replace("T", " ");
 
     const log = {
-      timeStamp: time,
+      timeStamp: getStringifiedTimeStamp(),
       method: req.method,
       route: req.originalUrl,
       status: res.statusCode,
@@ -38,7 +39,7 @@ export function requestLogger(
     );
 
     try {
-      await apiRequestsQueue.add("api-requests", log);
+      await apiRequestsQueue.add("api-request", log);
       console.log("[SUCCESS] api-request queue add.");
     } catch (err) {
       console.error("[FAILED] api-request queue add:", err);

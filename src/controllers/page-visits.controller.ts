@@ -8,7 +8,7 @@ export class PageVisitsController {
     const { path, userAgent, referrer } = getPageVisitsSchema.parse(req.body);
 
     try{
-      await pageVisitsQueue.add("visit", {
+      await pageVisitsQueue.add("page-visit", {
         path,
         ip: req.ip ?? "unknown", 
         userAgent: userAgent ?? null,

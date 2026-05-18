@@ -29,7 +29,7 @@ setInterval(() => {
 export const apiRequestsWorker = new Worker<CreateApiRequest>(
   "api-requests",
   async job => {
-    console.log("[SUCCESS] job received for api-requests");
+    console.log("[SUCCESS] job received for api-requests.");
     buffer.push(job.data);
 
     if (buffer.length >= FLUSH_SIZE) {

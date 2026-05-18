@@ -1,12 +1,14 @@
 import { Request } from "express";
-import { query } from "../database/query";
+import { apiAuthFailuresQueue } from "../queue/api-auth-failure.queue";
+import { getStringifiedTimeStamp } from "../utils/dateTimeStringifier";
 
-export function LogAuthFailure(
+export async function LogAuthFailure(
   req: Request,
   reason: "missing_key" | "invalid_key"
 ) {
+
   const log = {
-    time: new Date(),
+    timeStamp: getStringifiedTimeStamp(),
     reason,
     method: req.method,
     route: req.originalUrl,
@@ -19,13 +21,9 @@ export function LogAuthFailure(
   );
 
   try {
-    query("analytics",
-     { sql: `INSERT INTO ApiAuthFailures
-      (timestamp, reason, method, route, ip, userAgent)
-      VALUES(?, ?, ?, ?, ?, ?)` },
-      [log.time, log.reason, log.method, log.route, log.ip, log.userAgent]
-    )
-  } catch (error) {
-    console.error("Failed to log auth failure to database:", error); 
+    await apiAuthFailuresQueue.add("api-auth-failure", log);
+    console.log("[SUCCESS] api-auth-failure queue add.");
+  } catch (err) {
+    console.error("[FAILED] api-auth-failure queue add:", err);
   }
 }

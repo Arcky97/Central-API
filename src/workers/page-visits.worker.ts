@@ -13,7 +13,7 @@ const FLUSH_INTERVAL = 5000;
 async function flush() {
   if (buffer.length === 0) return;
 
-  console.log(`[SUCCESS] flushing ${buffer.length} page-visit request(s)`);
+  console.log(`[SUCCESS] flushing ${buffer.length} page-visit request(s).`);
 
   const batch = buffer.splice(0, buffer.length);
 
