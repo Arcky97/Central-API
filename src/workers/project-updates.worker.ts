@@ -17,7 +17,7 @@ async function flush() {
 
   const batch = buffer.splice(0, buffer.length);
 
-  await repo.bulkCreate(batch);
+  await repo.upsertMany(batch);
 }
 
 setInterval(() => {
