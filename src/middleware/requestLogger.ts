@@ -18,11 +18,6 @@ export function requestLogger(
       req.socket?.remoteAddress ||
       "0.0.0.0";
 
-    const time = new Date()
-      .toISOString()
-      .slice(0, 19)
-      .replace("T", " ");
-
     const log = {
       timeStamp: getStringifiedTimeStamp(),
       method: req.method,

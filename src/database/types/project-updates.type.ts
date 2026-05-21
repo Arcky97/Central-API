@@ -1,7 +1,7 @@
 export interface ProjectUpdate {
   id: number;
   project: string;
-  date: Date;
+  date: string;
   title: string;
   excerpt: string;
   slug: string;
