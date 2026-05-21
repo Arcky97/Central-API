@@ -18,5 +18,8 @@ export const env = {
 
   API_KEY_WEBSITE: process.env.API_KEY_WEBSITE,
   API_KEY_DISCORD: process.env.API_KEY_DISCORD,
-  API_KEY_ADMIN: process.env.API_KEY_ADMIN
+  API_KEY_ADMIN: process.env.API_KEY_ADMIN,
+
+  REDIS_HOST: process.env.REDIS_HOST,
+  REDIS_PORT: Number(process.env.REDIS_PORT ?? 6379)
 };
