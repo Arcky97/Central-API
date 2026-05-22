@@ -9,6 +9,7 @@ import { getPool } from "./database/pools";
 import { requireApiKey } from "./middleware/apiKey";
 import { requestLogger } from "./middleware/requestLogger";
 import { errorHandler } from "./middleware/errorHandler";
+import { blockCommonScans } from "./middleware/blockCommonScans";
 
 import "./workers";
 
@@ -18,7 +19,7 @@ app.set("trust proxy", 1);
 
 const apiLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 300,
+  max: 60,
   standardHeaders: true,
   legacyHeaders: false
 });
@@ -37,6 +38,8 @@ app.use(
     credentials: false
   })
 );
+
+app.use(blockCommonScans);
 
 app.use(
   apiLimiter,
