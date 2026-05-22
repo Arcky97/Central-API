@@ -1,13 +1,7 @@
 import type { RowDataPacket } from "mysql2";
-
 import { query } from "../query";
 import type { TableSchema } from "../types/schema";
-
-import { 
-  logInfo,
-  logSuccess,
-  logWarning
-} from "./logger";
+import { logInfo, logSuccess, logWarning } from "./logger";
 import { normalizeColumnType } from "../utils/normalizeColumnType";
 import { buildColumnType } from "../utils/buildColumnType";
 
@@ -17,19 +11,19 @@ interface ColumnRow extends RowDataPacket {
   IS_NULLABLE: "YES" | "NO";
   COLUMN_DEFAULT: string | null;
 }
+
 function getBaseType(type: string): string {
   return type
     .toLowerCase()
     .match(/^[a-z]+/i)?.[0] ?? type.toLowerCase();
 }
-export async function syncColumns(
-  schema: TableSchema
-) {
+
+export async function syncColumns(schema: TableSchema) {
   logInfo(`Starting column sync for ${schema.database}.${schema.table}`);
-  
+
   const columns = await query<ColumnRow[]>(
     schema.database,
-    { 
+    {
       sql: `
         SELECT
           COLUMN_NAME,
@@ -44,22 +38,15 @@ export async function syncColumns(
     [schema.table]
   );
 
-  const existingcolumns = new Map(
-    columns.map(column => [
-      column.COLUMN_NAME,
-      column
-    ])
+  const existingColumns = new Map(
+    columns.map(col => [col.COLUMN_NAME, col])
   );
 
-  for (const [name, definition] of Object.entries(
-    schema.columns
-  )) {
-    const existing = existingcolumns.get(name);
+  for (const [name, definition] of Object.entries(schema.columns)) {
+    const existing = existingColumns.get(name);
 
     if (!existing) {
-      logInfo(
-        `[ADD] Missing column detected: ${name}`
-      );
+      logInfo(`[ADD] Missing column detected: ${name}`);
 
       let sql = `
         ALTER TABLE \`${schema.table}\`
@@ -76,18 +63,15 @@ export async function syncColumns(
 
       await query(schema.database, { sql });
 
-      logSuccess(
-        `[ADD] Column created: ${name}`
-      );
-
+      logSuccess(`[ADD] Column created: ${name}`);
       continue;
     }
 
     const actualTypeRaw = existing.COLUMN_TYPE;
     const expectedTypeRaw = buildColumnType(definition);
 
-    const actualType = normalizeColumnType(existing.COLUMN_TYPE);
-    const expectedType = normalizeColumnType(buildColumnType(definition));
+    const actualType = normalizeColumnType(actualTypeRaw);
+    const expectedType = normalizeColumnType(expectedTypeRaw);
 
     const actualBase = getBaseType(actualTypeRaw);
     const expectedBase = getBaseType(expectedTypeRaw);
@@ -103,7 +87,7 @@ export async function syncColumns(
       );
 
       logWarning(
-        `         ${actualTypeRaw} => ${expectedTypeRaw}`
+        `         ${actualTypeRaw} → ${expectedTypeRaw}`
       );
 
       continue;
@@ -114,7 +98,7 @@ export async function syncColumns(
     );
 
     logInfo(
-      `         ${actualTypeRaw} => ${expectedTypeRaw}`
+      `         ${actualTypeRaw} → ${expectedTypeRaw}`
     );
 
     const sql = `
@@ -129,5 +113,5 @@ export async function syncColumns(
     );
   }
 
-  logInfo(`column sync completed for ${schema.table}`);
+  logInfo(`Column sync completed for ${schema.table}`);
 }
