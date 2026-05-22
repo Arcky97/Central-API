@@ -33,7 +33,7 @@ export const apiAuthFailuresSchema: TableSchema = {
       default: "NULL"
     },
     userAgent: {
-      type: "TEXT",
+      type: "VARCHAR(512)",
       default: "NULL"
     }
   }

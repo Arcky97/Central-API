@@ -17,10 +17,16 @@ interface ColumnRow extends RowDataPacket {
   IS_NULLABLE: "YES" | "NO";
   COLUMN_DEFAULT: string | null;
 }
-
+function getBaseType(type: string): string {
+  return type
+    .toLowerCase()
+    .match(/^[a-z]+/i)?.[0] ?? type.toLowerCase();
+}
 export async function syncColumns(
   schema: TableSchema
 ) {
+  logInfo(`Starting column sync for ${schema.database}.${schema.table}`);
+  
   const columns = await query<ColumnRow[]>(
     schema.database,
     { 
@@ -52,7 +58,7 @@ export async function syncColumns(
 
     if (!existing) {
       logInfo(
-        `Adding missing column ${name}`
+        `[ADD] Missing column detected: ${name}`
       );
 
       let sql = `
@@ -71,19 +77,57 @@ export async function syncColumns(
       await query(schema.database, { sql });
 
       logSuccess(
-        `Added column ${name}`
+        `[ADD] Column created: ${name}`
       );
 
       continue;
     }
 
+    const actualTypeRaw = existing.COLUMN_TYPE;
+    const expectedTypeRaw = buildColumnType(definition);
+
     const actualType = normalizeColumnType(existing.COLUMN_TYPE);
     const expectedType = normalizeColumnType(buildColumnType(definition));
 
-    if (actualType !== expectedType) {
-      logWarning(
-        `${schema.table}.${name} type mismatch (${actualType} vs ${expectedType})`
-      );
+    const actualBase = getBaseType(actualTypeRaw);
+    const expectedBase = getBaseType(expectedTypeRaw);
+
+    if (actualType === expectedType) {
+      logInfo(`[OK] ${schema.table}.${name} already in sync`);
+      continue;
     }
+
+    if (actualBase !== expectedBase) {
+      logWarning(
+        `[BLOCKED] ${schema.table}.${name} incompatible type change`
+      );
+
+      logWarning(
+        `         ${actualTypeRaw} => ${expectedTypeRaw}`
+      );
+
+      continue;
+    }
+
+    logInfo(
+      `[UPDATE] ${schema.table}.${name}`
+    );
+
+    logInfo(
+      `         ${actualTypeRaw} => ${expectedTypeRaw}`
+    );
+
+    const sql = `
+      ALTER TABLE \`${schema.table}\`
+      MODIFY COLUMN \`${name}\` ${expectedTypeRaw}
+    `;
+
+    await query(schema.database, { sql });
+
+    logSuccess(
+      `[UPDATED] ${schema.table}.${name} successfully altered`
+    );
   }
+
+  logInfo(`column sync completed for ${schema.table}`);
 }
