@@ -38,9 +38,6 @@ export class ProjectUpdatesController {
 
     const data = await ProjectUpdatesService.getLatest(limit);
 
-    res.json({
-      success: true,
-      data
-    });
+    res.json(data);
   }
 }
