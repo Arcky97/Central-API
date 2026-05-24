@@ -18,7 +18,7 @@ export interface CreateGuildSettings {
   doggoBoard: boolean;
   reactionRoles: boolean;
 
-  deletionDate: Date | null;
+  deletionDate?: Date | null;
 }
 
 // Update DTO

@@ -8,9 +8,6 @@ export class GuildSettingsController {
 
     const data = await GuildSettingsService.getSettings(guildId);
 
-    res.json({
-      success: true,
-      data
-    });
+    res.json(data);
   }
 }

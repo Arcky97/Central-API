@@ -6,7 +6,7 @@ const guildSettingsRepo = new GuildSettingsRepository();
 
 export class GuildSettingsService {
   static async getSettings(guildId: string) {
-    const record = await guildSettingsRepo.getByGuildId(guildId);
+    const record = await guildSettingsRepo.getOrCreateByGuildId(guildId, { guildId, logging: false, leveling: true, reactionRoles: false, doggoBoard: false });
 
     if (!record) {
       throw new ApiError(

@@ -1,3 +1,4 @@
+import { DefaultSerializer } from "node:v8";
 import { query } from "../../query";
 import { DatabaseName } from "../../types/schema";
 
@@ -59,5 +60,25 @@ export class Repository<DBRow, CreateInput = Partial<DBRow>, UpdateInput = Parti
     if (!row) return null;
 
     return this.mapRow(row);
+  }
+
+  async getOrCreateByGuildId(guildId: string, defaults: CreateInput) {
+    await query(
+      this.db,
+      {
+        sql: `
+          INSERT INTO ${this.tableName}
+          SET ?
+          ON DUPLICATE KEY UPDATE guildId = guildId
+        `
+      },
+      {
+        guildId,
+        ...defaults
+      }
+    );
+
+    const result = await this.getByGuildId(guildId);
+    return result!;
   }
 }
