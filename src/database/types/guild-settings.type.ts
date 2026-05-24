@@ -9,7 +9,8 @@ export interface GuildSettingsRow {
   deletionDate: Date | null;
 }
 
-export interface GuildSettings {
+// Create DTO
+export interface CreateGuildSettings {
   guildId: string;
 
   logging: boolean;
@@ -19,3 +20,9 @@ export interface GuildSettings {
 
   deletionDate: Date | null;
 }
+
+// Update DTO
+export type UpdateGuildSettings = Partial<CreateGuildSettings>;
+
+// Public DTO
+export type PublicGuildSettings = CreateGuildSettings;

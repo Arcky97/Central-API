@@ -1,7 +1,7 @@
 import { query } from "../../query";
 import { DatabaseName } from "../../types/schema";
 
-export class Repository<DBRow, Domain = DBRow, CreateInput = Partial<DBRow>> {
+export class Repository<DBRow, CreateInput = Partial<DBRow>, UpdateInput = Partial<DBRow>, PublicOutput = Partial<DBRow>> {
   tableName: string;
   db: DatabaseName;
 
@@ -30,11 +30,11 @@ export class Repository<DBRow, Domain = DBRow, CreateInput = Partial<DBRow>> {
     );
   }
 
-  protected mapRow(row: DBRow): Domain {
-    return row as unknown as Domain;
+  protected mapRow(row: DBRow): PublicOutput {
+    return row as unknown as PublicOutput;
   }
 
-  async getAll(): Promise<Domain[]> {
+  async getAll(): Promise<PublicOutput[]> {
     const result = await query<DBRow[]>(
       this.db, { 
         sql: 
@@ -45,12 +45,12 @@ export class Repository<DBRow, Domain = DBRow, CreateInput = Partial<DBRow>> {
     return result.map(row => this.mapRow(row));
   }
 
-  async getByGuildId(guildId: string): Promise<Domain | null> {
+  async getByGuildId(guildId: string): Promise<PublicOutput | null> {
     const result = await query<DBRow[]>(
-      this.db, 
+      this.db,
       {
         sql: `SELECT * FROM ${this.tableName} WHERE guildId = ?`
-      }, 
+      },
       [guildId]
     );
 

@@ -1,13 +1,13 @@
 import { toBoolean } from "../../mapper/toBoolean";
-import { GuildSettings, GuildSettingsRow } from "../../types/guild-settings.type";
+import { CreateGuildSettings, GuildSettingsRow, PublicGuildSettings, UpdateGuildSettings } from "../../types/guild-settings.type";
 import { Repository } from "../base/Repository";
 
-export class GuildSettingsRepository extends Repository<GuildSettingsRow, GuildSettings> {
+export class GuildSettingsRepository extends Repository<GuildSettingsRow, CreateGuildSettings, UpdateGuildSettings, PublicGuildSettings> {
   constructor() {
     super("guildSettings", "core");
   }
 
-  protected override mapRow(row: GuildSettingsRow): GuildSettings {
+  protected override mapRow(row: GuildSettingsRow): PublicGuildSettings {
     return {
       ...row,
       logging: toBoolean(row.logging),

@@ -14,3 +14,6 @@ export type CreateProjectUpdate = Omit<ProjectUpdate, "id" | "createdAt" | "upda
 
 // Update DTO
 export type UpdateProjectUpdate = Partial<CreateProjectUpdate>;
+
+// Public DTO
+export type PublicProjectUpdate = CreateProjectUpdate;
