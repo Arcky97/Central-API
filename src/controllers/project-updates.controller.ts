@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { getProjectUpdatesSchema } from "../schema/project-updates.schema";
 import { projectUpdatesQueue } from "../queue/project-updates.queue";
 import { dateTimeStringifier } from "../utils/dateTimeStringifier";
+import { ProjectUpdatesService } from "../services/project-updates.service";
 
 export class ProjectUpdatesController {
   static async registerBulkUpdates(req: Request, res: Response) {
@@ -30,5 +31,16 @@ export class ProjectUpdatesController {
     } finally {
       res.json({ success: true });
     }
+  }
+
+  static async getLatest(req: Request, res: Response) {
+    const limit = Number(req.query.limit) || 3;
+
+    const data = await ProjectUpdatesService.getLatest(limit);
+
+    res.json({
+      success: true,
+      data
+    });
   }
 }

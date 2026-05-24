@@ -9,6 +9,4 @@ router.use(requireScope("website", "admin"));
 
 router.post("/", asyncHandler(PageVisitsController.registerVisit));
 
-router.get("/latest", asyncHandler(PageVisitsController.getLatest));
-
 export default router;

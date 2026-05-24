@@ -2,8 +2,6 @@ import { Request, Response } from "express";
 //import { PageVisitsService } from "../services/page-visits.service";
 import { getPageVisitsSchema } from "../schema/page-visits.schema";
 import { pageVisitsQueue } from "../queue/page-visits.queue";
-import { PageVisitsService } from "../services/page-visits.service";
-import { ProjectUpdatesService } from "../services/project-updates.service";
 
 export class PageVisitsController {
   static async registerVisit(req: Request, res: Response) {
@@ -22,16 +20,5 @@ export class PageVisitsController {
     } finally {
       res.json({ success: true });
     }
-  }
-
-  static async getLatest(req: Request, res: Response) {
-    const limit = Number(req.query.limit) || 3;
-
-    const data = await ProjectUpdatesService.getLatest(limit);
-
-    res.json({
-      success: true,
-      data
-    });
   }
 }

@@ -9,4 +9,6 @@ router.use(requireScope("website", "admin"));
 
 router.post("/bulk", asyncHandler(ProjectUpdatesController.registerBulkUpdates));
 
+router.get("/latest", asyncHandler(ProjectUpdatesController.getLatest));
+
 export default router;
