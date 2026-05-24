@@ -30,7 +30,7 @@ export class ProjectUpdatesRepository extends Repository<ProjectUpdate, CreatePr
         SELECT pu.* FROM ${this.tableName} pu INNER JOIN (
         SELECT PROJECT,
           MAX(date) as maxDate FROM ${this.tableName} GROUP BY project
-        ) LATEST ON pu.project = latest.project AND 
+        ) latest ON pu.project = latest.project AND 
          pu.date = latest.maxDate ORDER BY pu.date DESC LIMIT ?
       `
     }, [limit]); 
