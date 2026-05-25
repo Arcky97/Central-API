@@ -13,23 +13,36 @@ export class ProjectUpdatesController {
     }
 
     try {
-      for (const update of updates) {
+      const jobs = updates.map(update => {
         const { project, date, title, excerpt, slug } = getProjectUpdatesSchema.parse(update);
 
-        await projectUpdatesQueue.add("project-update", {
-          project,
-          date: dateTimeStringifier(date),
-          title,
-          excerpt,
-          slug
-        });
-        
-      }
-      console.log("[SUCCESS] project-updates bulk queue add.");
+        return {
+          name: "project-update",
+          data: {
+            project,
+            date: dateTimeStringifier(date),
+            title,
+            excerpt,
+            slug
+          }
+        }
+      });
+
+      await projectUpdatesQueue.addBulk(jobs);
+
+      console.log(
+        `[SUCCESS] queued ${jobs.length} project-updates.`
+      );
+
+      return res.json({
+        success: true
+      });
     } catch (err) {
       console.error("[FAILED] project-updates bulk queue add:", err);
-    } finally {
-      res.json({ success: true });
+
+      return res.status(500).json({
+        success: false
+      });
     }
   }
 

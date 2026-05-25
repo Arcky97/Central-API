@@ -1,6 +1,7 @@
 import { API_ERRORS } from "../core/constants/apiErrors";
 import { ApiError } from "../core/errors/ApiError";
 import { GuildSettingsRepository } from "../database/repositories/core/GuildSettingsRepository";
+import { UpdateGuildSettings } from "../database/types/guild-settings.type";
 
 const guildSettingsRepo = new GuildSettingsRepository();
 
@@ -17,5 +18,9 @@ export class GuildSettingsService {
     }
 
     return record;
+  }
+
+  static async updateSettings(data: UpdateGuildSettings) {
+    await guildSettingsRepo.updateGuildSettings(data);
   }
 }

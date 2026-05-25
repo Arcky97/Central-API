@@ -1,4 +1,5 @@
 import { toBoolean } from "../../mapper/toBoolean";
+import { query } from "../../query";
 import { CreateGuildSettings, GuildSettingsRow, PublicGuildSettings, UpdateGuildSettings } from "../../types/guild-settings.type";
 import { Repository } from "../base/Repository";
 
@@ -15,5 +16,9 @@ export class GuildSettingsRepository extends Repository<GuildSettingsRow, Create
       doggoBoard: toBoolean(row.doggoBoard),
       reactionRoles: toBoolean(row.reactionRoles)
     };
+  }
+
+  async updateGuildSettings(data: UpdateGuildSettings) {
+
   }
 }

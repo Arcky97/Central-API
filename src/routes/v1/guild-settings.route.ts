@@ -7,9 +7,8 @@ const router = Router();
 
 router.use(requireScope("bot", "website", "admin"));
 
-router.get(
-  "/:guildId", 
-  asyncHandler(GuildSettingsController.getSettings)
-);
+router.get("/:guildId", asyncHandler(GuildSettingsController.getSettings));
+
+router.post("/", asyncHandler(GuildSettingsController.updateSettings));
 
 export default router;

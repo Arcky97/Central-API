@@ -1,4 +1,3 @@
-import { DefaultSerializer } from "node:v8";
 import { query } from "../../query";
 import { DatabaseName } from "../../types/schema";
 

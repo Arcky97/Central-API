@@ -7,18 +7,15 @@ export class PageVisitsController {
   static async registerVisit(req: Request, res: Response) {
     const { path, userAgent, referrer } = getPageVisitsSchema.parse(req.body);
 
-    try{
-      await pageVisitsQueue.add("page-visit", {
+    void pageVisitsQueue
+      .add("page-visit", {
         path,
         ip: req.ip ?? "unknown", 
         userAgent: userAgent ?? null,
         referrer: referrer ?? null
+      })
+      .catch(err => {
+        console.error("[FAILED] page-visits queue add:", err);
       });
-      console.log("[SUCCESS] page-visits queue add.")
-    } catch(err) {
-      console.error("[FAILED] page-visits queue add:", err);
-    } finally {
-      res.json({ success: true });
-    }
   }
 }
