@@ -21,6 +21,6 @@ export class GuildSettingsService {
   }
 
   static async updateSettings(data: UpdateGuildSettings) {
-    await guildSettingsRepo.updateGuildSettings(data);
+    await guildSettingsRepo.updateWhere( { guildId: data.guildId }, data );
   }
 }
