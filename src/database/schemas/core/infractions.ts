@@ -43,14 +43,6 @@ export const infractionsSchema: TableSchema = {
       type: "VARCHAR(100)",
       default: "NULL"
     },
-    logging: {
-      type: "TINYINT(1)",
-      default: "1"
-    },
-    logChannel: {
-      type: "VARCHAR(20)",
-      default: "NULL"
-    },
     date: {
       type: "TIMESTAMP",
       nullable: false,

@@ -1,11 +1,11 @@
 import { query } from "../../query";
-import { DatabaseName } from "../../types/schema";
+import { DatabaseName, TableName } from "../../types/schema";
 
 export class Repository<DBRow, CreateInput = Partial<DBRow>, UpdateInput = Partial<DBRow>, PublicOutput = Partial<DBRow>> {
-  tableName: string;
+  tableName: TableName;
   db: DatabaseName;
 
-  constructor(tableName: string, db: DatabaseName) {
+  constructor(tableName: TableName, db: DatabaseName) {
     this.tableName = tableName;
     this.db = db;
   }

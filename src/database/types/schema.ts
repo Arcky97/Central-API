@@ -3,6 +3,27 @@ export type DatabaseName =
   | "analytics"
   | "auth";
 
+export type TableName = 
+  | "apiAuthFailures"
+  | "apiRequests"
+  | "botReplies"
+  | "botStats"
+  | "doggoBoardPins"
+  | "doggoBoardSettings"
+  | "eventEmbeds"
+  | "generatedEmbeds"
+  | "guildLogging"
+  | "guildSettings"
+  | "infractions"
+  | "levelEmbeds"
+  | "levelSettings"
+  | "levelSystem"
+  | "pageVisits"
+  | "premiumSubscriptions"
+  | "projectUpdates"
+  | "reactionRoles"
+  | "userStats"
+
 export interface SchemaColumn {
   type: string;
   nullable?: boolean;

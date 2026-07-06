@@ -16,7 +16,7 @@ export const reactionRolesSchema: TableSchema = {
       nullable: false,
       primaryKey: true
     },
-    memberId: {
+    messageId: {
       type: "VARCHAR(20)",
       nullable: false,
       primaryKey: true

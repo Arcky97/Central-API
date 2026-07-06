@@ -16,7 +16,7 @@ export const userStatsSchema: TableSchema = {
       nullable: false,
       primaryKey: true
     },
-    attemps: {
+    attempts: {
       type: "TEXT",
       default: "NULL"
     },
