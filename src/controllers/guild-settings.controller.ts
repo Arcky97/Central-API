@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { GuildSettingsService } from "../services/guild-settings.service";
 import { getGuildSettingsSchema } from "../schema/guild-settings.schema";
-import { date } from "zod";
 
 export class GuildSettingsController {
   static async getSettings(req: Request, res: Response) {

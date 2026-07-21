@@ -88,6 +88,8 @@ export class Repository<DBRow, CreateInput = Partial<DBRow>, UpdateInput = Parti
       .map(key => `${key} = ?`)
       .join(' AND ');
 
+    const values = Object.values(where);
+
     const result = await query<DBRow[]>(
       this.db,
       {
@@ -95,7 +97,8 @@ export class Repository<DBRow, CreateInput = Partial<DBRow>, UpdateInput = Parti
           SELECT * FROM ${this.tableName}
           WHERE ${conditions}
         `
-      }
+      },
+      values
     );
 
     const row = result[0];
@@ -105,28 +108,33 @@ export class Repository<DBRow, CreateInput = Partial<DBRow>, UpdateInput = Parti
     return this.mapRow(row);
   }
 
-  async findMany(where: Record<string, unknown>, limit: number): Promise<PublicOutput[]> {
+  async findMany(where: Record<string, unknown> = {}, limit?: number): Promise<PublicOutput[]> {
     const keys = Object.keys(where);
 
-    const conditions = keys
-      .map(key => `${key} = ?`)
-      .join(' AND ');
+    let sql = `SELECT * FROM  ${this.tableName}`;
+    const values: unknown[] = [];
+
+    if (keys.length > 0) {
+      const conditions = keys 
+        .map(key => `${key} = ?`)
+        .join(" AND ");
+
+      sql += ` WHERE ${conditions}`;
+      values.push(...Object.values(where));
+    }
+
+    if (limit) {
+      sql += `LIMIT ?`;
+      values.push(limit);
+    }
 
     const result = await query<DBRow[]>(
       this.db,
-      {
-        sql: `
-          SELECT * FROM ${this.tableName}
-          WHERE ${conditions}
-          LIMIT ?
-        `
-      },
-      [String(limit)]
+      { sql },
+      values
     );
 
-    const rows = result;
-
-    return rows.map(row => this.mapRow(row));
+    return result.map(row => this.mapRow(row));
   }
 
   async updateWhere(where: Record<string, unknown>, data: UpdateInput) {
@@ -149,5 +157,26 @@ export class Repository<DBRow, CreateInput = Partial<DBRow>, UpdateInput = Parti
         },
         [data, ...values]
       )
+  }
+
+  async deleteWhere(where: Record<string, unknown>) {
+    const keys = Object.keys(where);
+
+    const conditions = keys 
+      .map(key => `${key} = ?`)
+      .join(" AND ");
+
+    const values = Object.values(where);
+
+    await query(
+      this.db,
+      {
+        sql: `
+          DELETE FROM ${this.tableName}
+          WHERE ${conditions}
+        `
+      },
+      values
+    );
   }
 }
