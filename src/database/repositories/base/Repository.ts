@@ -124,7 +124,7 @@ export class Repository<DBRow, CreateInput = Partial<DBRow>, UpdateInput = Parti
     }
 
     if (limit) {
-      sql += `LIMIT ?`;
+      sql += ` LIMIT ?`;
       values.push(limit);
     }
 

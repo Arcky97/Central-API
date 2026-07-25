@@ -23,6 +23,11 @@ export type TableName =
   | "projectUpdates"
   | "reactionRoles"
   | "userStats"
+  | "youtubeChannels"
+  | "youtubeGoalProfiles"
+  | "youtubeVideoSnapshots"
+  | "youtubeVideos"
+
 
 export interface SchemaColumn {
   type: string;

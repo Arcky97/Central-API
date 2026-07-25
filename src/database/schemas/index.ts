@@ -17,6 +17,10 @@ import { reactionRolesSchema } from "./core/reactionRoles";
 import { userStatsSchema } from "./core/userStats";
 import { apiAuthFailuresSchema } from "./analytics/apiAuthFailures";
 import { apiRequestsSchema } from "./analytics/apiRequests";
+import { youtubeChannelsSchema } from "./analytics/youtubeChannels";
+import { youtubeGoalProfilesSchema } from "./analytics/youtubeGoalProfiles";
+import { youtubeVideoSnapshotsSchema } from "./analytics/youtubeVideoSnapshots";
+import { youtubeVideosSchema } from "./analytics/youtubeVideos";
 
 export const schemas = [
   botRepliesSchema,
@@ -38,5 +42,10 @@ export const schemas = [
   
   apiAuthFailuresSchema,
   apiRequestsSchema,
-  pageVisitsSchema
+  pageVisitsSchema,
+
+  youtubeChannelsSchema,
+  youtubeGoalProfilesSchema,
+  youtubeVideosSchema,
+  youtubeVideoSnapshotsSchema
 ];
