@@ -30,7 +30,7 @@ export class Repository<DBRow, CreateInput = Partial<DBRow>, UpdateInput = Parti
     );
   }
 
-  async bulkUpdate<T extends keyof UpdateInput>(
+  async bulkUpdate(
     rows: {
       where: Record<string, unknown>;
       data: UpdateInput;
@@ -45,6 +45,49 @@ export class Repository<DBRow, CreateInput = Partial<DBRow>, UpdateInput = Parti
 
   protected mapRow(row: DBRow): PublicOutput {
     return row as unknown as PublicOutput;
+  }
+
+  async bulkUpsert(
+    rows: CreateInput[], 
+    updateColumns: (keyof UpdateInput)[]
+  ) {
+    if (rows.length === 0) return;
+
+    const columns = Object.keys(rows[0] as object);
+
+    const placeholders = rows
+      .map(() =>
+        `(${columns.map(() => "?").join(",")})`
+      )
+      .join(",");
+
+    const values = rows.flatMap(row =>
+      columns.map(column => 
+        (row as any)[column]
+      )
+    );
+
+    const updates = updateColumns
+      .map(column =>
+        `${String(column)} = VALUES(${String(column)})`
+      )
+      .join(",");
+
+    await query(
+      this.db,
+      {
+        sql: `
+          INSERT INTO ${this.tableName}
+          (${columns.join(",")})
+
+          VALUES ${placeholders}
+
+          ON DUPLICATE KEY UPDATE 
+          ${updates}
+        `
+      },
+      values
+    );
   }
 
   async getAll(): Promise<PublicOutput[]> {

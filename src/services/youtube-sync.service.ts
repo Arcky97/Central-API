@@ -1,17 +1,13 @@
-import { YoutubeClient } from "../clients/youtube/YoutubeClient";
 import { env } from "../config/env";
 
 import { YoutubeChannelRepository } from "../database/repositories/analytics/YoutubeChannelRepository";
 import { YoutubeVideoRepository } from "../database/repositories/analytics/YoutubeVideoRepository";
-import { YoutubeChannel, YoutubeVideo } from "../clients/youtube/youtube.types";
-import { CreateYoutubeChannel, PublicYoutubeChannel } from "../database/types/youtube-channel.type";
+import { YoutubeVideo } from "../clients/youtube/youtube.types";
+import { PublicYoutubeChannel } from "../database/types/youtube-channel.type";
 import { CreateYoutubeVideo, PublicYoutubeVideo, UpdateYoutubeVideo } from "../database/types/youtube-video.type";
 import { CreateYoutubeVideoSnapshot } from "../database/types/youtube-video-snapshot.type";
 import { YoutubeVideoSnapshotRepository } from "../database/repositories/analytics/YoutubeVideoSnapshotRepository";
-
-  const youtubeClient = new YoutubeClient(
-    env.YOUTUBE_API_KEY
-  );
+import { youtubeClient } from "../clients/youtube";
 
   const channelRepo =
     new YoutubeChannelRepository();
@@ -24,8 +20,20 @@ import { YoutubeVideoSnapshotRepository } from "../database/repositories/analyti
 
 export class YoutubeSyncService {
   async sync() {
-    const channel = await this.syncChannel();
-    await this.syncVideos(channel);
+    try {
+      console.log("[YouTube] Starting synchronization...");
+      const channel = await this.syncChannel();
+      const videos = await this.fetchVideos();
+      const lookup = await this.saveVideos(channel, videos);
+
+      await this.createSnapShots(videos, lookup);
+
+      console.log("[YouTube] Synchronization completed.");
+    } catch (error) {
+      console.error("[YouTube] Synchronization failed.", error);
+      throw error;
+    }
+
   }
 
   private async syncChannel(): Promise<PublicYoutubeChannel> {
@@ -72,15 +80,6 @@ export class YoutubeSyncService {
       return updated;
   }
 
-  private async syncVideos(channel: PublicYoutubeChannel) {
-    const videos = await this.fetchVideos();
-
-    console.log(`[YouTube] Found ${videos.length} videos.`);
-
-    await this.saveVideos(channel, videos);
-
-  } 
-
   private async fetchVideos(filter?: (video: YoutubeVideo) => boolean): Promise<YoutubeVideo[]> {
     const playlistId = await youtubeClient.getUploadsPlaylistId(env.YOUTUBE_CHANNEL_ID);
 
@@ -117,12 +116,17 @@ export class YoutubeSyncService {
 
     } while (pageToken);
 
+    console.log(`[YouTube] Downloaded ${videos.length} videos from YouTube.`);
+
     return filter 
       ? videos.filter(filter)
       : videos;
   }
 
   private async saveVideos(channel: PublicYoutubeChannel, videos: YoutubeVideo[]): Promise<Map<string, PublicYoutubeVideo>> {
+    let created = 0;
+    let updated = 0;
+
     const lookup = await videoRepo.getLookupMap();
 
     const newVideos: CreateYoutubeVideo[] = [];
@@ -136,6 +140,7 @@ export class YoutubeSyncService {
       const existing = lookup.get(video.id);
 
       if (!existing) {
+        created++;
 
         newVideos.push({
           channelId: channel.id,
@@ -148,6 +153,8 @@ export class YoutubeSyncService {
 
         continue;
       }
+
+      updated++;
 
       updatedVideos.push({
         where: {
@@ -169,7 +176,9 @@ export class YoutubeSyncService {
       await videoRepo.bulkUpdate(updatedVideos);
     }
 
-    return lookup;
+    console.log(`[YouTube] ${created} new video(s), ${updated} updated.`);
+
+    return await videoRepo.getLookupMap();
   }
 
   private async createSnapShots(
@@ -177,6 +186,15 @@ export class YoutubeSyncService {
     lookup: Map<string, PublicYoutubeVideo>
   ) {
     const snapshots: CreateYoutubeVideoSnapshot[] = [];
+    
+    const today = new Date();
+
+    today.setHours(
+      0,
+      0,
+      0,
+      0
+    );
 
     for (const video of videos) {
       const databaseVideo = lookup.get(video.id);
@@ -187,10 +205,20 @@ export class YoutubeSyncService {
         videoId: databaseVideo.id,
         views: video.views,
         likes: video.likes,
-        comments: video.comments
+        comments: video.comments,
+        snapshotDate: today
       });
     }
 
-    await snapshotRepo.bulkCreate(snapshots);
+    console.log(`[YouTube] Creating ${snapshots.length} snapshots.`);
+
+    await snapshotRepo.bulkUpsert(
+      snapshots,
+      [
+        "views",
+        "likes",
+        "comments"
+      ]
+    );
   }
 }

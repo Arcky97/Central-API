@@ -5,4 +5,6 @@ export class YoutubeVideoSnapshotRepository extends Repository<YoutubeVideoSnaps
   constructor() {
     super("youtubeVideoSnapshots", "analytics");
   }
+
+  
 }

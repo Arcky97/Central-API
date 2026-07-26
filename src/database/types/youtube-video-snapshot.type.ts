@@ -28,15 +28,17 @@ export interface CreateYoutubeVideoSnapshot {
   likes: number;
   comments: number;
 
-  watchHours?: number;
+  watchHours?: number | null;
 
-  averageViewDuration?: number;
+  averageViewDuration?: number | null;
 
-  impressions?: number;
+  impressions?: number | null;
 
-  clickThroughRate?: number;
+  clickThroughRate?: number | null;
 
-  subscribersGained?: number;
+  subscribersGained?: number | null;
+
+  snapshotDate: Date;
 }
 
 // Update DTO

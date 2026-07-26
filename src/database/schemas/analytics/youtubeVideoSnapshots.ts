@@ -18,11 +18,6 @@ export const youtubeVideoSnapshotsSchema: TableSchema = {
       nullable: false
     },
 
-    recordedAt: {
-      type: "TIMESTAMP",
-      default: "CURRENT_TIMESTAMP"
-    },
-
     views: {
       type: "INT",
       default: "0"
@@ -61,16 +56,27 @@ export const youtubeVideoSnapshotsSchema: TableSchema = {
     subscribersGained: {
       type: "INT",
       default: "0"
+    },
+
+    snapshotDate: {
+      type: "DATE",
+      nullable: false
+    },
+
+    createdAt: {
+      type: "TIMESTAMP",
+      default: "CURRENT_TIMESTAMP"
     }
   },
 
   indexes: [
     {
-      name: "idx_video_snapshot",
+      name: "idx_video_snapshot_date",
       columns: [
         "videoId",
-        "recordedAt"
-      ]
+        "snapshotDate"
+      ],
+      unique: true
     }
   ]
 };
