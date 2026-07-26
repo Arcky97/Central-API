@@ -56,6 +56,11 @@ export const youtubeVideoSnapshotsSchema: TableSchema = {
     clickThroughRate: {
       type: "DECIMAL(5,2)",
       default: "0"
+    },
+
+    subscribersGained: {
+      type: "INT",
+      default: "0"
     }
   },
 

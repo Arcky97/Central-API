@@ -16,6 +16,8 @@ export interface YoutubeVideoSnapshotRow {
   impressions: number;
 
   clickThroughRate: number;
+
+  subscribersGained: number;
 }
 
 // Create DTO
@@ -33,10 +35,12 @@ export interface CreateYoutubeVideoSnapshot {
   impressions?: number;
 
   clickThroughRate?: number;
+
+  subscribersGained?: number;
 }
 
 // Update DTO
 export type UpdateYoutubeVideoSnapshot = Partial<CreateYoutubeVideoSnapshot>;
 
 // Public DTO
-export type PublicYoutubeVideoSnapshot = CreateYoutubeVideoSnapshot;
+export type PublicYoutubeVideoSnapshot = YoutubeVideoSnapshotRow;

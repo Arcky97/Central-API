@@ -30,6 +30,19 @@ export class Repository<DBRow, CreateInput = Partial<DBRow>, UpdateInput = Parti
     );
   }
 
+  async bulkUpdate<T extends keyof UpdateInput>(
+    rows: {
+      where: Record<string, unknown>;
+      data: UpdateInput;
+    }[]
+  ) {
+    await Promise.all(
+      rows.map(row => 
+        this.updateWhere(row.where, row.data)
+      )
+    );
+  }
+
   protected mapRow(row: DBRow): PublicOutput {
     return row as unknown as PublicOutput;
   }

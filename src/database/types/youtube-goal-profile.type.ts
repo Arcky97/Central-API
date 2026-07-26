@@ -24,4 +24,4 @@ export interface CreateYoutubeGoalProfile {
 export type UpdateYoutubeGoalProfile = Partial<CreateYoutubeGoalProfile>;
 
 // Public DTO
-export type PublicYoutubeGoalProfile = CreateYoutubeGoalProfile;
+export type PublicYoutubeGoalProfile = YoutubeGoalProfileRow;

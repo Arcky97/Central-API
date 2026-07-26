@@ -31,4 +31,15 @@ export class YoutubeVideoRepository extends Repository<YoutubeVideoRow, CreateYo
       series
     });
   }
+
+  async getLookupMap() {
+    const videos = await this.getAll();
+
+    return new Map(
+      videos.map(video => [
+        video.youtubeVideoId,
+        video
+      ])
+    );
+  }
 }

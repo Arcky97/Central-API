@@ -18,4 +18,4 @@ export interface CreateYoutubeChannel {
 export type UpdateYoutubeChannel = Partial<CreateYoutubeChannel>;
 
 // Public DTO
-export type PublicYoutubeChannel = CreateYoutubeChannel;
+export type PublicYoutubeChannel = YoutubeChannelRow;

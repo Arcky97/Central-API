@@ -42,4 +42,6 @@ export interface CreateYoutubeVideo {
 export type UpdateYoutubeVideo = Partial<CreateYoutubeVideo>;
 
 // Public DTO
-export type PublicYoutubeVideo = CreateYoutubeVideo
+export type PublicYoutubeVideo = Omit<YoutubeVideoRow, "trackAnalytics"> & {
+  trackAnalytics: boolean;
+}
