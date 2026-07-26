@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "nodemon --exec ts-node src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "youtube:sync": "ts-node src/scripts/test-youtube-sync.ts"
   },
   "keywords": [],
   "author": "",

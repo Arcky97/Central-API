@@ -1,6 +1,7 @@
 import { YoutubeChannelRepository } from "../database/repositories/analytics/YoutubeChannelRepository";
 import { YoutubeVideoRepository } from "../database/repositories/analytics/YoutubeVideoRepository";
 import { YoutubeVideoSnapshotRepository } from "../database/repositories/analytics/YoutubeVideoSnapshotRepository";
+import { YoutubeVideoResponse } from "../database/types/api/youtube-response.type";
 
 const channelRepo = new YoutubeChannelRepository();
 const videoRepo = new YoutubeVideoRepository();
@@ -11,8 +12,29 @@ export class YoutubeService {
     return channelRepo.findOne({});
   }
 
-  static async getVideos() {
-    return videoRepo.getAll();
+  static async getVideos(): Promise<YoutubeVideoResponse[]> {
+    const videos = await videoRepo.getAll();
+
+    const snapshotLookup =
+      await snapshotRepo.getLatestSnapshotLookup();
+
+    return videos.map(video => {
+      const snapshot =
+        snapshotLookup.get(video.id);
+
+      return {
+        youtubeVideoId: video.youtubeVideoId,
+        title: video.title,
+        thumbnailUrl: video.thumbnailUrl ?? "",
+        publishedAt: video.publishedAt,
+
+        statistics: {
+          views: snapshot?.views ?? 0,
+          likes: snapshot?.likes ?? 0,
+          comments: snapshot?.comments ?? 0
+        }
+      };
+    });
   }
 
   static async getVideo(videoId: string) {

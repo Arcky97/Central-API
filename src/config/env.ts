@@ -23,7 +23,7 @@ export const env = {
   REDIS_HOST: process.env.REDIS_HOST,
   REDIS_PORT: Number(process.env.REDIS_PORT ?? 6379),
 
-  YOUTUBE_BASE_URL: required(process.env.YOUTUBE_BASE_URL!),
-  YOUTUBE_API_KEY: required(process.env.YOUTUBE_API_KEY!),
-  YOUTUBE_CHANNEL_ID: required(process.env.YOUTUBE_CHANNEL_ID!)
+  YOUTUBE_BASE_URL: required("YOUTUBE_BASE_URL"),
+  YOUTUBE_API_KEY: required("YOUTUBE_API_KEY"),
+  YOUTUBE_CHANNEL_ID: required("YOUTUBE_CHANNEL_ID")
 };

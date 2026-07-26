@@ -1,8 +1,8 @@
 export interface YoutubeVideoResponse {
-  id: string;
+  youtubeVideoId: string;
   title: string;
   thumbnailUrl: string;
-  publishedAt: string;
+  publishedAt: Date;
   statistics: {
     views: number;
     likes: number;
