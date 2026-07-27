@@ -107,6 +107,7 @@ export class YoutubeSyncService {
           video.views = stats.views;
           video.likes=  stats.likes;
           video.comments = stats.comments;
+          video.watchHours = stats.watchHours
         }
 
         videos.push(video);
@@ -118,9 +119,11 @@ export class YoutubeSyncService {
 
     console.log(`[YouTube] Downloaded ${videos.length} videos from YouTube.`);
 
+    const orderedVideos = videos.reverse();
+
     return filter 
-      ? videos.filter(filter)
-      : videos;
+      ? orderedVideos.filter(filter)
+      : orderedVideos;
   }
 
   private async saveVideos(channel: PublicYoutubeChannel, videos: YoutubeVideo[]): Promise<Map<string, PublicYoutubeVideo>> {
@@ -206,6 +209,7 @@ export class YoutubeSyncService {
         views: video.views,
         likes: video.likes,
         comments: video.comments,
+        watchHours: video.watchHours ?? 0,
         snapshotDate: today
       });
     }
@@ -217,7 +221,8 @@ export class YoutubeSyncService {
       [
         "views",
         "likes",
-        "comments"
+        "comments",
+        "watchHours"
       ]
     );
   }

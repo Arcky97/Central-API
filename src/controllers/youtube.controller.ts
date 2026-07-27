@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { YoutubeSyncService } from "../services/youtube-sync.service";
 import { YoutubeService } from "../services/youtube.service";
 import { getYoutubeVideoSchema } from "../schema/youtube.schema";
+import { youtubeAnalyticsClient } from "../clients/youtube";
 
 export class YoutubeController {
   static async sync(req: Request, res: Response) {
@@ -41,5 +42,22 @@ export class YoutubeController {
     const snapshots = await YoutubeService.getSnapshots(videoId);
 
     res.json(snapshots);
+  }
+
+  static async testAnalytics(req: Request, res: Response) {
+    const token = await youtubeAnalyticsClient.getAccessToken();
+
+    const result = await youtubeAnalyticsClient.getVideoAnalytics(
+      "ZqhZGP2beyw",
+      "2026-06-29",
+      "2026-07-27"
+    );
+
+    console.log(result.data);
+    
+    res.json({
+      success: true,
+      accessToken: token
+    });
   }
 }

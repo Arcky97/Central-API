@@ -31,7 +31,8 @@ export class YoutubeService {
         statistics: {
           views: snapshot?.views ?? 0,
           likes: snapshot?.likes ?? 0,
-          comments: snapshot?.comments ?? 0
+          comments: snapshot?.comments ?? 0,
+          watchHours: snapshot?.watchHours ?? 0
         }
       };
     });

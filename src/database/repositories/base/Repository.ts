@@ -137,22 +137,29 @@ export class Repository<DBRow, CreateInput = Partial<DBRow>, UpdateInput = Parti
     return result!;
   }
 
-  async findOne(where: Record<string, unknown>): Promise<PublicOutput | null> {
+  async findOne(): Promise<PublicOutput | null>;
+  async findOne(where: Record<string, unknown>): Promise<PublicOutput | null>;
+  async findOne(where: Record<string, unknown> = {}): Promise<PublicOutput | null> {
     const keys = Object.keys(where);
 
-    const conditions = keys 
-      .map(key => `${key} = ?`)
-      .join(' AND ');
+    let sql = `SELECT * FROM ${this.tableName}`;
+    const values: unknown[] = [];
 
-    const values = Object.values(where);
+    if (keys.length > 0) {
+      const conditions = keys
+        .map(key => `${key} = ?`)
+        .join(" AND ");
+
+      sql += ` WHERE ${conditions}`;
+      values.push(...Object.values(where));
+    }
+
+    sql += ` LIMIT 1`;
 
     const result = await query<DBRow[]>(
       this.db,
       {
-        sql: `
-          SELECT * FROM ${this.tableName}
-          WHERE ${conditions}
-        `
+        sql
       },
       values
     );

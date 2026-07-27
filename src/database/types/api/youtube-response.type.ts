@@ -7,5 +7,6 @@ export interface YoutubeVideoResponse {
     views: number;
     likes: number;
     comments: number;
+    watchHours: number;
   };
 }

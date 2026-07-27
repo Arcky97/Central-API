@@ -7,6 +7,7 @@ function required(name: string): string {
 }
 
 export const env = {
+  NODE_ENV: process.env.NODE_ENV,
   DB_HOST: required("DB_HOST"),
   DB_USER: required("DB_USER"),
   DB_PASS: required("DB_PASS"),
@@ -25,5 +26,9 @@ export const env = {
 
   YOUTUBE_BASE_URL: required("YOUTUBE_BASE_URL"),
   YOUTUBE_API_KEY: required("YOUTUBE_API_KEY"),
-  YOUTUBE_CHANNEL_ID: required("YOUTUBE_CHANNEL_ID")
+  YOUTUBE_CHANNEL_ID: required("YOUTUBE_CHANNEL_ID"),
+  YOUTUBE_CLIENT_ID: required("YOUTUBE_CLIENT_ID"),
+  YOUTUBE_CLIENT_SECRET: required("YOUTUBE_CLIENT_SECRET"),
+  YOUTUBE_REDIRECT_URI: required("YOUTUBE_REDIRECT_URI"),
+  YOUTUBE_REFRESH_TOKEN: required("YOUTUBE_REFRESH_TOKEN")
 };
