@@ -21,10 +21,12 @@ export interface YoutubeVideo {
   views: number;
   likes: number;
   comments: number;
+  shares: number;
   watchHours?: number;
-  avarageViewDuration?: number;
-  impressions?: number;
-  ctr?: number;
+  averageViewDuration?: number;
+  averageViewPercentage?: number
+  subscribersGained?: number;
+  subscribersLost?: number;
 }
 
 export interface YoutubeSyncResult {
@@ -53,7 +55,6 @@ export interface YoutubeComment {
 export interface YoutubeVideoAnalytics {
   videoId: string;
   watchHours: number;
-  avarageViewDuration: number;
-  impressions: number;
-  ctr: number;
+  averageViewDuration: number;
+  averageViewPercentage: number;
 }

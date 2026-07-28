@@ -33,6 +33,11 @@ router.post(
   asyncHandler(YoutubeController.sync)
 );
 
+router.post(
+  "/sync/fill/:date",
+  asyncHandler(YoutubeController.backfillSync)
+);
+
 // dev only
 
 if (env.NODE_ENV === "development") {

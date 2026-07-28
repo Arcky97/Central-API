@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { YoutubeSyncService } from "../services/youtube-sync.service";
 import { YoutubeService } from "../services/youtube.service";
-import { getYoutubeVideoSchema } from "../schema/youtube.schema";
+import { getYoutubeSyncSchema, getYoutubeVideoSchema } from "../schema/youtube.schema";
 import { youtubeAnalyticsClient } from "../clients/youtube";
 
 export class YoutubeController {
@@ -14,6 +14,18 @@ export class YoutubeController {
       success: true,
       message: "YouTube synchronization completed."
     });
+  }
+
+  static async backfillSync(req: Request, res: Response) {
+    const service = new YoutubeSyncService();
+
+    const { date } = getYoutubeSyncSchema.parse(req.params);
+    await service.backfillSync(date);
+
+    res.json({
+      success: true,
+      message: `Youtube synchronization completed from ${date} up until ${new Date()}`
+    })
   }
 
   static async getChannel(req: Request, res: Response) {
@@ -51,8 +63,6 @@ export class YoutubeController {
       "2026-06-29",
       "2026-07-27"
     );
-
-    console.log(result);
     
     res.json({
       success: true,

@@ -36,7 +36,7 @@ export class YoutubeAnalyticsClient {
     const analytics = this.getAnalytics();
 
     const response = await analytics.reports.query({
-      ids: "channel==MINE",
+      ids: `channel==MINE`,
 
       startDate,
       endDate,
@@ -48,42 +48,43 @@ export class YoutubeAnalyticsClient {
         "estimatedMinutesWatched",
         "averageViewDuration",
         "averageViewPercentage",
-        "subscribersGained",
-        "subscribersLost",
         "likes",
         "comments",
-        "shares"
-      ].join(",")
+        "shares",
+        "subscribersGained",
+        "subscribersLost"
+      ].join(","),
+      sort: "-views",
+      maxResults: 200
     });
 
     const lookup = new Map<string, YoutubeVideoAnalytics>();
 
-    for (const row of response.data.rows ?? []) {
+  for (const row of response.data.rows ?? []) {
       const [
         youtubeVideoId,
         views,
         watchMinutes,
         averageViewDuration,
         averageViewPercentage,
-        subscribersGained,
-        subscribersLost,
         likes,
         comments,
-        shares
+        shares,
+        subscribersGained,
+        subscribersLost
       ] = row;
 
       lookup.set(youtubeVideoId as string, {
         youtubeVideoId,
         views: Number(views),
-        watchMinutes: Number(watchMinutes),
         watchHours: Number(watchMinutes) / 60,
         averageViewDuration: Number(averageViewDuration),
         averageViewPercentage: Number(averageViewPercentage),
-        subscribersGained: Number(subscribersGained),
-        subscribersLost: Number(subscribersLost),
         likes: Number(likes),
         comments: Number(comments),
-        shares: Number(shares)
+        shares: Number(shares),
+        subscribersGained: Number(subscribersGained),
+        subscribersLost: Number(subscribersLost)
       });
     }
 

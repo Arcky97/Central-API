@@ -8,16 +8,13 @@ export interface YoutubeVideoSnapshotRow {
   views: number;
   likes: number;
   comments: number;
+  shares: number;
 
   watchHours: number;
 
   averageViewDuration: number;
 
   averageViewPercentage: number;
-
-  impressions: number;
-
-  clickThroughRate: number;
 
   subscribersGained: number;
 
@@ -31,16 +28,13 @@ export interface CreateYoutubeVideoSnapshot {
   views: number;
   likes: number;
   comments: number;
+  shares: number;
 
   watchHours?: number | null;
 
   averageViewDuration?: number | null;
 
   averageViewPercentage?: number | null;
-
-  impressions?: number | null;
-
-  clickThroughRate?: number | null;
 
   subscribersGained?: number | null;
 

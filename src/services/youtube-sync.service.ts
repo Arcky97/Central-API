@@ -26,16 +26,42 @@ export class YoutubeSyncService {
       const videos = await this.fetchVideos();
       const lookup = await this.saveVideos(channel, videos);
 
-      await this.syncAnalytics(videos, lookup);
+      await this.syncAnalytics(videos);
 
-      await this.createSnapShots(videos, lookup);
+      await this.createSnapShots(videos, lookup, new Date());
 
       console.log("[YouTube] Synchronization completed.");
-    } catch (error) {
-      console.error("[YouTube] Synchronization failed.", error);
+    } catch (error: any) {
+      console.error("[YouTube] Synchronization failed.", error.response?.data);
       throw error;
     }
 
+  }
+
+  async backfillSync(startDate: string) {
+    const channel = await this.syncChannel();
+    const videos = await this.fetchVideos();
+
+    const lookup = await this.saveVideos(channel, videos);
+
+    let current = new Date(startDate);
+
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    while (current <= today) {
+
+      const availableVideos = videos.filter(video => 
+        video.publishedAt <= current
+      );
+
+      await this.syncAnalytics(availableVideos, startDate, current.toISOString().slice(0,10));
+
+      await this.createSnapShots(availableVideos, lookup, new Date(current));
+
+      console.log(`[YouTube] Backfill synchronization completed for ${availableVideos.length} video(s) up until ${current}`)
+      current.setDate(current.getDate() + 1);
+    }
   }
 
   private async syncChannel(): Promise<PublicYoutubeChannel> {
@@ -109,7 +135,7 @@ export class YoutubeSyncService {
           video.views = stats.views;
           video.likes=  stats.likes;
           video.comments = stats.comments;
-          video.watchHours = stats.watchHours
+          video.shares = stats.shares;
         }
 
         videos.push(video);
@@ -186,19 +212,50 @@ export class YoutubeSyncService {
     return await videoRepo.getLookupMap();
   }
 
-  private async syncAnalytics(videos: YoutubeVideo[], lookup: Map<string, PublicYoutubeVideo>) {
-    
+  private async syncAnalytics(videos: YoutubeVideo[], startDate: string = "2026-05-23", endDate: string = new Date().toISOString().slice(0,10)) {
+
+
+    let synced = 0;
+
+    for (const video of videos) {
+    const analytics = 
+      await youtubeAnalyticsClient.getVideoAnalytics(
+        video.publishedAt.toISOString().slice(0,10),
+        endDate
+      );
+
+      const data =
+        analytics.get(video.id);
+
+      if (!data) continue;
+
+      video.watchHours = data.watchHours;
+      video.averageViewDuration = data.averageViewDuration;
+      video.averageViewPercentage = data.averageViewPercentage;
+      video.subscribersGained = data.subscribersGained;
+      video.subscribersLost = data.subscribersLost;
+
+      video.views = data.views,
+      video.likes = data.likes;
+      video.comments = data.comments;
+      video.shares = data.shares;
+
+      synced++;
+    }
+
+    console.log(
+      `[YouTube] synced analytics for ${synced} video(s).`
+    );
   }
 
   private async createSnapShots(
     videos: YoutubeVideo[],
-    lookup: Map<string, PublicYoutubeVideo>
+    lookup: Map<string, PublicYoutubeVideo>,
+    snapshotDate: Date
   ) {
     const snapshots: CreateYoutubeVideoSnapshot[] = [];
-    
-    const today = new Date();
 
-    today.setHours(
+    snapshotDate.setHours(
       0,
       0,
       0,
@@ -215,8 +272,13 @@ export class YoutubeSyncService {
         views: video.views,
         likes: video.likes,
         comments: video.comments,
+        shares: video.shares,
         watchHours: video.watchHours ?? 0,
-        snapshotDate: today
+        averageViewDuration: video.averageViewDuration ?? 0,
+        averageViewPercentage: video.averageViewPercentage ?? 0,
+        subscribersGained: video.subscribersGained ?? 0,
+        subscribersLost: video.subscribersLost ?? 0,
+        snapshotDate
       });
     }
 
@@ -228,7 +290,12 @@ export class YoutubeSyncService {
         "views",
         "likes",
         "comments",
-        "watchHours"
+        "shares",
+        "watchHours",
+        "averageViewDuration",
+        "averageViewPercentage",
+        "subscribersGained",
+        "subscribersLost",
       ]
     );
   }

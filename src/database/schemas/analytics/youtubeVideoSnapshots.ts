@@ -33,6 +33,11 @@ export const youtubeVideoSnapshotsSchema: TableSchema = {
       default: "0",
     },
 
+    shares: {
+      type: "INT",
+      default: "0"
+    },
+
     watchHours: {
       type: "DECIMAL(10,2)",
       default: "0"
@@ -44,17 +49,7 @@ export const youtubeVideoSnapshotsSchema: TableSchema = {
     },
 
     averageViewPercentage: {
-      type: "DECIMAL(5,2)",
-      default: "0"
-    },
-
-    impressions: {
-      type: "INT",
-      default: "0"
-    },
-
-    clickThroughRate: {
-      type: "DECIMAL(5,2)",
+      type: "DECIMAL(10,2)",
       default: "0"
     },
 

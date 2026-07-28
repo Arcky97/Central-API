@@ -3,7 +3,6 @@ export interface YoutubeVideoAnalytics {
 
   views: number;
 
-  watchMinutes: number;
   watchHours: number;
 
   averageViewDuration: number;

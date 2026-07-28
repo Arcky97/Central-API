@@ -52,7 +52,6 @@ export class YoutubeClient {
       id: channelId
     });
 
-    console.log(data.items[0]);
     return data.items[0]
       .contentDetails
       .relatedPlaylists
@@ -84,7 +83,6 @@ export class YoutubeClient {
         views: 0,
         likes: 0,
         comments: 0,
-        watchHours: 0
       }))
     };
   }
@@ -93,7 +91,7 @@ export class YoutubeClient {
     views: number;
     likes: number;
     comments: number;
-    watchHours: number;
+    shares: number;
   }>> {
     const data = await this.get<any>(
       "/videos",
@@ -110,7 +108,6 @@ export class YoutubeClient {
           views: Number(item.statistics.viewCount),
           likes: Number(item.statistics.likeCount ?? 0),
           comments: Number(item.statistics.commentCount ?? 0),
-          watchHours: Number(item.statistics.watchHours ?? 0)
         }
       ])
     );
