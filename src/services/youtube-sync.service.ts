@@ -7,7 +7,7 @@ import { PublicYoutubeChannel } from "../database/types/youtube-channel.type";
 import { CreateYoutubeVideo, PublicYoutubeVideo, UpdateYoutubeVideo } from "../database/types/youtube-video.type";
 import { CreateYoutubeVideoSnapshot } from "../database/types/youtube-video-snapshot.type";
 import { YoutubeVideoSnapshotRepository } from "../database/repositories/analytics/YoutubeVideoSnapshotRepository";
-import { youtubeClient } from "../clients/youtube";
+import { youtubeAnalyticsClient, youtubeClient } from "../clients/youtube";
 
   const channelRepo =
     new YoutubeChannelRepository();
@@ -25,6 +25,8 @@ export class YoutubeSyncService {
       const channel = await this.syncChannel();
       const videos = await this.fetchVideos();
       const lookup = await this.saveVideos(channel, videos);
+
+      await this.syncAnalytics(videos, lookup);
 
       await this.createSnapShots(videos, lookup);
 
@@ -182,6 +184,10 @@ export class YoutubeSyncService {
     console.log(`[YouTube] ${created} new video(s), ${updated} updated.`);
 
     return await videoRepo.getLookupMap();
+  }
+
+  private async syncAnalytics(videos: YoutubeVideo[], lookup: Map<string, PublicYoutubeVideo>) {
+    
   }
 
   private async createSnapShots(

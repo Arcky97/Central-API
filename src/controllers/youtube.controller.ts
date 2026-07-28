@@ -48,12 +48,11 @@ export class YoutubeController {
     const token = await youtubeAnalyticsClient.getAccessToken();
 
     const result = await youtubeAnalyticsClient.getVideoAnalytics(
-      "ZqhZGP2beyw",
       "2026-06-29",
       "2026-07-27"
     );
 
-    console.log(result.data);
+    console.log(result);
     
     res.json({
       success: true,

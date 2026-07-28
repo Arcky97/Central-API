@@ -13,11 +13,15 @@ export interface YoutubeVideoSnapshotRow {
 
   averageViewDuration: number;
 
+  averageViewPercentage: number;
+
   impressions: number;
 
   clickThroughRate: number;
 
   subscribersGained: number;
+
+  subscribersLost: number;
 }
 
 // Create DTO
@@ -32,11 +36,15 @@ export interface CreateYoutubeVideoSnapshot {
 
   averageViewDuration?: number | null;
 
+  averageViewPercentage?: number | null;
+
   impressions?: number | null;
 
   clickThroughRate?: number | null;
 
   subscribersGained?: number | null;
+
+  subscribersLost?: number | null;
 
   snapshotDate: Date;
 }

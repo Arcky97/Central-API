@@ -43,6 +43,11 @@ export const youtubeVideoSnapshotsSchema: TableSchema = {
       default: "0"
     },
 
+    averageViewPercentage: {
+      type: "DECIMAL(5,2)",
+      default: "0"
+    },
+
     impressions: {
       type: "INT",
       default: "0"
@@ -54,6 +59,11 @@ export const youtubeVideoSnapshotsSchema: TableSchema = {
     },
 
     subscribersGained: {
+      type: "INT",
+      default: "0"
+    },
+
+    subscribersLost: {
       type: "INT",
       default: "0"
     },
