@@ -8,15 +8,16 @@ import { CreateYoutubeVideo, PublicYoutubeVideo, UpdateYoutubeVideo } from "../d
 import { CreateYoutubeVideoSnapshot } from "../database/types/youtube-video-snapshot.type";
 import { YoutubeVideoSnapshotRepository } from "../database/repositories/analytics/YoutubeVideoSnapshotRepository";
 import { youtubeAnalyticsClient, youtubeClient } from "../clients/youtube";
+import { formatLocalDate } from "../utils/dateTimeStringifier";
 
-  const channelRepo =
-    new YoutubeChannelRepository();
+const channelRepo =
+  new YoutubeChannelRepository();
 
-  const videoRepo = 
-    new YoutubeVideoRepository();
+const videoRepo = 
+  new YoutubeVideoRepository();
 
-  const snapshotRepo =
-    new YoutubeVideoSnapshotRepository();
+const snapshotRepo =
+  new YoutubeVideoSnapshotRepository();
 
 export class YoutubeSyncService {
   async sync() {
@@ -47,20 +48,20 @@ export class YoutubeSyncService {
     let current = new Date(startDate);
 
     const today = new Date();
-    today.setHours(0,0,0,0);
 
-    while (current <= today) {
+    while (formatLocalDate(current) <= formatLocalDate(today)) {
 
       const availableVideos = videos.filter(video => 
         video.publishedAt <= current
       );
 
-      await this.syncAnalytics(availableVideos, startDate, current.toISOString().slice(0,10));
+      await this.syncAnalytics(availableVideos, startDate, formatLocalDate(current));
 
       await this.createSnapShots(availableVideos, lookup, new Date(current));
 
-      console.log(`[YouTube] Backfill synchronization completed for ${availableVideos.length} video(s) up until ${current}`)
+      console.log(`[YouTube] Backfill synchronization completed for ${availableVideos.length} video(s) up until ${current}`);
       current.setDate(current.getDate() + 1);
+      console.log([today, current]);
     }
   }
 
@@ -212,15 +213,13 @@ export class YoutubeSyncService {
     return await videoRepo.getLookupMap();
   }
 
-  private async syncAnalytics(videos: YoutubeVideo[], startDate: string = "2026-05-23", endDate: string = new Date().toISOString().slice(0,10)) {
-
-
+  private async syncAnalytics(videos: YoutubeVideo[], startDate: string = "2026-05-23", endDate: string = formatLocalDate(new Date())) {
     let synced = 0;
 
     for (const video of videos) {
     const analytics = 
       await youtubeAnalyticsClient.getVideoAnalytics(
-        video.publishedAt.toISOString().slice(0,10),
+        formatLocalDate(video.publishedAt),
         endDate
       );
 

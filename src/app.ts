@@ -12,6 +12,7 @@ import { errorHandler } from "./middleware/errorHandler";
 import { blockCommonScans } from "./middleware/blockCommonScans";
 
 import "./workers";
+import "./tasks/youtube-snapshots.task";
 
 const app = express();
 
