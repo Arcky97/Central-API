@@ -16,7 +16,7 @@ export class YoutubeVideoRepository extends Repository<YoutubeVideoRow, CreateYo
 
   async getByYoutubeVideoId(videoId: string) {
     return this.findOne({
-      youtubeVideoId: videoId
+      videoId
     });
   }
 
@@ -37,7 +37,7 @@ export class YoutubeVideoRepository extends Repository<YoutubeVideoRow, CreateYo
 
     return new Map(
       videos.map(video => [
-        video.youtubeVideoId,
+        video.videoId,
         video
       ])
     );

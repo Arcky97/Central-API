@@ -1,5 +1,5 @@
 export interface YoutubeVideoResponse {
-  youtubeVideoId: string;
+  videoId: string;
   title: string;
   thumbnailUrl: string;
   publishedAt: Date;

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { YoutubeSyncService } from "../services/youtube-sync.service";
 import { YoutubeService } from "../services/youtube.service";
-import { getYoutubeSyncSchema, getYoutubeVideoSchema } from "../schema/youtube.schema";
+import { getYoutubeSyncSchema, getYoutubeVideoSchema, getYoutubeVideoUpdateSchema } from "../schema/youtube.schema";
 import { youtubeAnalyticsClient } from "../clients/youtube";
 
 export class YoutubeController {
@@ -46,6 +46,20 @@ export class YoutubeController {
     const video = await YoutubeService.getVideo(videoId);
 
     res.json(video);
+  }
+
+  static async updateVideo(req: Request, res: Response) {
+    const data = getYoutubeVideoUpdateSchema.parse(req.body);
+    const updateData = Object.fromEntries(
+      Object.entries(data)
+        .filter(([_, value]) => value !== undefined)
+    );
+    await YoutubeService.updateVideo(updateData);
+
+    res.json({
+      success: true,
+      message: `Youtube video with id: "${data.videoId}" updated successfully!`
+    });
   }
 
   static async getSnapshots(req: Request, res: Response) {

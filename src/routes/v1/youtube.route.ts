@@ -28,6 +28,11 @@ router.get(
 );
 
 router.post(
+  "/video/update",
+  asyncHandler(YoutubeController.updateVideo)
+)
+
+router.post(
   "/sync",
   requireScope("admin"),
   asyncHandler(YoutubeController.sync)

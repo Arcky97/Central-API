@@ -1,5 +1,5 @@
 export interface YoutubeVideoAnalytics {
-  youtubeVideoId: string;
+  videoId: string;
 
   views: number;
 

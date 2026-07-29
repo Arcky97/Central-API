@@ -176,7 +176,7 @@ export class YoutubeSyncService {
 
         newVideos.push({
           channelId: channel.id,
-          youtubeVideoId: video.id,
+          videoId: video.id,
           title: video.title,
           thumbnailUrl: video.thumbnailUrl,
           publishedAt: video.publishedAt,
@@ -190,7 +190,7 @@ export class YoutubeSyncService {
 
       updatedVideos.push({
         where: {
-          youtubevideoId: video.id
+          videoId: video.id
         },
         data: {
           title: video.title,

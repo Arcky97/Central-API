@@ -2,6 +2,7 @@ import { YoutubeChannelRepository } from "../database/repositories/analytics/You
 import { YoutubeVideoRepository } from "../database/repositories/analytics/YoutubeVideoRepository";
 import { YoutubeVideoSnapshotRepository } from "../database/repositories/analytics/YoutubeVideoSnapshotRepository";
 import { YoutubeVideoResponse } from "../database/types/api/youtube-response.type";
+import { UpdateYoutubeVideo } from "../database/types/youtube-video.type";
 
 const channelRepo = new YoutubeChannelRepository();
 const videoRepo = new YoutubeVideoRepository();
@@ -23,7 +24,7 @@ export class YoutubeService {
         snapshotLookup.get(video.id);
 
       return {
-        youtubeVideoId: video.youtubeVideoId,
+        videoId: video.videoId,
         title: video.title,
         thumbnailUrl: video.thumbnailUrl ?? "",
         publishedAt: video.publishedAt,
@@ -39,14 +40,21 @@ export class YoutubeService {
   }
 
   static async getVideo(videoId: string) {
+    console.log(videoId);
     return videoRepo.findOne({
-      youtubeVideoId: videoId
+      videoId
     });
+  }
+
+  static async updateVideo(data: UpdateYoutubeVideo) {
+
+
+    await videoRepo.updateWhere({ videoId: data.videoId }, data);
   }
 
   static async getSnapshots(videoId: string) {
     const video = await videoRepo.findOne({
-      youtubeVideoId: videoId
+      videoId
     });
 
     if (!video) return [];

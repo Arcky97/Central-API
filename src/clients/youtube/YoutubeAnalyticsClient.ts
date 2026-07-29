@@ -62,7 +62,7 @@ export class YoutubeAnalyticsClient {
 
   for (const row of response.data.rows ?? []) {
       const [
-        youtubeVideoId,
+        videoId,
         views,
         watchMinutes,
         averageViewDuration,
@@ -74,8 +74,8 @@ export class YoutubeAnalyticsClient {
         subscribersLost
       ] = row;
 
-      lookup.set(youtubeVideoId as string, {
-        youtubeVideoId,
+      lookup.set(videoId as string, {
+        videoId,
         views: Number(views),
         watchHours: Number(watchMinutes) / 60,
         averageViewDuration: Number(averageViewDuration),

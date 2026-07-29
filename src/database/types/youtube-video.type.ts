@@ -4,7 +4,7 @@ export interface YoutubeVideoRow {
   channelId: number;
   goalProfileId: number | null;
 
-  youtubeVideoId: string;
+  videoId: string;
 
   title: string;
   thumbnailUrl: string | null;
@@ -25,7 +25,7 @@ export interface CreateYoutubeVideo {
   channelId: number;
   goalProfileId?: number | null;
 
-  youtubeVideoId: string;
+  videoId: string;
 
   title: string;
   thumbnailUrl: string | null;

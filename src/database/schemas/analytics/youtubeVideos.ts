@@ -18,7 +18,7 @@ export const youtubeVideosSchema: TableSchema = {
       nullable: false
     },
 
-    youtubeVideoId: {
+    videoId: {
       type: "VARCHAR(20)",
       nullable: false,
       unique: true
