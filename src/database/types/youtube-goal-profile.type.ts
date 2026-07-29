@@ -3,10 +3,10 @@ export interface YoutubeGoalProfileRow {
 
   name: string;
 
-  goalViews: number;
-  goalWatchHours: number;
-  goalLikes: number;
-  goalComments: number;
+  goalViews: number | null;
+  goalWatchHours: number | null;
+  goalLikes: number | null;
+  goalComments: number | null;
 
   createdAt: Date;
 }
@@ -14,10 +14,10 @@ export interface YoutubeGoalProfileRow {
 // Create DTO
 export interface CreateYoutubeGoalProfile {
   name: string;
-  goalViews?: number;
-  goalWatchHours?: number;
-  goalLikes?: number;
-  goalComments?: number;
+  goalViews?: number | null;
+  goalWatchHours?: number | null;
+  goalLikes?: number | null;
+  goalComments?: number | null;
 }
 
 // Update DTO

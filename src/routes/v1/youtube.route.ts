@@ -27,10 +27,30 @@ router.get(
   asyncHandler(YoutubeController.getSnapshots)
 );
 
-router.post(
-  "/video/update",
+router.patch(
+  "/video/:videoId",
   asyncHandler(YoutubeController.updateVideo)
 )
+
+router.get(
+  "/profile/:profileId",
+  asyncHandler(YoutubeController.getGoalProfile)
+);
+
+router.post(
+  "/profile",
+  asyncHandler(YoutubeController.createGoalProfile)
+)
+
+router.patch(
+  "/profile/:profileId",
+  asyncHandler(YoutubeController.updateGoalProfile)
+);
+
+router.delete(
+  "profile/:profileId",
+  asyncHandler(YoutubeController.removeGoalProfile)
+);
 
 router.post(
   "/sync",

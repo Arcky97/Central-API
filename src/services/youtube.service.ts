@@ -1,12 +1,15 @@
 import { YoutubeChannelRepository } from "../database/repositories/analytics/YoutubeChannelRepository";
+import { YoutubeGoalProfileRepository } from "../database/repositories/analytics/YoutubeGoalProfileRepository";
 import { YoutubeVideoRepository } from "../database/repositories/analytics/YoutubeVideoRepository";
 import { YoutubeVideoSnapshotRepository } from "../database/repositories/analytics/YoutubeVideoSnapshotRepository";
 import { YoutubeVideoResponse } from "../database/types/api/youtube-response.type";
+import { CreateYoutubeGoalProfile, PublicYoutubeGoalProfile, UpdateYoutubeGoalProfile } from "../database/types/youtube-goal-profile.type";
 import { UpdateYoutubeVideo } from "../database/types/youtube-video.type";
 
 const channelRepo = new YoutubeChannelRepository();
 const videoRepo = new YoutubeVideoRepository();
 const snapshotRepo = new YoutubeVideoSnapshotRepository();
+const goalProfileRepo = new YoutubeGoalProfileRepository();
 
 export class YoutubeService {
   static async getChannel() {
@@ -40,16 +43,31 @@ export class YoutubeService {
   }
 
   static async getVideo(videoId: string) {
-    console.log(videoId);
     return videoRepo.findOne({
       videoId
     });
   }
 
-  static async updateVideo(data: UpdateYoutubeVideo) {
+  static async updateVideo(videoId: string, data: UpdateYoutubeVideo) {
+    await videoRepo.updateWhere({ videoId }, data);
+  }
 
+  static async getGoalProfile(goalProfileId: number): Promise<PublicYoutubeGoalProfile | null> {
+    return goalProfileRepo.findOne({
+      goalProfileId
+    });
+  }
 
-    await videoRepo.updateWhere({ videoId: data.videoId }, data);
+  static async addGoalProfile(goalProfileData: CreateYoutubeGoalProfile) {
+    await goalProfileRepo.create(goalProfileData);
+  }
+
+  static async updateGoalProfile(goalProfileId: number, goalProfileData: UpdateYoutubeGoalProfile) {
+    await goalProfileRepo.updateWhere({ id: goalProfileId}, goalProfileData);
+  }
+
+  static async removeGoalProfile(goalProfileId: number) {
+    await goalProfileRepo.deleteWhere({ id: goalProfileId })
   }
 
   static async getSnapshots(videoId: string) {

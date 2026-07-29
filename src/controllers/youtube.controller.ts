@@ -1,8 +1,10 @@
 import { Request, Response } from "express";
 import { YoutubeSyncService } from "../services/youtube-sync.service";
 import { YoutubeService } from "../services/youtube.service";
-import { getYoutubeSyncSchema, getYoutubeVideoSchema, getYoutubeVideoUpdateSchema } from "../schema/youtube.schema";
+import { getGoalProfileSchema, getGoalProfileUpdateSchema, getYoutubeSyncSchema, getYoutubeVideoSchema, getYoutubeVideoUpdateSchema } from "../schema/youtube.schema";
 import { youtubeAnalyticsClient } from "../clients/youtube";
+import { removeUndefined } from "../database/utils/removeUndefined";
+import { CreateYoutubeGoalProfile } from "../database/types/youtube-goal-profile.type";
 
 export class YoutubeController {
   static async sync(req: Request, res: Response) {
@@ -49,17 +51,43 @@ export class YoutubeController {
   }
 
   static async updateVideo(req: Request, res: Response) {
+    const { videoId } = getYoutubeVideoSchema.parse(req.params);
+
     const data = getYoutubeVideoUpdateSchema.parse(req.body);
-    const updateData = Object.fromEntries(
-      Object.entries(data)
-        .filter(([_, value]) => value !== undefined)
-    );
-    await YoutubeService.updateVideo(updateData);
+    const updateData = removeUndefined(data);
+    await YoutubeService.updateVideo(videoId, updateData);
 
     res.json({
       success: true,
-      message: `Youtube video with id: "${data.videoId}" updated successfully!`
+      message: `Youtube video with id: "${videoId}" updated successfully!`
     });
+  }
+
+  static async getGoalProfile(req: Request, res: Response) {
+    const { goalProfileId } = getGoalProfileSchema.parse(req.params);
+
+    const profile = await YoutubeService.getGoalProfile(goalProfileId);
+
+    res.json(profile);
+  }
+
+  static async createGoalProfile(req: Request, res: Response) {
+    const data = getGoalProfileUpdateSchema.parse(req.body);
+    const updateData = removeUndefined(data);
+    await YoutubeService.addGoalProfile(updateData);
+  }
+
+  static async updateGoalProfile(req: Request, res: Response) {
+    const { goalProfileId } = getGoalProfileSchema.parse(req.params)
+    const data = getGoalProfileUpdateSchema.parse(req.body);
+    const updateData = removeUndefined(data);
+
+    await YoutubeService.updateGoalProfile(goalProfileId, updateData)
+  }
+
+  static async removeGoalProfile(req: Request, res: Response) {
+    const { goalProfileId } = getGoalProfileSchema.parse(req.params);
+    await YoutubeService.removeGoalProfile(goalProfileId);
   }
 
   static async getSnapshots(req: Request, res: Response) {
