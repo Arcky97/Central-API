@@ -16,7 +16,7 @@ export const getYoutubeVideoUpdateSchema = z.object({
 })
 
 export const getGoalProfileSchema = z.object({
-  goalProfileId: z.number()
+  goalProfileId: z.coerce.number().int().positive()
 });
 
 export const getGoalProfileUpdateSchema = z.object({

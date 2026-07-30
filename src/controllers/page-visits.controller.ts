@@ -5,6 +5,7 @@ import { pageVisitsQueue } from "../queue/page-visits.queue";
 
 export class PageVisitsController {
   static async registerVisit(req: Request, res: Response) {
+    console.log(`[PAGE-VISITS] New Page Visit register request received.`)
     const { path, userAgent, referrer } = getPageVisitsSchema.parse(req.body);
 
     void pageVisitsQueue

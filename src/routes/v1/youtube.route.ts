@@ -7,6 +7,8 @@ import { env } from "../../config/env";
 
 const router = Router();
 
+router.use(requireScope("website", "admin"));
+
 router.get(
   "/channel", 
   asyncHandler(YoutubeController.getChannel)
@@ -54,9 +56,13 @@ router.delete(
 
 router.post(
   "/sync",
-  requireScope("admin"),
   asyncHandler(YoutubeController.sync)
 );
+
+router.get(
+  "/hello",
+  asyncHandler(YoutubeController.hello)
+)
 
 router.post(
   "/sync/fill/:date",
@@ -81,7 +87,5 @@ if (env.NODE_ENV === "development") {
     asyncHandler(YoutubeController.testAnalytics)
   );
 }
-
-
 
 export default router;

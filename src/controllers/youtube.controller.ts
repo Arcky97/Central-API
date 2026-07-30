@@ -4,7 +4,6 @@ import { YoutubeService } from "../services/youtube.service";
 import { getGoalProfileSchema, getGoalProfileUpdateSchema, getYoutubeSyncSchema, getYoutubeVideoSchema, getYoutubeVideoUpdateSchema } from "../schema/youtube.schema";
 import { youtubeAnalyticsClient } from "../clients/youtube";
 import { removeUndefined } from "../database/utils/removeUndefined";
-import { CreateYoutubeGoalProfile } from "../database/types/youtube-goal-profile.type";
 
 export class YoutubeController {
   static async sync(req: Request, res: Response) {
@@ -72,9 +71,16 @@ export class YoutubeController {
   }
 
   static async createGoalProfile(req: Request, res: Response) {
+    console.log(req.params);
     const data = getGoalProfileUpdateSchema.parse(req.body);
+
     const updateData = removeUndefined(data);
     await YoutubeService.addGoalProfile(updateData);
+
+    res.status(201).json({
+      success: true,
+      message: `Youtube goal profile added successfully!`
+    });
   }
 
   static async updateGoalProfile(req: Request, res: Response) {
@@ -110,5 +116,12 @@ export class YoutubeController {
       success: true,
       accessToken: token
     });
+  }
+
+  static async hello(req: Request, res: Response) {
+    res.status(201).json({
+      success: true,
+      message: "Hello from the API!"
+    })
   }
 }

@@ -36,7 +36,11 @@ export class YoutubeService {
           views: snapshot?.views ?? 0,
           likes: snapshot?.likes ?? 0,
           comments: snapshot?.comments ?? 0,
-          watchHours: snapshot?.watchHours ?? 0
+          watchHours: snapshot?.watchHours ?? 0,
+          averageViewDuration: snapshot?.averageViewDuration ?? 0,
+          averageViewPercentage: snapshot?.averageViewPercentage ?? 0,
+          subscribersGained: snapshot?.subscribersGained ?? 0,
+          subscribersLost: snapshot?.subscribersLost ?? 0
         }
       };
     });

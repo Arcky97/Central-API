@@ -8,5 +8,9 @@ export interface YoutubeVideoResponse {
     likes: number;
     comments: number;
     watchHours: number;
+    averageViewDuration: number;
+    averageViewPercentage: number;
+    subscribersGained: number;
+    subscribersLost: number;
   };
 }
