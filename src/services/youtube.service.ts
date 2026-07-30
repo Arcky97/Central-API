@@ -58,7 +58,7 @@ export class YoutubeService {
 
   static async getGoalProfile(goalProfileId: number): Promise<PublicYoutubeGoalProfile | null> {
     return goalProfileRepo.findOne({
-      goalProfileId
+      id: goalProfileId
     });
   }
 

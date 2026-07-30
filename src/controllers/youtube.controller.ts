@@ -71,7 +71,6 @@ export class YoutubeController {
   }
 
   static async createGoalProfile(req: Request, res: Response) {
-    console.log(req.params);
     const data = getGoalProfileUpdateSchema.parse(req.body);
 
     const updateData = removeUndefined(data);

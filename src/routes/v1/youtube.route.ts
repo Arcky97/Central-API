@@ -35,7 +35,7 @@ router.patch(
 )
 
 router.get(
-  "/profile/:profileId",
+  "/profile/:goalProfileId",
   asyncHandler(YoutubeController.getGoalProfile)
 );
 
@@ -45,12 +45,12 @@ router.post(
 )
 
 router.patch(
-  "/profile/:profileId",
+  "/profile/:goalProfileId",
   asyncHandler(YoutubeController.updateGoalProfile)
 );
 
 router.delete(
-  "profile/:profileId",
+  "/profile/:goalProfileId",
   asyncHandler(YoutubeController.removeGoalProfile)
 );
 
@@ -58,11 +58,6 @@ router.post(
   "/sync",
   asyncHandler(YoutubeController.sync)
 );
-
-router.get(
-  "/hello",
-  asyncHandler(YoutubeController.hello)
-)
 
 router.post(
   "/sync/fill/:date",
