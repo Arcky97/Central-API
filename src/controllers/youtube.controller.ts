@@ -20,6 +20,7 @@ export class YoutubeController {
   static async backfillSync(req: Request, res: Response) {
     const service = new YoutubeSyncService();
 
+    console.log("Backfill sync request received");
     const { date } = getYoutubeSyncSchema.parse(req.params);
     await service.backfillSync(date);
 
