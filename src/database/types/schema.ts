@@ -27,7 +27,9 @@ export type TableName =
   | "youtubeGoalProfiles"
   | "youtubeVideoSnapshots"
   | "youtubeVideos"
-
+  | "users"
+  | "youtubeAccounts"
+  | "discordAccounts"
 
 export interface SchemaColumn {
   type: string;
