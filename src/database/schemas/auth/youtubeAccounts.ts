@@ -13,6 +13,11 @@ export const youtubeAccountsSchema: TableSchema = {
       autoIncrement: true
     },
 
+    authUserId: {
+      type: "INT",
+      nullable: false
+    },
+
     googleUserId: {
       type: "VARCHAR(255)",
       nullable: false
@@ -25,6 +30,11 @@ export const youtubeAccountsSchema: TableSchema = {
 
     channelName: {
       type: "VARCHAR(255)",
+      nullable: false
+    },
+
+    accessToken: {
+      type: "TEXT",
       nullable: false
     },
 
@@ -52,6 +62,11 @@ export const youtubeAccountsSchema: TableSchema = {
     {
       name: "idx_youtube_channel",
       columns: ["channelId"],
+      unique: true
+    },
+    {
+      name: "idx_youtube_auth_user",
+      columns: ["authUserId"],
       unique: true
     }
   ]

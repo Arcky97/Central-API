@@ -1,3 +1,4 @@
+import { ResultSetHeader } from "mysql2";
 import { query } from "../../query";
 import { DatabaseName, TableName } from "../../types/schema";
 
@@ -10,7 +11,7 @@ export class Repository<DBRow, CreateInput = Partial<DBRow>, UpdateInput = Parti
     this.db = db;
   }
 
-  async create(data: CreateInput) {
+  async create(data: CreateInput): Promise<ResultSetHeader> {
     return query(
       this.db,
       {

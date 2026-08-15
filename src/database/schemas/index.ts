@@ -21,7 +21,7 @@ import { youtubeChannelsSchema } from "./analytics/youtubeChannels";
 import { youtubeGoalProfilesSchema } from "./analytics/youtubeGoalProfiles";
 import { youtubeVideoSnapshotsSchema } from "./analytics/youtubeVideoSnapshots";
 import { youtubeVideosSchema } from "./analytics/youtubeVideos";
-import { usersSchema } from "./auth/users";
+import { authUsersSchema } from "./auth/authUsers";
 import { discordAccountsSchema } from "./auth/discordAccounts";
 import { youtubeAccountsSchema } from "./auth/youtubeAccounts";
 
@@ -52,7 +52,7 @@ export const schemas = [
   youtubeVideosSchema,
   youtubeVideoSnapshotsSchema,
 
-  usersSchema,
+  authUsersSchema,
   discordAccountsSchema,
   youtubeAccountsSchema
 ];

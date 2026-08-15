@@ -1,10 +1,10 @@
 import { TableSchema } from "../../types/schema";
 
-export const usersSchema: TableSchema = {
+export const authUsersSchema: TableSchema = {
   version: 1,
   strict: true,
   database: "auth",
-  table: "users",
+  table: "authUsers",
   columns: {
     id: {
       type: "INT",

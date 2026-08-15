@@ -13,6 +13,11 @@ export const discordAccountsSchema: TableSchema = {
       autoIncrement: true
     },
 
+    authUserId: {
+      type: "INT",
+      nullable: false
+    },
+
     discordUserId: {
       type: "VARCHAR(255)",
       nullable: false
@@ -47,6 +52,11 @@ export const discordAccountsSchema: TableSchema = {
     {
       name: "idx_discord_user",
       columns: ["discordUserId"],
+      unique: true
+    },
+    {
+      name: "idx_discord_auth_user",
+      columns: ["authUserId"],
       unique: true
     }
   ]
