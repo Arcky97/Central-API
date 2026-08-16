@@ -18,7 +18,7 @@ export const youtubeSyncWorker = new Worker<YoutubeSyncJob>(
 
       if (type === "sync") {
         console.log(`[YouTube Sync Worker] Starting full sync for job ${jobId}`);
-        await syncService.sync();
+        await syncService.sync(jobId);
         await SyncJobsService.updateProgress(jobId, 100, "Sync completed");
       } else if (type === "backfill") {
         if (!startDate) {
@@ -28,8 +28,8 @@ export const youtubeSyncWorker = new Worker<YoutubeSyncJob>(
         console.log(
           `[YouTube Sync Worker] Starting backfill from ${startDate} for job ${jobId}`
         );
-        
-        await syncService.backfillSync(startDate);
+
+        await syncService.backfillSync(startDate, jobId);
         await SyncJobsService.updateProgress(jobId, 100, `Backfill completed`);
       }
 

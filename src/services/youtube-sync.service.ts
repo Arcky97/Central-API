@@ -9,6 +9,7 @@ import { CreateYoutubeVideoSnapshot } from "../database/types/youtube-video-snap
 import { YoutubeVideoSnapshotRepository } from "../database/repositories/analytics/YoutubeVideoSnapshotRepository";
 import { youtubeAnalyticsClient, youtubeClient } from "../clients/youtube";
 import { formatLocalDate } from "../utils/dateTimeStringifier";
+import { SyncJobsService } from "./sync-jobs.service";
 
 const channelRepo =
   new YoutubeChannelRepository();
@@ -20,16 +21,52 @@ const snapshotRepo =
   new YoutubeVideoSnapshotRepository();
 
 export class YoutubeSyncService {
-  async sync() {
+  async sync(jobId?: string) {
     try {
       console.log("[YouTube] Starting synchronization...");
+
+      if (jobId) {
+        await SyncJobsService.updateJob(jobId, {
+          status: "running",
+          message: "Syncing YouTube channel and videos",
+          progress: 10,
+          currentItem: "Channel"
+        });
+      }
+
       const channel = await this.syncChannel();
+      if (jobId) {
+        await SyncJobsService.updateJob(jobId, {
+          status: "running",
+          message: "Fetching YouTube videos",
+          progress: 30,
+          currentItem: channel.channelName
+        });
+      }
+
       const videos = await this.fetchVideos();
       const lookup = await this.saveVideos(channel, videos);
 
-      await this.syncAnalytics(videos);
+      if (jobId) {
+        await SyncJobsService.updateJob(jobId, {
+          status: "running",
+          message: "Syncing analytics for recent videos",
+          progress: 60,
+          currentItem: `${videos.length} videos`
+        });
+      }
 
+      await this.syncAnalytics(videos);
       await this.createSnapShots(videos, lookup, new Date());
+
+      if (jobId) {
+        await SyncJobsService.updateJob(jobId, {
+          status: "running",
+          message: "Finalizing synchronization",
+          progress: 95,
+          currentItem: "Wrapping up"
+        });
+      }
 
       console.log("[YouTube] Synchronization completed.");
     } catch (error: any) {
@@ -39,29 +76,53 @@ export class YoutubeSyncService {
 
   }
 
-  async backfillSync(startDate: string) {
+  async backfillSync(startDate: string, jobId?: string) {
     const channel = await this.syncChannel();
     const videos = await this.fetchVideos();
 
     const lookup = await this.saveVideos(channel, videos);
 
     let current = new Date(startDate);
+    current.setHours(0, 0, 0, 0);
 
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const totalDays = Math.max(1, Math.floor((today.getTime() - current.getTime()) / 86400000) + 1);
+    let processedDays = 0;
 
     while (formatLocalDate(current) <= formatLocalDate(today)) {
-
+      const currentDate = formatLocalDate(current);
       const availableVideos = videos.filter(video => 
         video.publishedAt <= current
       );
 
-      await this.syncAnalytics(availableVideos, startDate, formatLocalDate(current));
+      if (jobId) {
+        const progress = Math.min(99, Math.round((processedDays / totalDays) * 100));
+        await SyncJobsService.updateJob(jobId, {
+          status: "running",
+          message: `Backfilling YouTube analytics for ${currentDate}`,
+          progress,
+          currentItem: currentDate
+        });
+      }
 
+      await this.syncAnalytics(availableVideos, startDate, currentDate);
       await this.createSnapShots(availableVideos, lookup, new Date(current));
 
       console.log(`[YouTube] Backfill synchronization completed for ${availableVideos.length} video(s) up until ${current}`);
+
+      processedDays += 1;
       current.setDate(current.getDate() + 1);
-      console.log([today, current]);
+    }
+
+    if (jobId) {
+      await SyncJobsService.updateJob(jobId, {
+        status: "running",
+        message: "Backfill completed",
+        progress: 100,
+        currentItem: formatLocalDate(today)
+      });
     }
   }
 
