@@ -30,6 +30,7 @@ export type TableName =
   | "authUser"
   | "youtubeAccounts"
   | "discordAccounts"
+  | "syncJobs"
 
 export interface SchemaColumn {
   type: string;

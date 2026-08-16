@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { asyncHandler } from "../../utils/asyncHandler";
 import { YoutubeController } from "../../controllers/youtube.controller";
+import { YoutubeSyncController } from "../../controllers/youtube-sync.controller";
 import { requireScope } from "../../middleware/requireScope";
 import { YoutubeOAuthController } from "../../controllers/youtube-oauth.controller";
 import { env } from "../../config/env";
@@ -9,6 +10,23 @@ const router = Router();
 
 router.use(requireScope("website", "admin"));
 
+// Sync endpoints (job-based)
+router.post(
+  "/sync",
+  asyncHandler(YoutubeSyncController.startSync)
+);
+
+router.post(
+  "/sync/fill/:date",
+  asyncHandler(YoutubeSyncController.startBackfill)
+);
+
+router.get(
+  "/sync/jobs/:jobId",
+  asyncHandler(YoutubeSyncController.getJobStatus)
+);
+
+// Data endpoints
 router.get(
   "/channel", 
   asyncHandler(YoutubeController.getChannel)
@@ -52,16 +70,6 @@ router.patch(
 router.delete(
   "/profile/:goalProfileId",
   asyncHandler(YoutubeController.removeGoalProfile)
-);
-
-router.post(
-  "/sync",
-  asyncHandler(YoutubeController.sync)
-);
-
-router.post(
-  "/sync/fill/:date",
-  asyncHandler(YoutubeController.backfillSync)
 );
 
 // dev only

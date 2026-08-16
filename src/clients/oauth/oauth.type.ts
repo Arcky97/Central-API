@@ -20,12 +20,18 @@ export interface OAuthClient<TMetadata = unknown> {
   getUser(tokens: OAuthTokens): Promise<OAuthUser<TMetadata>>;
 }
 
-export type OAuthProvider = "youtube";
+export type OAuthProvider = "youtube" //| "discord";
 
 export interface YoutubeOAuthMetadata {
   googleUserId: string;
   channelId: string;
   channelName: string;
+}
+
+export interface DiscordOAuthMetadata {
+  discordUserId: string;
+  username: string;
+  displayName: string;
 }
 
 /**
@@ -34,5 +40,5 @@ export interface YoutubeOAuthMetadata {
  */
 export interface OAuthMetadataMap {
   youtube: YoutubeOAuthMetadata;
-  // discord: DiscordOAuthMetadata; // Add when implementing Discord OAuth
+  discord: DiscordOAuthMetadata;
 }

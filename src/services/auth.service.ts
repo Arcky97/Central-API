@@ -2,6 +2,8 @@ import { AuthUserRepository } from "../database/repositories/auth/AuthUserReposi
 import { DiscordAccountRepository } from "../database/repositories/auth/DiscordAccountRepository";
 import { YoutubeAccountRepository } from "../database/repositories/auth/youtubeAccountRepository";
 import { DiscordOAuthData, YoutubeOAuthData } from "../types/oauth.type";
+import jwt from "jsonwebtoken";
+import { env } from "../config/env";
 
 const youtubeRepo = new YoutubeAccountRepository();
 const discordRepo = new DiscordAccountRepository();
@@ -12,6 +14,12 @@ export class AuthService {
     const result = await authUserRepo.create({});
 
     return result.insertId;
+  }
+
+  static generateToken(authUserId: number): string {
+    return jwt.sign({ authUserId }, env.JWT_SECRET, {
+      expiresIn: env.JWT_EXPIRES_IN
+    } as jwt.SignOptions);
   }
 
   static async loginWithYoutube(data: YoutubeOAuthData) {

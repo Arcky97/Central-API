@@ -25,7 +25,7 @@ export const apiAuthFailuresSchema: TableSchema = {
       default: "NULL"
     },
     route: {
-      type: "VARCHAR(128)",
+      type: "VARCHAR(512)",
       default: "NULL"
     },
     ip: {

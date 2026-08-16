@@ -17,6 +17,7 @@ import { reactionRolesSchema } from "./core/reactionRoles";
 import { userStatsSchema } from "./core/userStats";
 import { apiAuthFailuresSchema } from "./analytics/apiAuthFailures";
 import { apiRequestsSchema } from "./analytics/apiRequests";
+import { syncJobsSchema } from "./analytics/syncJobs";
 import { youtubeChannelsSchema } from "./analytics/youtubeChannels";
 import { youtubeGoalProfilesSchema } from "./analytics/youtubeGoalProfiles";
 import { youtubeVideoSnapshotsSchema } from "./analytics/youtubeVideoSnapshots";
@@ -45,6 +46,7 @@ export const schemas = [
   
   apiAuthFailuresSchema,
   apiRequestsSchema,
+  syncJobsSchema,
   pageVisitsSchema,
 
   youtubeChannelsSchema,

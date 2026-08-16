@@ -7,5 +7,9 @@ export function buildColumnType(column: SchemaColumn): string {
     type += " UNSIGNED";
   }
 
+  if (column.autoIncrement) {
+    type += " AUTO_INCREMENT";
+  }
+
   return type.trim();
 }

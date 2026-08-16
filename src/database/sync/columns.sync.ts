@@ -53,11 +53,19 @@ export async function syncColumns(schema: TableSchema) {
         ADD COLUMN \`${name}\` ${definition.type}
       `;
 
+      if (definition.unsigned) {
+        sql += " UNSIGNED";
+      }
+
+      if (definition.autoIncrement) {
+        sql += " AUTO_INCREMENT";
+      }
+
       if (definition.nullable === false) {
         sql += " NOT NULL";
       }
 
-      if (definition.default !== undefined) {
+      if (definition.default !== undefined && !definition.autoIncrement) {
         sql += ` DEFAULT ${definition.default}`;
       }
 
