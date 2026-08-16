@@ -11,11 +11,11 @@ export class OAuthService {
     return client.getAuthorizationUrl(state);
   }
 
-  static async authenticate(
+  static async authenticate<TMetadata>(
     provider: OAuthProvider,
     code: string
   ) {
-    const client = getOAuthClient(provider);
+    const client = getOAuthClient<TMetadata>(provider);
 
     const tokens = await client.exchangeCode(code);
     const user = await client.getUser(tokens);

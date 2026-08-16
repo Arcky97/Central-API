@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { AuthService } from "../services/auth.service";
 import { OAuthService } from "../services/oauth.service";
+import { YoutubeOAuthMetadata, OAuthUser } from "../clients/oauth/oauth.type";
 
 export class AuthController {
   static async youtubeLogin(req: Request, res: Response) {
@@ -20,12 +21,15 @@ export class AuthController {
     }
 
     const { user, tokens } =
-      await OAuthService.authenticate("youtube", code);
+      await OAuthService.authenticate<YoutubeOAuthMetadata>(
+        "youtube",
+        code
+      );
 
     const authUser = await AuthService.loginWithYoutube({
       googleUserId: user.providerUserId,
-      channelId: user.metadata?.channelId as string,
-      channelName: user.metadata?.displayName as string,
+      channelId: user.metadata!.channelId,
+      channelName: user.metadata!.channelName,
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken ?? ""
     });

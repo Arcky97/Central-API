@@ -85,7 +85,12 @@ export class YoutubeOAuthClient implements OAuthClient<YoutubeOAuthMetadata> {
     return {
       providerUserId: googleUserId,
       username: channel.snippet?.customUrl ?? undefined,
-      displayName: channel.snippet?.title ?? undefined
+      displayName: channel.snippet?.title ?? undefined,
+      metadata: {
+        googleUserId,
+        channelId: channel.id,
+        channelName: channel.snippet?.title ?? ""
+      }
     };
   }
 }

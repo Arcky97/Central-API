@@ -4,7 +4,7 @@ export interface OAuthTokens {
   expiresAt?: Date | undefined;
 }
 
-export interface OAuthUser<TMetadata = Record<string, unknown>> {
+export interface OAuthUser<TMetadata  = unknown> {
   providerUserId: string;
   username?: string | undefined;
   displayName?: string | undefined;
@@ -12,7 +12,7 @@ export interface OAuthUser<TMetadata = Record<string, unknown>> {
   metadata?: TMetadata;
 }
 
-export interface OAuthClient<TMetadata = Record<string, unknown>> {
+export interface OAuthClient<TMetadata = unknown> {
   getAuthorizationUrl(state?: string): string;
 
   exchangeCode(code: string): Promise<OAuthTokens>;
@@ -26,4 +26,13 @@ export interface YoutubeOAuthMetadata {
   googleUserId: string;
   channelId: string;
   channelName: string;
+}
+
+/**
+ * Maps each OAuth provider to its corresponding metadata type.
+ * Use this to ensure type safety across the OAuth client registry.
+ */
+export interface OAuthMetadataMap {
+  youtube: YoutubeOAuthMetadata;
+  // discord: DiscordOAuthMetadata; // Add when implementing Discord OAuth
 }
