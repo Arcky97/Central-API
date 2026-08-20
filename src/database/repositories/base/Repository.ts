@@ -12,6 +12,15 @@ export class Repository<DBRow, CreateInput = Partial<DBRow>, UpdateInput = Parti
   }
 
   async create(data: CreateInput): Promise<ResultSetHeader> {
+    if (Object.keys(data as object).length === 0) {
+      return query(
+        this.db,
+        {
+          sql: `INSERT INTO ${this.tableName} () VALUES ()`
+        }
+      );
+    }
+
     return query(
       this.db,
       {

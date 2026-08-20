@@ -27,7 +27,7 @@ export type TableName =
   | "youtubeGoalProfiles"
   | "youtubeVideoSnapshots"
   | "youtubeVideos"
-  | "authUser"
+  | "authUsers"
   | "youtubeAccounts"
   | "discordAccounts"
   | "syncJobs"

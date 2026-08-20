@@ -39,5 +39,6 @@ export const env = {
 
   JWT_SECRET: required("JWT_SECRET"),
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN ?? "7d",
-  FRONTEND_URL: process.env.FRONTEND_URL ?? "http://localhost:3000"
+  FRONTEND_URL: process.env.FRONTEND_URL ?? "http://localhost:3002",
+  AUTH_COOKIE_DOMAIN: process.env.AUTH_COOKIE_DOMAIN
 };

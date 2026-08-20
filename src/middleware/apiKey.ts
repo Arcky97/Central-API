@@ -36,6 +36,16 @@ export function requireApiKey(
   if (req.method === "OPTIONS") {
     return next();
   }
+
+  const requestPath = ((req.originalUrl ?? req.path) ?? "").split("?", 1)[0] ?? "";
+
+  if (
+    requestPath.endsWith("/v1/auth/youtube/callback") ||
+    requestPath.endsWith("/v1/youtube/oauth/callback")
+  ) {
+    req.apiScope = "website";
+    return next();
+  }
   
   const key = req.header("X-api-key");
 

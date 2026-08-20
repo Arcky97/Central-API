@@ -4,6 +4,7 @@ import { YoutubeController } from "../../controllers/youtube.controller";
 import { YoutubeSyncController } from "../../controllers/youtube-sync.controller";
 import { requireScope } from "../../middleware/requireScope";
 import { YoutubeOAuthController } from "../../controllers/youtube-oauth.controller";
+import { AuthController } from "../../controllers/auth.controller";
 import { env } from "../../config/env";
 
 const router = Router();
@@ -81,14 +82,14 @@ if (env.NODE_ENV === "development") {
   );
 
   router.get(
-    "/oauth/callback",
-    asyncHandler(YoutubeOAuthController.callback)
-  );
-
-  router.get(
     "/analytics/test",
     asyncHandler(YoutubeController.testAnalytics)
   );
 }
+
+router.get(
+  "/oauth/callback",
+  asyncHandler(AuthController.youtubeCallback)
+);
 
 export default router;

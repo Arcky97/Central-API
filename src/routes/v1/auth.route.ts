@@ -11,6 +11,7 @@ router.use(requireScope("website", "admin"));
 // YouTube OAuth flow
 router.get("/youtube/login", asyncHandler(AuthController.youtubeLogin));
 router.get("/youtube/callback", asyncHandler(AuthController.youtubeCallback));
+router.post("/logout", asyncHandler(AuthController.logout));
 
 // Discord OAuth flow
 //router.get("/discord/login", asyncHandler(AuthController.discordLogin));

@@ -3,23 +3,81 @@ import { AuthService } from "../services/auth.service";
 import { OAuthService } from "../services/oauth.service";
 import { YoutubeOAuthMetadata, DiscordOAuthMetadata, OAuthUser } from "../clients/oauth/oauth.type";
 import { AuthRequest } from "../middleware/jwt";
+import { randomBytes, timingSafeEqual } from "node:crypto";
+import { env } from "../config/env";
+
+const stateCookieName = "youtube_oauth_state";
+const redirectCookieName = "youtube_oauth_redirect";
+const sessionCookieName = "auth_session";
+const allowedRedirects = new Set(["/", "/youtube"]);
+
+function serializeCookie(name: string, value: string, maxAge?: number) {
+  const attributes = ["Path=/", "HttpOnly", "SameSite=Lax"];
+
+  if (env.NODE_ENV === "production") {
+    attributes.push("Secure");
+  }
+
+  if (env.AUTH_COOKIE_DOMAIN) {
+    attributes.push(`Domain=${env.AUTH_COOKIE_DOMAIN}`);
+  }
+
+  if (maxAge !== undefined) {
+    attributes.push(`Max-Age=${maxAge}`);
+  }
+
+  return `${name}=${encodeURIComponent(value)}; ${attributes.join("; ")}`;
+}
+
+function getCookie(req: Request, name: string) {
+  const cookie = req.headers.cookie
+    ?.split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${name}=`));
+
+  return cookie ? decodeURIComponent(cookie.slice(name.length + 1)) : undefined;
+}
 
 export class AuthController {
   static async youtubeLogin(req: Request, res: Response) {
-    const url = OAuthService.getAuthorizationUrl("youtube");
+    const state = randomBytes(32).toString("hex");
+    const redirect = typeof req.query.redirect === "string" && allowedRedirects.has(req.query.redirect)
+      ? req.query.redirect
+      : "/";
+    const url = OAuthService.getAuthorizationUrl("youtube", state);
 
+    res.setHeader("Set-Cookie", [
+      serializeCookie(stateCookieName, state, 600),
+      serializeCookie(redirectCookieName, redirect, 600)
+    ]);
     res.json({ url });
   }
 
   static async youtubeCallback(req: Request, res: Response) {
     const code = req.query.code;
+    const state = req.query.state;
+    const storedState = getCookie(req, stateCookieName);
+    const redirect = getCookie(req, redirectCookieName);
+    const redirectPath = redirect && allowedRedirects.has(redirect) ? redirect : "/";
 
-    if (typeof code !== "string") {
+    if (typeof code !== "string" || typeof state !== "string" || !storedState) {
       return res.status(400).json({
         success: false,
-        message: "Missing OAuth code."
+        message: "Invalid OAuth callback."
       });
     }
+
+    const expected = Buffer.from(storedState);
+    const received = Buffer.from(state);
+
+    if (expected.length !== received.length || !timingSafeEqual(expected, received)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OAuth state."
+      });
+    }
+
+    res.setHeader("Set-Cookie", serializeCookie(stateCookieName, "", 0));
 
     const { user, tokens } =
       await OAuthService.authenticate<YoutubeOAuthMetadata>(
@@ -44,11 +102,17 @@ export class AuthController {
 
     const token = AuthService.generateToken(authUser.id);
 
-    res.json({
-      success: true,
-      token,
-      user: authUser
-    });
+    res.setHeader("Set-Cookie", [
+      serializeCookie(stateCookieName, "", 0),
+      serializeCookie(redirectCookieName, "", 0),
+      serializeCookie(sessionCookieName, token)
+    ]);
+    res.redirect(`${env.FRONTEND_URL}${redirectPath}`);
+  }
+
+  static async logout(_req: Request, res: Response) {
+    res.setHeader("Set-Cookie", serializeCookie(sessionCookieName, "", 0));
+    res.json({ success: true });
   }
 
 /*
