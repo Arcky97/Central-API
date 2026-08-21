@@ -7,7 +7,7 @@ export class YoutubeAccountRepository extends Repository<YoutubeAccountRow, Crea
   }
 
   async getByAuthUserId(authUserid: number) {
-    return this.findOne({ authUserid });
+    return this.findOne({ authUserId: authUserid });
   }
 
   async getByGoogleUserId(googleUserId: string) {

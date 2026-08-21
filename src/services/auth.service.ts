@@ -10,6 +10,10 @@ const discordRepo = new DiscordAccountRepository();
 const authUserRepo = new AuthUserRepository();
 
 export class AuthService {
+  static async getYoutubeAccount(authUserId: number) {
+    return youtubeRepo.getByAuthUserId(authUserId);
+  }
+
   private static async createAuthUser(): Promise<number> {
     const result = await authUserRepo.create({});
 

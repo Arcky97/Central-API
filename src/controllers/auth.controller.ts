@@ -9,7 +9,7 @@ import { env } from "../config/env";
 const stateCookieName = "youtube_oauth_state";
 const redirectCookieName = "youtube_oauth_redirect";
 const sessionCookieName = "auth_session";
-const allowedRedirects = new Set(["/", "/youtube"]);
+const allowedRedirects = new Set(["/"]);
 
 function serializeCookie(name: string, value: string, maxAge?: number) {
   const attributes = ["Path=/", "HttpOnly", "SameSite=Lax"];
@@ -170,11 +170,18 @@ export class AuthController {
       });
     }
 
-    // You may want to fetch more detailed user info from database
+    const youtubeAccount = await AuthService.getYoutubeAccount(req.authUserId);
+
     res.json({
       success: true,
       user: {
-        id: req.authUserId
+        id: req.authUserId,
+        youtube: youtubeAccount
+          ? {
+              channelId: youtubeAccount.channelId,
+              channelName: youtubeAccount.channelName
+            }
+          : null
       }
     });
   }
