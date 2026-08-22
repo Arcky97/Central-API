@@ -1,5 +1,6 @@
 export interface YoutubeGoalProfileRow {
   id: number;
+  channelId: number;
 
   name: string;
 
@@ -13,6 +14,7 @@ export interface YoutubeGoalProfileRow {
 
 // Create DTO
 export interface CreateYoutubeGoalProfile {
+  channelId: number;
   name: string;
   goalViews?: number | null;
   goalWatchHours?: number | null;

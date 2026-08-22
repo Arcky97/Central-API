@@ -3,7 +3,7 @@ export interface YoutubeVideoSnapshotRow {
 
   videoId: number;
 
-  recordedAt: Date;
+  snapshotDate: Date;
 
   views: number;
   likes: number;

@@ -3,22 +3,29 @@ import { redis } from "../redis";
 import { YoutubeSyncJob } from "../queue/youtube-sync.queue";
 import { YoutubeSyncService } from "../services/youtube-sync.service";
 import { SyncJobsService } from "../services/sync-jobs.service";
+import { YoutubeAccountRepository } from "../database/repositories/auth/youtubeAccountRepository";
 
 const syncService = new YoutubeSyncService();
+const youtubeAccountRepo = new YoutubeAccountRepository();
 
 export const youtubeSyncWorker = new Worker<YoutubeSyncJob>(
   "youtube-sync",
   async (job) => {
-    const { jobId, type, startDate } = job.data;
+    const { jobId, authUserId, type, startDate } = job.data;
 
     try {
       console.log(`[YouTube Sync Worker] Processing job ${jobId} (${type})`);
 
       await SyncJobsService.startJob(jobId);
 
+      const account = await youtubeAccountRepo.getCredentialsByAuthUserId(authUserId);
+      if (!account) {
+        throw new Error("No connected YouTube account found for this sync job.");
+      }
+
       if (type === "sync") {
         console.log(`[YouTube Sync Worker] Starting full sync for job ${jobId}`);
-        await syncService.sync(jobId);
+        await syncService.sync(account, jobId);
         await SyncJobsService.updateProgress(jobId, 100, "Sync completed");
       } else if (type === "backfill") {
         if (!startDate) {
@@ -29,7 +36,7 @@ export const youtubeSyncWorker = new Worker<YoutubeSyncJob>(
           `[YouTube Sync Worker] Starting backfill from ${startDate} for job ${jobId}`
         );
 
-        await syncService.backfillSync(startDate, jobId);
+        await syncService.backfillSync(account, startDate, jobId);
         await SyncJobsService.updateProgress(jobId, 100, `Backfill completed`);
       }
 

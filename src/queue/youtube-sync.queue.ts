@@ -3,6 +3,7 @@ import { redis } from "../redis";
 
 export interface YoutubeSyncJob {
   jobId: string;
+  authUserId: number;
   type: "sync" | "backfill";
   startDate?: string;
 }

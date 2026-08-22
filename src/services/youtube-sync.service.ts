@@ -7,7 +7,9 @@ import { PublicYoutubeChannel } from "../database/types/youtube-channel.type";
 import { CreateYoutubeVideo, PublicYoutubeVideo, UpdateYoutubeVideo } from "../database/types/youtube-video.type";
 import { CreateYoutubeVideoSnapshot } from "../database/types/youtube-video-snapshot.type";
 import { YoutubeVideoSnapshotRepository } from "../database/repositories/analytics/YoutubeVideoSnapshotRepository";
-import { youtubeAnalyticsClient, youtubeClient } from "../clients/youtube";
+import { YoutubeAnalyticsClient } from "../clients/youtube/YoutubeAnalyticsClient";
+import { YoutubeClient } from "../clients/youtube/YoutubeClient";
+import { YoutubeAccountRow } from "../database/types/youtube-accounts.type";
 import { formatLocalDate } from "../utils/dateTimeStringifier";
 import { SyncJobsService } from "./sync-jobs.service";
 
@@ -21,8 +23,10 @@ const snapshotRepo =
   new YoutubeVideoSnapshotRepository();
 
 export class YoutubeSyncService {
-  async sync(jobId?: string) {
+  async sync(account: Pick<YoutubeAccountRow, "channelId" | "channelName" | "refreshToken">, jobId?: string) {
     try {
+      const youtubeClient = new YoutubeClient(env.YOUTUBE_API_KEY);
+      const youtubeAnalyticsClient = new YoutubeAnalyticsClient(account.refreshToken);
       console.log("[YouTube] Starting synchronization...");
 
       if (jobId) {
@@ -34,7 +38,7 @@ export class YoutubeSyncService {
         });
       }
 
-      const channel = await this.syncChannel();
+      const channel = await this.syncChannel(youtubeClient, account.channelId);
       if (jobId) {
         await SyncJobsService.updateJob(jobId, {
           status: "running",
@@ -44,7 +48,7 @@ export class YoutubeSyncService {
         });
       }
 
-      const videos = await this.fetchVideos();
+      const videos = await this.fetchVideos(youtubeClient, account.channelId);
       const lookup = await this.saveVideos(channel, videos);
 
       if (jobId) {
@@ -56,7 +60,7 @@ export class YoutubeSyncService {
         });
       }
 
-      await this.syncAnalytics(videos);
+      await this.syncAnalytics(youtubeAnalyticsClient, videos);
       await this.createSnapShots(videos, lookup, new Date());
 
       if (jobId) {
@@ -76,9 +80,11 @@ export class YoutubeSyncService {
 
   }
 
-  async backfillSync(startDate: string, jobId?: string) {
-    const channel = await this.syncChannel();
-    const videos = await this.fetchVideos();
+  async backfillSync(account: Pick<YoutubeAccountRow, "channelId" | "channelName" | "refreshToken">, startDate: string, jobId?: string) {
+    const youtubeClient = new YoutubeClient(env.YOUTUBE_API_KEY);
+    const youtubeAnalyticsClient = new YoutubeAnalyticsClient(account.refreshToken);
+    const channel = await this.syncChannel(youtubeClient, account.channelId);
+    const videos = await this.fetchVideos(youtubeClient, account.channelId);
 
     const lookup = await this.saveVideos(channel, videos);
 
@@ -107,7 +113,7 @@ export class YoutubeSyncService {
         });
       }
 
-      await this.syncAnalytics(availableVideos, startDate, currentDate);
+      await this.syncAnalytics(youtubeAnalyticsClient, availableVideos, startDate, currentDate);
       await this.createSnapShots(availableVideos, lookup, new Date(current));
 
       console.log(`[YouTube] Backfill synchronization completed for ${availableVideos.length} video(s) up until ${current}`);
@@ -126,10 +132,10 @@ export class YoutubeSyncService {
     }
   }
 
-  private async syncChannel(): Promise<PublicYoutubeChannel> {
+  private async syncChannel(youtubeClient: YoutubeClient, channelId: string): Promise<PublicYoutubeChannel> {
     const channel =
       await youtubeClient.getChannel(
-        env.YOUTUBE_CHANNEL_ID
+        channelId
       );
     
     const existing = 
@@ -170,8 +176,8 @@ export class YoutubeSyncService {
       return updated;
   }
 
-  private async fetchVideos(filter?: (video: YoutubeVideo) => boolean): Promise<YoutubeVideo[]> {
-    const playlistId = await youtubeClient.getUploadsPlaylistId(env.YOUTUBE_CHANNEL_ID);
+  private async fetchVideos(youtubeClient: YoutubeClient, channelId: string, filter?: (video: YoutubeVideo) => boolean): Promise<YoutubeVideo[]> {
+    const playlistId = await youtubeClient.getUploadsPlaylistId(channelId);
 
     const videos: YoutubeVideo[] = [];
     
@@ -274,7 +280,7 @@ export class YoutubeSyncService {
     return await videoRepo.getLookupMap();
   }
 
-  private async syncAnalytics(videos: YoutubeVideo[], startDate: string = "2026-05-23", endDate: string = formatLocalDate(new Date())) {
+  private async syncAnalytics(youtubeAnalyticsClient: YoutubeAnalyticsClient, videos: YoutubeVideo[], startDate: string = "2026-05-23", endDate: string = formatLocalDate(new Date())) {
     let synced = 0;
 
     for (const video of videos) {

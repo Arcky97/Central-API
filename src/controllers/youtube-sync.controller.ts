@@ -1,14 +1,19 @@
 import { Request, Response } from "express";
 import { SyncJobsService } from "../services/sync-jobs.service";
 import { youtubeSyncQueue } from "../queue/youtube-sync.queue";
+import { AuthRequest } from "../middleware/jwt";
 
 export class YoutubeSyncController {
   /**
    * POST /v1/youtube/sync
    * Start a full YouTube sync job
    */
-  static async startSync(req: Request, res: Response) {
+  static async startSync(req: AuthRequest, res: Response) {
     try {
+      if (!req.authUserId) {
+        return res.status(401).json({ success: false, message: "Authentication required" });
+      }
+
       // Create job record
       const job = await SyncJobsService.createJob(
         "youtube_sync",
@@ -18,6 +23,7 @@ export class YoutubeSyncController {
       // Enqueue the actual work
       await youtubeSyncQueue.add("sync", {
         jobId: job.id,
+        authUserId: req.authUserId,
         type: "sync"
       });
 
@@ -41,8 +47,12 @@ export class YoutubeSyncController {
    * POST /v1/youtube/sync/fill/:date
    * Start a YouTube backfill job from a specific date
    */
-  static async startBackfill(req: Request, res: Response) {
+  static async startBackfill(req: AuthRequest, res: Response) {
     try {
+      if (!req.authUserId) {
+        return res.status(401).json({ success: false, message: "Authentication required" });
+      }
+
       const date = req.params.date as string | undefined;
 
       if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
@@ -61,6 +71,7 @@ export class YoutubeSyncController {
       // Enqueue the actual work
       await youtubeSyncQueue.add("backfill", {
         jobId: job.id,
+        authUserId: req.authUserId,
         type: "backfill",
         startDate: date
       });

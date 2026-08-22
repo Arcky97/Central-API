@@ -13,6 +13,11 @@ export const youtubeGoalProfilesSchema: TableSchema = {
       autoIncrement: true
     },
 
+    channelId: {
+      type: "INT",
+      nullable: false
+    },
+
     name: {
       type: "VARCHAR(100)",
       nullable: false
@@ -42,5 +47,12 @@ export const youtubeGoalProfilesSchema: TableSchema = {
       type: "TIMESTAMP",
       default: "CURRENT_TIMESTAMP"
     }
-  }
+  },
+
+  indexes: [
+    {
+      name: "idx_youtube_goal_profile_channel",
+      columns: ["channelId"]
+    }
+  ]
 };

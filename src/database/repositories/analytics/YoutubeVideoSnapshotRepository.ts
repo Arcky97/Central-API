@@ -7,7 +7,9 @@ export class YoutubeVideoSnapshotRepository extends Repository<YoutubeVideoSnaps
     super("youtubeVideoSnapshots", "analytics");
   }
 
-  async getLatestSnapshotLookup() {
+  async getLatestSnapshotLookup(channelId?: number) {
+    const channelCondition = channelId === undefined ? "" : "WHERE v.channelId = ?";
+    const values = channelId === undefined ? [] : [channelId];
     const snapshots = await query<YoutubeVideoSnapshotRow[]>(
       this.db,
       {
@@ -15,21 +17,26 @@ export class YoutubeVideoSnapshotRepository extends Repository<YoutubeVideoSnaps
           SELECT s.*
 
           FROM youtubeVideoSnapshots s
+          INNER JOIN youtubeVideos v ON v.id = s.videoId
 
           INNER JOIN (
             SELECT
-              videoId,
+              s2.videoId,
               MAX(snapshotDate) AS snapshotDate
 
-            FROM youtubeVideoSnapshots
+            FROM youtubeVideoSnapshots s2
+            INNER JOIN youtubeVideos v2 ON v2.id = s2.videoId
+            ${channelId === undefined ? "" : "WHERE v2.channelId = ?"}
 
-            GROUP BY videoId
+            GROUP BY s2.videoId
           ) latest
 
           ON latest.videoId = s.videoId
           AND latest.snapshotDate = s.snapshotDate
+          ${channelCondition}
         `
-      }
+      },
+      channelId === undefined ? [] : [channelId, ...values]
     );
 
     const lookup = new Map<

@@ -6,10 +6,16 @@ import { requireScope } from "../../middleware/requireScope";
 import { YoutubeOAuthController } from "../../controllers/youtube-oauth.controller";
 import { AuthController } from "../../controllers/auth.controller";
 import { env } from "../../config/env";
+import { authenticateJWT } from "../../middleware/jwt";
 
 const router = Router();
 
 router.use(requireScope("website", "admin"));
+router.use("/sync", authenticateJWT);
+router.use("/channel", authenticateJWT);
+router.use("/videos", authenticateJWT);
+router.use("/video", authenticateJWT);
+router.use("/profile", authenticateJWT);
 
 // Sync endpoints (job-based)
 router.post(

@@ -9,9 +9,9 @@ export class YoutubeAnalyticsClient {
     env.YOUTUBE_REDIRECT_URI
   );
 
-  constructor() {
+  constructor(refreshToken = env.YOUTUBE_REFRESH_TOKEN) {
     this.oauth2.setCredentials({
-      refresh_token: env.YOUTUBE_REFRESH_TOKEN
+      refresh_token: refreshToken
     });
   }
 

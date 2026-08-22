@@ -12,15 +12,18 @@ const snapshotRepo = new YoutubeVideoSnapshotRepository();
 const goalProfileRepo = new YoutubeGoalProfileRepository();
 
 export class YoutubeService {
-  static async getChannel() {
-    return channelRepo.findOne({});
+  static async getChannel(channelId: string) {
+    return channelRepo.getByChannelId(channelId);
   }
 
-  static async getVideos(): Promise<YoutubeVideoResponse[]> {
-    const videos = await videoRepo.getAll();
+  static async getVideos(channelId: string): Promise<YoutubeVideoResponse[]> {
+    const channel = await channelRepo.getByChannelId(channelId);
+    if (!channel) return [];
+
+    const videos = await videoRepo.getByChannelId(channel.id);
 
     const snapshotLookup =
-      await snapshotRepo.getLatestSnapshotLookup();
+      await snapshotRepo.getLatestSnapshotLookup(channel.id);
 
     return videos.map(video => {
       const snapshot =
@@ -46,38 +49,56 @@ export class YoutubeService {
     });
   }
 
-  static async getVideo(videoId: string) {
-    return videoRepo.findOne({
-      videoId
-    });
+  static async getVideo(videoId: string, channelId: string) {
+    const channel = await channelRepo.getByChannelId(channelId);
+    if (!channel) return null;
+
+    return videoRepo.findOne({ videoId, channelId: channel.id });
   }
 
   static async updateVideo(videoId: string, data: UpdateYoutubeVideo) {
     await videoRepo.updateWhere({ videoId }, data);
   }
 
-  static async getGoalProfile(goalProfileId: number): Promise<PublicYoutubeGoalProfile | null> {
+  static async getGoalProfile(goalProfileId: number, channelId: string): Promise<PublicYoutubeGoalProfile | null> {
+    const channel = await channelRepo.getByChannelId(channelId);
+    if (!channel) return null;
+
     return goalProfileRepo.findOne({
-      id: goalProfileId
+      id: goalProfileId,
+      channelId: channel.id
     });
   }
 
-  static async addGoalProfile(goalProfileData: CreateYoutubeGoalProfile) {
-    await goalProfileRepo.create(goalProfileData);
+  static async addGoalProfile(channelId: string, goalProfileData: Omit<CreateYoutubeGoalProfile, "channelId">) {
+    const channel = await channelRepo.getByChannelId(channelId);
+    if (!channel) return false;
+
+    await goalProfileRepo.create({ ...goalProfileData, channelId: channel.id });
+    return true;
   }
 
-  static async updateGoalProfile(goalProfileId: number, goalProfileData: UpdateYoutubeGoalProfile) {
-    await goalProfileRepo.updateWhere({ id: goalProfileId}, goalProfileData);
+  static async updateGoalProfile(goalProfileId: number, channelId: string, goalProfileData: UpdateYoutubeGoalProfile) {
+    const profile = await this.getGoalProfile(goalProfileId, channelId);
+    if (!profile) return false;
+
+    await goalProfileRepo.updateWhere({ id: goalProfileId, channelId: profile.channelId }, goalProfileData);
+    return true;
   }
 
-  static async removeGoalProfile(goalProfileId: number) {
-    await goalProfileRepo.deleteWhere({ id: goalProfileId })
+  static async removeGoalProfile(goalProfileId: number, channelId: string) {
+    const profile = await this.getGoalProfile(goalProfileId, channelId);
+    if (!profile) return false;
+
+    await goalProfileRepo.deleteWhere({ id: goalProfileId, channelId: profile.channelId });
+    return true;
   }
 
-  static async getSnapshots(videoId: string) {
-    const video = await videoRepo.findOne({
-      videoId
-    });
+  static async getSnapshots(videoId: string, channelId: string) {
+    const channel = await channelRepo.getByChannelId(channelId);
+    if (!channel) return [];
+
+    const video = await videoRepo.findOne({ videoId, channelId: channel.id });
 
     if (!video) return [];
 

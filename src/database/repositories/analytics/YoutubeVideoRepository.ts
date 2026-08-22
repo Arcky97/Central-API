@@ -26,6 +26,10 @@ export class YoutubeVideoRepository extends Repository<YoutubeVideoRow, CreateYo
     });
   }
 
+  async getByChannelId(channelId: number) {
+    return this.findMany({ channelId });
+  }
+
   async getSeries(series: string) {
     return this.findMany({
       series
