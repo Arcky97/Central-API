@@ -10,6 +10,11 @@ export const syncJobsSchema: TableSchema = {
       type: "VARCHAR(36)",
       primaryKey: true
     },
+    authUserId: {
+      type: "INT",
+      nullable: false,
+      default: "0"
+    },
     type: {
       type: "VARCHAR(50)",
       nullable: false
@@ -54,6 +59,10 @@ export const syncJobsSchema: TableSchema = {
     {
       name: "idx_type",
       columns: ["type"]
+    },
+    {
+      name: "idx_auth_user",
+      columns: ["authUserId"]
     },
     {
       name: "idx_created_at",

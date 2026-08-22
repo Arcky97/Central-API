@@ -21,7 +21,11 @@ cron.schedule('0 0 * * *', async () => {
     const credentials = await accountRepo.getCredentialsByAuthUserId(account.authUserId);
     if (!credentials) continue;
 
-    await service.backfillSync(credentials, formatLocalDate(startDate));
+    try {
+      await service.backfillSync(credentials, formatLocalDate(startDate));
+    } catch (error) {
+      console.error(`[YouTube] Scheduled sync failed for channel ${account.channelId}.`, error);
+    }
   }
   console.log(`[YouTube] Cron job completed!`);
 });

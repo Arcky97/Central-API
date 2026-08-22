@@ -85,13 +85,15 @@ export class AuthController {
         code
       );
 
-    const authUser = await AuthService.loginWithYoutube({
+    const youtubeAuthData = {
       googleUserId: user.providerUserId,
       channelId: user.metadata!.channelId,
       channelName: user.metadata!.channelName,
       accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken ?? ""
-    });
+      ...(tokens.refreshToken ? { refreshToken: tokens.refreshToken } : {})
+    };
+
+    const authUser = await AuthService.loginWithYoutube(youtubeAuthData);
 
     if (!authUser) {
       return res.status(500).json({

@@ -8,12 +8,13 @@ export class SyncJobsService {
   /**
    * Create a new sync job
    */
-  static async createJob(type: SyncJobType, message?: string): Promise<PublicSyncJob> {
+  static async createJob(authUserId: number, type: SyncJobType, message?: string): Promise<PublicSyncJob> {
     const jobId = uuidv4();
     const now = new Date();
 
     await repo.create({
       id: jobId,
+      authUserId,
       type,
       status: "queued",
       message: message ?? `${type} job queued`,
@@ -30,8 +31,10 @@ export class SyncJobsService {
   /**
    * Get job status
    */
-  static async getJob(jobId: string): Promise<PublicSyncJob | null> {
-    return repo.getById(jobId);
+  static async getJob(jobId: string, authUserId?: number): Promise<PublicSyncJob | null> {
+    const job = await repo.getById(jobId);
+    if (job && authUserId !== undefined && job.authUserId !== authUserId) return null;
+    return job;
   }
 
   /**

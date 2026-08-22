@@ -3,7 +3,7 @@ export interface YoutubeOAuthData {
   channelId: string;
   channelName: string;
   accessToken: string;
-  refreshToken: string;
+  refreshToken?: string;
 }
 
 export interface DiscordOAuthData {

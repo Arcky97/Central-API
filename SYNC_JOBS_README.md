@@ -44,6 +44,7 @@ This system decouples sync operations from HTTP requests, allowing the frontend 
 ```sql
 CREATE TABLE syncJobs (
   id VARCHAR(36) PRIMARY KEY,
+  authUserId INT NOT NULL,
   type VARCHAR(50) NOT NULL,
   status VARCHAR(20) NOT NULL,
   progress INT,
@@ -57,6 +58,7 @@ CREATE TABLE syncJobs (
   
   INDEX idx_status (status),
   INDEX idx_type (type),
+  INDEX idx_auth_user (authUserId),
   INDEX idx_created_at (createdAt)
 );
 ```

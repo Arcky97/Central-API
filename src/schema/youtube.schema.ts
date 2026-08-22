@@ -5,7 +5,18 @@ export const getYoutubeVideoSchema = z.object({
 });
 
 export const getYoutubeSyncSchema = z.object({
-  date: z.string().min(1)
+  date: z.string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must use YYYY-MM-DD format")
+    .refine(value => {
+      const date = new Date(`${value}T00:00:00Z`);
+      return !Number.isNaN(date.getTime()) && date.toISOString().startsWith(value);
+    }, "Date is invalid")
+    .refine(value => value <= new Date().toISOString().slice(0, 10), "Date cannot be in the future")
+    .refine(value => {
+      const minimum = new Date();
+      minimum.setUTCFullYear(minimum.getUTCFullYear() - 5);
+      return value >= minimum.toISOString().slice(0, 10);
+    }, "Backfill range cannot exceed five years")
 })
 
 export const getYoutubeVideoUpdateSchema = z.object({

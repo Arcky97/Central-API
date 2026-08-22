@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { SyncJobsService } from "../services/sync-jobs.service";
 import { youtubeSyncQueue } from "../queue/youtube-sync.queue";
 import { AuthRequest } from "../middleware/jwt";
+import { getYoutubeSyncSchema } from "../schema/youtube.schema";
 
 export class YoutubeSyncController {
   /**
@@ -16,6 +17,7 @@ export class YoutubeSyncController {
 
       // Create job record
       const job = await SyncJobsService.createJob(
+        req.authUserId,
         "youtube_sync",
         "YouTube sync job queued"
       );
@@ -55,15 +57,17 @@ export class YoutubeSyncController {
 
       const date = req.params.date as string | undefined;
 
-      if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      const parsedDate = getYoutubeSyncSchema.safeParse({ date });
+      if (!parsedDate.success) {
         return res.status(400).json({
           success: false,
-          message: "Invalid date format. Use YYYY-MM-DD"
+          message: parsedDate.error.issues[0]?.message ?? "Invalid backfill date"
         });
       }
 
       // Create job record
       const job = await SyncJobsService.createJob(
+        req.authUserId,
         "youtube_backfill",
         `YouTube backfill from ${date} queued`
       );
@@ -73,7 +77,7 @@ export class YoutubeSyncController {
         jobId: job.id,
         authUserId: req.authUserId,
         type: "backfill",
-        startDate: date
+        startDate: parsedDate.data.date
       });
 
       res.status(202).json({
@@ -96,7 +100,7 @@ export class YoutubeSyncController {
    * GET /v1/youtube/sync/jobs/:jobId
    * Get the status and progress of a sync job
    */
-  static async getJobStatus(req: Request, res: Response) {
+  static async getJobStatus(req: AuthRequest, res: Response) {
     try {
       const jobId = req.params.jobId as string | undefined;
 
@@ -107,7 +111,11 @@ export class YoutubeSyncController {
         });
       }
 
-      const job = await SyncJobsService.getJob(jobId);
+      if (!req.authUserId) {
+        return res.status(401).json({ success: false, message: "Authentication required" });
+      }
+
+      const job = await SyncJobsService.getJob(jobId, req.authUserId);
 
       if (!job) {
         return res.status(404).json({

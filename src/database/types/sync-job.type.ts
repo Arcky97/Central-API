@@ -5,6 +5,7 @@ export type SyncJobStatus = "queued" | "running" | "completed" | "failed";
 
 export interface SyncJobRow extends RowDataPacket {
   id: string;
+  authUserId: number;
   type: SyncJobType;
   status: SyncJobStatus;
   progress?: number | null;
@@ -19,6 +20,7 @@ export interface SyncJobRow extends RowDataPacket {
 
 export interface CreateSyncJob {
   id: string;
+  authUserId: number;
   type: SyncJobType;
   status: SyncJobStatus;
   progress?: number | null;
@@ -40,6 +42,7 @@ export interface UpdateSyncJob {
 
 export interface PublicSyncJob {
   id: string;
+  authUserId: number;
   type: SyncJobType;
   status: SyncJobStatus;
   progress?: number | null;

@@ -39,13 +39,17 @@ export class AuthService {
           channelId: data.channelId,
           channelName: data.channelName,
           accessToken: data.accessToken,
-          refreshToken: data.refreshToken
+          ...(data.refreshToken ? { refreshToken: data.refreshToken } : {})
         }
       );
 
       return authUserRepo.findOne({
         id: existingAccount.authUserId
       });
+    }
+
+    if (!data.refreshToken) {
+      throw new Error("YouTube authorization did not return a refresh token.");
     }
 
     const authUserId = await this.createAuthUser();
@@ -56,7 +60,7 @@ export class AuthService {
       channelId: data.channelId,
       channelName: data.channelName,
       accessToken: data.accessToken,
-      refreshToken: data.refreshToken
+      refreshToken: data.refreshToken!
     });
 
     return authUserRepo.findOne({
@@ -90,7 +94,7 @@ export class AuthService {
           channelId: data.channelId,
           channelName: data.channelName,
           accessToken: data.accessToken,
-          refreshToken: data.refreshToken
+          ...(data.refreshToken ? { refreshToken: data.refreshToken } : {})
         }
       );
 
@@ -103,7 +107,7 @@ export class AuthService {
       channelId: data.channelId,
       channelName: data.channelName,
       accessToken: data.accessToken,
-      refreshToken: data.refreshToken
+      refreshToken: data.refreshToken!
     });
   }
 

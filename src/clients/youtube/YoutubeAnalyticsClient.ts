@@ -35,32 +35,32 @@ export class YoutubeAnalyticsClient {
   async getVideoAnalytics(startDate: string, endDate: string) {
     const analytics = this.getAnalytics();
 
-    const response = await analytics.reports.query({
-      ids: `channel==MINE`,
-
-      startDate,
-      endDate,
-
-      dimensions: "video",
-
-      metrics: [
-        "views",
-        "estimatedMinutesWatched",
-        "averageViewDuration",
-        "averageViewPercentage",
-        "likes",
-        "comments",
-        "shares",
-        "subscribersGained",
-        "subscribersLost"
-      ].join(","),
-      sort: "-views",
-      maxResults: 200
-    });
-
     const lookup = new Map<string, YoutubeVideoAnalytics>();
+    let startIndex = 1;
 
-  for (const row of response.data.rows ?? []) {
+    do {
+      const response = await analytics.reports.query({
+        ids: `channel==MINE`,
+        startDate,
+        endDate,
+        dimensions: "video",
+        metrics: [
+          "views",
+          "estimatedMinutesWatched",
+          "averageViewDuration",
+          "averageViewPercentage",
+          "likes",
+          "comments",
+          "shares",
+          "subscribersGained",
+          "subscribersLost"
+        ].join(","),
+        sort: "-views",
+        maxResults: 200,
+        startIndex
+      });
+
+      for (const row of response.data.rows ?? []) {
       const [
         videoId,
         views,
@@ -74,7 +74,7 @@ export class YoutubeAnalyticsClient {
         subscribersLost
       ] = row;
 
-      lookup.set(videoId as string, {
+        lookup.set(videoId as string, {
         videoId,
         views: Number(views),
         watchHours: Number(watchMinutes) / 60,
@@ -85,8 +85,13 @@ export class YoutubeAnalyticsClient {
         shares: Number(shares),
         subscribersGained: Number(subscribersGained),
         subscribersLost: Number(subscribersLost)
-      });
-    }
+        });
+      }
+
+      const rowCount = response.data.rows?.length ?? 0;
+      startIndex += rowCount;
+      if (rowCount < 200) break;
+    } while (true);
 
     return lookup;
   }

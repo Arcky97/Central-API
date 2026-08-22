@@ -50,6 +50,7 @@ export class YoutubeSyncService {
 
       const videos = await this.fetchVideos(youtubeClient, account.channelId);
       const lookup = await this.saveVideos(channel, videos);
+      const trackedVideos = videos.filter(video => lookup.get(video.id)?.trackAnalytics);
 
       if (jobId) {
         await SyncJobsService.updateJob(jobId, {
@@ -60,8 +61,8 @@ export class YoutubeSyncService {
         });
       }
 
-      await this.syncAnalytics(youtubeAnalyticsClient, videos);
-      await this.createSnapShots(videos, lookup, new Date());
+      await this.syncAnalytics(youtubeAnalyticsClient, trackedVideos);
+      await this.createSnapShots(trackedVideos, lookup, new Date());
 
       if (jobId) {
         await SyncJobsService.updateJob(jobId, {
@@ -87,6 +88,7 @@ export class YoutubeSyncService {
     const videos = await this.fetchVideos(youtubeClient, account.channelId);
 
     const lookup = await this.saveVideos(channel, videos);
+    const trackedVideos = videos.filter(video => lookup.get(video.id)?.trackAnalytics);
 
     let current = new Date(startDate);
     current.setHours(0, 0, 0, 0);
@@ -99,7 +101,7 @@ export class YoutubeSyncService {
 
     while (formatLocalDate(current) <= formatLocalDate(today)) {
       const currentDate = formatLocalDate(current);
-      const availableVideos = videos.filter(video => 
+      const availableVideos = trackedVideos.filter(video => 
         video.publishedAt <= current
       );
 
@@ -280,18 +282,24 @@ export class YoutubeSyncService {
     return await videoRepo.getLookupMap();
   }
 
-  private async syncAnalytics(youtubeAnalyticsClient: YoutubeAnalyticsClient, videos: YoutubeVideo[], startDate: string = "2026-05-23", endDate: string = formatLocalDate(new Date())) {
+  private async syncAnalytics(youtubeAnalyticsClient: YoutubeAnalyticsClient, videos: YoutubeVideo[], startDate?: string, endDate: string = formatLocalDate(new Date())) {
+    if (videos.length === 0) return;
+
+    const firstVideo = videos[0]!;
+    const firstPublishedDate = formatLocalDate(
+      videos.reduce((earliest, video) =>
+        video.publishedAt < earliest ? video.publishedAt : earliest,
+        firstVideo.publishedAt
+      )
+    );
+    const analytics = await youtubeAnalyticsClient.getVideoAnalytics(
+      startDate ?? firstPublishedDate,
+      endDate
+    );
     let synced = 0;
 
     for (const video of videos) {
-    const analytics = 
-      await youtubeAnalyticsClient.getVideoAnalytics(
-        formatLocalDate(video.publishedAt),
-        endDate
-      );
-
-      const data =
-        analytics.get(video.id);
+      const data = analytics.get(video.id);
 
       if (!data) continue;
 

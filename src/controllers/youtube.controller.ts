@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { YoutubeSyncService } from "../services/youtube-sync.service";
 import { YoutubeService } from "../services/youtube.service";
 import { getGoalProfileSchema, getGoalProfileUpdateSchema, getYoutubeSyncSchema, getYoutubeVideoSchema, getYoutubeVideoUpdateSchema } from "../schema/youtube.schema";
-import { youtubeAnalyticsClient } from "../clients/youtube";
 import { removeUndefined } from "../database/utils/removeUndefined";
 import { AuthRequest } from "../middleware/jwt";
 import { YoutubeAccountRepository } from "../database/repositories/auth/youtubeAccountRepository";
@@ -80,12 +79,15 @@ export class YoutubeController {
     res.json(video);
   }
 
-  static async updateVideo(req: Request, res: Response) {
+  static async updateVideo(req: AuthRequest, res: Response) {
     const { videoId } = getYoutubeVideoSchema.parse(req.params);
+    const account = await YoutubeController.getAccount(req, res);
+    if (!account) return;
 
     const data = getYoutubeVideoUpdateSchema.parse(req.body);
     const updateData = removeUndefined(data);
-    await YoutubeService.updateVideo(videoId, updateData);
+    const updated = await YoutubeService.updateVideo(videoId, account.channelId, updateData);
+    if (!updated) return res.status(404).json({ success: false, message: "Video not found for this channel" });
 
     res.json({
       success: true,
@@ -150,20 +152,6 @@ export class YoutubeController {
     const snapshots = await YoutubeService.getSnapshots(videoId, account.channelId);
 
     res.json(snapshots);
-  }
-
-  static async testAnalytics(req: Request, res: Response) {
-    const token = await youtubeAnalyticsClient.getAccessToken();
-
-    const result = await youtubeAnalyticsClient.getVideoAnalytics(
-      "2026-06-29",
-      "2026-07-27"
-    );
-    
-    res.json({
-      success: true,
-      accessToken: token
-    });
   }
 
   static async hello(req: Request, res: Response) {

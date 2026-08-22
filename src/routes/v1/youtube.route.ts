@@ -87,10 +87,6 @@ if (env.NODE_ENV === "development") {
     asyncHandler(YoutubeOAuthController.getAuthUrl)
   );
 
-  router.get(
-    "/analytics/test",
-    asyncHandler(YoutubeController.testAnalytics)
-  );
 }
 
 router.get(

@@ -31,7 +31,10 @@ export class YoutubeClient {
       id: channelId
     });
 
-    const channel = data.items[0];
+    const channel = data.items?.[0];
+    if (!channel) {
+      throw new Error(`YouTube channel ${channelId} was not found or is inaccessible.`);
+    }
 
     return {
       id: channel.id,
@@ -52,10 +55,12 @@ export class YoutubeClient {
       id: channelId
     });
 
-    return data.items[0]
-      .contentDetails
-      .relatedPlaylists
-      .uploads;
+    const playlistId = data.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
+    if (!playlistId) {
+      throw new Error(`YouTube uploads playlist for channel ${channelId} was not found.`);
+    }
+
+    return playlistId
   }
 
   async getPlaylistVideos(playlistId: string, pageToken?: string): Promise<YoutubePagedResult<YoutubeVideo>> {
@@ -108,6 +113,7 @@ export class YoutubeClient {
           views: Number(item.statistics.viewCount),
           likes: Number(item.statistics.likeCount ?? 0),
           comments: Number(item.statistics.commentCount ?? 0),
+          shares: 0
         }
       ])
     );

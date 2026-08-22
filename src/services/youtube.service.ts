@@ -56,8 +56,23 @@ export class YoutubeService {
     return videoRepo.findOne({ videoId, channelId: channel.id });
   }
 
-  static async updateVideo(videoId: string, data: UpdateYoutubeVideo) {
-    await videoRepo.updateWhere({ videoId }, data);
+  static async updateVideo(videoId: string, channelId: string, data: UpdateYoutubeVideo) {
+    const channel = await channelRepo.getByChannelId(channelId);
+    if (!channel) return false;
+
+    const video = await videoRepo.findOne({ videoId, channelId: channel.id });
+    if (!video) return false;
+
+    if (data.goalProfileId !== undefined && data.goalProfileId !== null) {
+      const profile = await goalProfileRepo.findOne({
+        id: data.goalProfileId,
+        channelId: channel.id
+      });
+      if (!profile) return false;
+    }
+
+    await videoRepo.updateWhere({ id: video.id, channelId: channel.id }, data);
+    return true;
   }
 
   static async getGoalProfile(goalProfileId: number, channelId: string): Promise<PublicYoutubeGoalProfile | null> {
