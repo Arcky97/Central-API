@@ -5,6 +5,8 @@ import { YoutubeOAuthMetadata, DiscordOAuthMetadata, OAuthUser } from "../client
 import { AuthRequest } from "../middleware/jwt";
 import { randomBytes, timingSafeEqual } from "node:crypto";
 import { env } from "../config/env";
+import { SyncJobsService } from "../services/sync-jobs.service";
+import { youtubeSyncQueue } from "../queue/youtube-sync.queue";
 
 const stateCookieName = "youtube_oauth_state";
 const redirectCookieName = "youtube_oauth_redirect";
@@ -95,14 +97,28 @@ export class AuthController {
 
     const authUser = await AuthService.loginWithYoutube(youtubeAuthData);
 
-    if (!authUser) {
+    if (!authUser.user) {
       return res.status(500).json({
         success: false,
         message: "Failed to create or retrieve user"
       });
     }
 
-    const token = AuthService.generateToken(authUser.id);
+    if (authUser.isNewAccount) {
+      const job = await SyncJobsService.createJob(
+        authUser.user.id,
+        "youtube_backfill",
+        "Initial sync"
+      );
+
+      await youtubeSyncQueue.add("backfill", {
+        jobId: job.id,
+        authUserId: authUser.user.id,
+        type: "backfill"
+      });
+    }
+
+    const token = AuthService.generateToken(authUser.user.id);
 
     res.setHeader("Set-Cookie", [
       serializeCookie(stateCookieName, "", 0),

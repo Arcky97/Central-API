@@ -81,7 +81,7 @@ export class YoutubeSyncService {
 
   }
 
-  async backfillSync(account: Pick<YoutubeAccountRow, "channelId" | "channelName" | "refreshToken">, startDate: string, jobId?: string) {
+  async backfillSync(account: Pick<YoutubeAccountRow, "channelId" | "channelName" | "refreshToken">, startDate?: string, jobId?: string) {
     const youtubeClient = new YoutubeClient(env.YOUTUBE_API_KEY);
     const youtubeAnalyticsClient = new YoutubeAnalyticsClient(account.refreshToken);
     const channel = await this.syncChannel(youtubeClient, account.channelId);
@@ -90,7 +90,19 @@ export class YoutubeSyncService {
     const lookup = await this.saveVideos(channel, videos);
     const trackedVideos = videos.filter(video => lookup.get(video.id)?.trackAnalytics);
 
-    let current = new Date(startDate);
+    const retentionCutoff = new Date();
+    retentionCutoff.setFullYear(retentionCutoff.getFullYear() - env.YOUTUBE_SNAPSHOT_RETENTION_YEARS);
+
+    const earliestPublished = trackedVideos.reduce(
+      (earliest, video) => video.publishedAt < earliest ? video.publishedAt : earliest,
+      new Date()
+    );
+
+    const effectiveStartDate = startDate ?? formatLocalDate(
+      earliestPublished > retentionCutoff ? earliestPublished : retentionCutoff
+    );
+
+    let current = new Date(effectiveStartDate);
     current.setHours(0, 0, 0, 0);
 
     const today = new Date();
@@ -115,7 +127,7 @@ export class YoutubeSyncService {
         });
       }
 
-      await this.syncAnalytics(youtubeAnalyticsClient, availableVideos, startDate, currentDate);
+      await this.syncAnalytics(youtubeAnalyticsClient, availableVideos, effectiveStartDate, currentDate);
       await this.createSnapShots(availableVideos, lookup, new Date(current));
 
       console.log(`[YouTube] Backfill synchronization completed for ${availableVideos.length} video(s) up until ${current}`);
@@ -148,7 +160,15 @@ export class YoutubeSyncService {
     if (!existing) {
       await channelRepo.create({
         channelId: channel.id,
-        channelName: channel.title
+        channelName: channel.title,
+        description: channel.description ?? null,
+        thumbnailUrl: channel.thumbnailUrl ?? null,
+        customUrl: channel.customUrl ?? null,
+        publishedAt: channel.publishedAt ?? null,
+        subscriberCount: channel.subscriberCount ?? null,
+        viewCount: channel.viewCount ?? null,
+        videoCount: channel.videoCount ?? null
+
       });
 
       const created = await channelRepo.getByChannelId(channel.id);
@@ -372,5 +392,13 @@ export class YoutubeSyncService {
         "subscribersLost",
       ]
     );
+  }
+
+  async pruneExpiredSnapshots() {
+    const cutoff = new Date();
+    cutoff.setFullYear(cutoff.getFullYear() - env.YOUTUBE_SNAPSHOT_RETENTION_YEARS);
+
+    await snapshotRepo.deleteOlderThan(cutoff);
+    console.log(`[YouTube] Pruned snapshots older than ${formatLocalDate(cutoff)}.`);
   }
 }

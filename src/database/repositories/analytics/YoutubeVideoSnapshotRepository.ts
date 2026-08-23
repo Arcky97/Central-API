@@ -1,3 +1,4 @@
+import { formatLocalDate } from "../../../utils/dateTimeStringifier";
 import { query } from "../../query";
 import { CreateYoutubeVideoSnapshot, PublicYoutubeVideoSnapshot, UpdateYoutubeVideoSnapshot, YoutubeVideoSnapshotRow } from "../../types/youtube-video-snapshot.type";
 import { Repository } from "../base/Repository";
@@ -52,5 +53,11 @@ export class YoutubeVideoSnapshotRepository extends Repository<YoutubeVideoSnaps
     }
 
     return lookup;
+  }
+
+  async deleteOlderThan(cutoffDate: Date) {
+    await query(this.db, {
+      sql: `DELETE FROM ${this.tableName} WHERE snapshotDate < ?`
+    }, [formatLocalDate(cutoffDate)]);
   }
 }

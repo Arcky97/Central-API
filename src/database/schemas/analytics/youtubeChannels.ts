@@ -24,6 +24,41 @@ export const youtubeChannelsSchema: TableSchema = {
       nullable: false
     },
 
+    description: {
+      type: "TEXT",
+      nullable: true
+    },
+
+    thumbnailUrl: {
+      type: "VARCHAR(2048)",
+      nullable: true
+    },
+
+    customUrl: {
+      type: "VARCHAR(128)",
+      nullable: true
+    },
+
+    publishedAt: {
+      type: "TIMESTAMP",
+      nullable: true
+    },
+
+    subscriberCount: {
+      type: "INT",
+      nullable: true
+    },
+
+    viewCount: {
+      type: "INT",
+      nullable: true
+    },
+
+    videoCount: {
+      type: "INT",
+      nullable: true
+    },
+
     createdAt: {
       type: "TIMESTAMP",
       default: "CURRENT_TIMESTAMP"

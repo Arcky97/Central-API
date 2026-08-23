@@ -4,7 +4,7 @@ import { YoutubeSyncService } from "../services/youtube-sync.service";
 import { formatLocalDate } from "../utils/dateTimeStringifier";
 import { YoutubeAccountRepository } from "../database/repositories/auth/youtubeAccountRepository";
 
-console.log(`[YouTube] Synchronization Cron job initialized.`);
+console.log(`[YouTube] Synchronization Cron Job initialized.`);
 
 cron.schedule('0 0 * * *', async () => {
   console.log("[YouTube] Cron job started.");
@@ -29,3 +29,19 @@ cron.schedule('0 0 * * *', async () => {
   }
   console.log(`[YouTube] Cron job completed!`);
 });
+
+console.log(`[YouTube] Snapshot cleanup Cron Job initialized.`);
+
+cron.schedule('0 0 * * *', async () => {
+  console.log(`[YouTube] Cron job started.`);
+
+  const service = new YoutubeSyncService();
+
+  try {
+    await service.pruneExpiredSnapshots();
+  } catch (error) {
+    console.error(`[YouTube] Snapshot cleanup failed.`, error);
+  }
+
+  console.log(`[YouTube] Cron job completed!`);
+})

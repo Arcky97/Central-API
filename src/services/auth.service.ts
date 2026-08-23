@@ -43,9 +43,11 @@ export class AuthService {
         }
       );
 
-      return authUserRepo.findOne({
+      const user = await authUserRepo.findOne({
         id: existingAccount.authUserId
       });
+
+      return { user, isNewAccount: false };
     }
 
     if (!data.refreshToken) {
@@ -63,9 +65,11 @@ export class AuthService {
       refreshToken: data.refreshToken!
     });
 
-    return authUserRepo.findOne({
+    const user = await authUserRepo.findOne({
       id: authUserId
     });
+
+    return { user, isNewAccount: true };
   }
 
   static async connectYoutube(

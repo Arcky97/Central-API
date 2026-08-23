@@ -28,10 +28,6 @@ export const youtubeSyncWorker = new Worker<YoutubeSyncJob>(
         await syncService.sync(account, jobId);
         await SyncJobsService.updateProgress(jobId, 100, "Sync completed");
       } else if (type === "backfill") {
-        if (!startDate) {
-          throw new Error("Start date is required for backfill jobs");
-        }
-
         console.log(
           `[YouTube Sync Worker] Starting backfill from ${startDate} for job ${jobId}`
         );
