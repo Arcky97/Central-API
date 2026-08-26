@@ -33,7 +33,9 @@ export class YoutubeService {
         videoId: video.videoId,
         title: video.title,
         thumbnailUrl: video.thumbnailUrl ?? "",
+        description: video.description ?? "",
         publishedAt: video.publishedAt,
+        playlistIds: video.playlistIds ?? [],
 
         statistics: {
           views: snapshot?.views ?? 0,

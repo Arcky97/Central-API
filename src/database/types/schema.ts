@@ -25,6 +25,7 @@ export type TableName =
   | "userStats"
   | "youtubeChannels"
   | "youtubeGoalProfiles"
+  | "youtubePlaylists"
   | "youtubeVideoSnapshots"
   | "youtubeVideos"
   | "authUsers"

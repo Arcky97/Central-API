@@ -1,10 +1,10 @@
-import { TableSchema } from "../../types/schema";
+import type { TableSchema } from "../../types/schema";
 
-export const youtubeVideosSchema: TableSchema = {
+export const youtubePlaylistsSchema: TableSchema = {
   version: 1,
   strict: true,
   database: "analytics",
-  table: "youtubeVideos",
+  table: "youtubePlaylists",
 
   columns: {
     id: {
@@ -18,20 +18,10 @@ export const youtubeVideosSchema: TableSchema = {
       nullable: false
     },
 
-    videoId: {
-      type: "VARCHAR(20)",
+    playlistId: {
+      type: "VARCHAR(50)",
       nullable: false,
       unique: true
-    },
-
-    goalProfileId: {
-      type: "INT",
-      nullable: true
-    },
-
-    playlistIds: {
-      type: "JSON",
-      nullable: true
     },
 
     title: {
@@ -45,18 +35,18 @@ export const youtubeVideosSchema: TableSchema = {
     },
 
     thumbnailUrl: {
-      type: "TEXT",
+      type: "VARCHAR(2048)",
+      nullable: true
+    },
+
+    itemCount: {
+      type: "INT",
       nullable: true
     },
 
     publishedAt: {
       type: "TIMESTAMP",
-      nullable: false
-    },
-
-    trackAnalytics: {
-      type: "TINYINT(1)",
-      default: "1"
+      nullable: true
     },
 
     createdAt: {
@@ -66,22 +56,16 @@ export const youtubeVideosSchema: TableSchema = {
 
     updatedAt: {
       type: "TIMESTAMP",
-      default: "CURRENT_TIMESTAMP"
+      default: "CURRENT_TIMESTAMP",
+      onUpdate: "CURRENT_TIMESTAMP"
     }
   },
 
   indexes: [
     {
-      name: "idx_youtube_channel",
+      name: "idx_youtube_playlist_channel",
       columns: [
         "channelId"
-      ]
-    },
-
-    {
-      name: "idx_goal_profile",
-      columns: [
-        "goalProfileId"
       ]
     }
   ]

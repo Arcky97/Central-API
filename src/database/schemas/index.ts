@@ -20,6 +20,7 @@ import { apiRequestsSchema } from "./analytics/apiRequests";
 import { syncJobsSchema } from "./analytics/syncJobs";
 import { youtubeChannelsSchema } from "./analytics/youtubeChannels";
 import { youtubeGoalProfilesSchema } from "./analytics/youtubeGoalProfiles";
+import { youtubePlaylistsSchema } from "./analytics/youtubePlaylists";
 import { youtubeVideoSnapshotsSchema } from "./analytics/youtubeVideoSnapshots";
 import { youtubeVideosSchema } from "./analytics/youtubeVideos";
 import { authUsersSchema } from "./auth/authUsers";
@@ -51,6 +52,7 @@ export const schemas = [
 
   youtubeChannelsSchema,
   youtubeGoalProfilesSchema,
+  youtubePlaylistsSchema,
   youtubeVideosSchema,
   youtubeVideoSnapshotsSchema,
 

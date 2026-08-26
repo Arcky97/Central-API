@@ -1,8 +1,9 @@
 import { env } from "../config/env";
 
 import { YoutubeChannelRepository } from "../database/repositories/analytics/YoutubeChannelRepository";
+import { YoutubePlaylistRepository } from "../database/repositories/analytics/YoutubePlaylistRepository";
 import { YoutubeVideoRepository } from "../database/repositories/analytics/YoutubeVideoRepository";
-import { YoutubeVideo } from "../clients/youtube/youtube.types";
+import { YoutubeVideo, YoutubePlaylist } from "../clients/youtube/youtube.types";
 import { PublicYoutubeChannel } from "../database/types/youtube-channel.type";
 import { CreateYoutubeVideo, PublicYoutubeVideo, UpdateYoutubeVideo } from "../database/types/youtube-video.type";
 import { CreateYoutubeVideoSnapshot } from "../database/types/youtube-video-snapshot.type";
@@ -21,6 +22,9 @@ const videoRepo =
 
 const snapshotRepo =
   new YoutubeVideoSnapshotRepository();
+
+const playlistRepo =
+  new YoutubePlaylistRepository();
 
 export class YoutubeSyncService {
   async sync(account: Pick<YoutubeAccountRow, "channelId" | "channelName" | "refreshToken">, jobId?: string) {
@@ -49,6 +53,7 @@ export class YoutubeSyncService {
       }
 
       const videos = await this.fetchVideos(youtubeClient, account.channelId);
+      await this.syncPlaylists(youtubeClient, channel, videos);
       const lookup = await this.saveVideos(channel, videos);
       const trackedVideos = videos.filter(video => lookup.get(video.id)?.trackAnalytics);
 
@@ -86,6 +91,7 @@ export class YoutubeSyncService {
     const youtubeAnalyticsClient = new YoutubeAnalyticsClient(account.refreshToken);
     const channel = await this.syncChannel(youtubeClient, account.channelId);
     const videos = await this.fetchVideos(youtubeClient, account.channelId);
+    await this.syncPlaylists(youtubeClient, channel, videos);
 
     const lookup = await this.saveVideos(channel, videos);
     const trackedVideos = videos.filter(video => lookup.get(video.id)?.trackAnalytics);
@@ -244,6 +250,67 @@ export class YoutubeSyncService {
       : orderedVideos;
   }
 
+  private async syncPlaylists(youtubeClient: YoutubeClient, channel: PublicYoutubeChannel, videos: YoutubeVideo[]) {
+    const playlists: YoutubePlaylist[] = [];
+
+    let pageToken: string | undefined;
+
+    do {
+      const page = await youtubeClient.getPlaylists(channel.channelId, pageToken);
+      playlists.push(...page.items);
+      pageToken = page.nextPageToken;
+    } while (pageToken);
+
+    const lookup = await playlistRepo.getLookupMap(channel.id);
+    const videoPlaylistIds = new Map<string, string[]>();
+
+    for (const playlist of playlists) {
+      const existing = lookup.get(playlist.id);
+
+      if (!existing) {
+        await playlistRepo.create({
+          channelId: channel.id,
+          playlistId: playlist.id,
+          title: playlist.title,
+          description: playlist.description ?? null,
+          thumbnailUrl: playlist.thumbnailUrl ?? null,
+          itemCount: playlist.itemCount ?? null,
+          publishedAt: playlist.publishedAt ?? null
+        });
+      } else {
+        await playlistRepo.updateWhere(
+          { playlistId: playlist.id },
+          {
+            title: playlist.title,
+            description: playlist.description ?? null,
+            thumbnailUrl: playlist.thumbnailUrl ?? null,
+            itemCount: playlist.itemCount ?? null
+          }
+        );
+      }
+
+      let itemPageToken: string | undefined;
+
+      do {
+        const itemPage = await youtubeClient.getPlaylistItemVideoIds(playlist.id, itemPageToken);
+
+        for (const videoId of itemPage.items) {
+          const playlistIds = videoPlaylistIds.get(videoId) ?? [];
+          playlistIds.push(playlist.id);
+          videoPlaylistIds.set(videoId, playlistIds);
+        }
+
+        itemPageToken = itemPage.nextPageToken;
+      } while (itemPageToken);
+    }
+
+    for (const video of videos) {
+      video.playlistIds = videoPlaylistIds.get(video.id) ?? [];
+    }
+
+    console.log(`[YouTube] Synced ${playlists.length} playlist(s).`);
+  }
+
   private async saveVideos(channel: PublicYoutubeChannel, videos: YoutubeVideo[]): Promise<Map<string, PublicYoutubeVideo>> {
     let created = 0;
     let updated = 0;
@@ -268,6 +335,8 @@ export class YoutubeSyncService {
           videoId: video.id,
           title: video.title,
           thumbnailUrl: video.thumbnailUrl,
+          description: video.description,
+          playlistIds: video.playlistIds,
           publishedAt: video.publishedAt,
           trackAnalytics: true
         });
@@ -284,6 +353,7 @@ export class YoutubeSyncService {
         data: {
           title: video.title,
           thumbnailUrl: video.thumbnailUrl,
+          playlistIds: video.playlistIds,
           publishedAt: video.publishedAt
         }
       });

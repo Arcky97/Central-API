@@ -9,8 +9,9 @@ export interface YoutubeVideoRow {
   title: string;
   thumbnailUrl: string | null;
 
-  series: string | null;
-  episodeNumber: number | null;
+  description: string | null;
+
+  playlistIds: string[] | null;
 
   publishedAt: Date;
 
@@ -29,6 +30,10 @@ export interface CreateYoutubeVideo {
 
   title: string;
   thumbnailUrl: string | null;
+
+  description?: string | null;
+
+  playlistIds?: string[] | null;
 
   series?: string | null;
   episodeNumber?: number | null;

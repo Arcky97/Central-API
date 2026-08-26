@@ -21,8 +21,6 @@ export const getYoutubeSyncSchema = z.object({
 
 export const getYoutubeVideoUpdateSchema = z.object({
   goalProfileId: z.number().nullable().optional(),
-  series: z.string().min(1).nullable().optional(),
-  episodeNumber: z.number().nullable().optional(),
   trackAnalytics: z.boolean().optional()
 })
 

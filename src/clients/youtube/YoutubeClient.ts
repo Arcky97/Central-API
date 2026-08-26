@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 import { env } from "../../config/env";
-import { YoutubeChannel, YoutubePagedResult, YoutubeVideo } from "./youtube.types";
+import { YoutubeChannel, YoutubePagedResult, YoutubePlaylist, YoutubeVideo } from "./youtube.types";
 
 export class YoutubeClient {
   private readonly client: AxiosInstance;
@@ -85,10 +85,54 @@ export class YoutubeClient {
         publishedAt: new Date(item.snippet.publishedAt),
         channelId: item.snippet.channelId,
         channelTitle: item.snippet.channelTitle,
+        playlistIds: [],
         views: 0,
         likes: 0,
         comments: 0,
       }))
+    };
+  }
+
+  async getPlaylists(channelId: string, pageToken?: string): Promise<YoutubePagedResult<YoutubePlaylist>> {
+    const data = await this.get<any>(
+      "/playlists",
+      {
+        part: "snippet,contentDetails",
+        channelId,
+        maxResults: 50,
+        pageToken
+      }
+    );
+
+    return {
+      nextPageToken: data.nextPageToken,
+
+      items: data.items.map((item: any) => ({
+        id: item.id,
+        channelId: item.snippet.channelId,
+        title: item.snippet.title,
+        description: item.snippet.description,
+        thumbnailUrl: item.snippet.thumbnails?.high?.url ?? "",
+        publishedAt: new Date(item.snippet.publishedAt),
+        itemCount: Number(item.contentDetails?.itemCount ?? 0)
+      }))
+    };
+  }
+
+  async getPlaylistItemVideoIds(playlistId: string, pageToken?: string): Promise<YoutubePagedResult<string>> {
+    const data = await this.get<any>(
+      "/playlistItems",
+      {
+        part: "contentDetails",
+        playlistId,
+        maxResults: 50,
+        pageToken
+      }
+    );
+
+    return {
+      nextPageToken: data.nextPageToken,
+      items: data.items.map((item: any) => item.contentDetails.videoId)
     };
   }
 

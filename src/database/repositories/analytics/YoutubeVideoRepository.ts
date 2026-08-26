@@ -7,9 +7,43 @@ export class YoutubeVideoRepository extends Repository<YoutubeVideoRow, CreateYo
     super("youtubeVideos", "analytics");
   }
 
+  // playlistIds must be JSON-stringified before insert/update, mysql2 does not serialize array values for JSON columns
+  private serialize<T extends { playlistIds?: string[] | null }>(data: T): T {
+    if (data.playlistIds === undefined) return data;
+
+    return {
+      ...data,
+      playlistIds: JSON.stringify(data.playlistIds ?? []) as unknown as string[] | null
+    };
+  }
+
+  override async create(data: CreateYoutubeVideo) {
+    return super.create(this.serialize(data));
+  }
+
+  override async bulkCreate(rows: CreateYoutubeVideo[]) {
+    return super.bulkCreate(rows.map(row => this.serialize(row)));
+  }
+
+  override async bulkUpdate(rows: { where: Record<string, unknown>; data: UpdateYoutubeVideo }[]) {
+    return super.bulkUpdate(
+      rows.map(row => ({
+        where: row.where,
+        data: this.serialize(row.data)
+      }))
+    );
+  }
+
+  override async updateWhere(where: Record<string, unknown>, data: UpdateYoutubeVideo) {
+    return super.updateWhere(where, this.serialize(data));
+  }
+
   protected override mapRow(row: YoutubeVideoRow): PublicYoutubeVideo {
     return {
       ...row,
+      playlistIds: typeof row.playlistIds === "string"
+        ? JSON.parse(row.playlistIds)
+        : row.playlistIds ?? [],
       trackAnalytics: toBoolean(row.trackAnalytics)
     }
   }
@@ -30,10 +64,8 @@ export class YoutubeVideoRepository extends Repository<YoutubeVideoRow, CreateYo
     return this.findMany({ channelId });
   }
 
-  async getSeries(series: string) {
-    return this.findMany({
-      series
-    });
+  async getByPlaylistId(playlistId: string) {
+    return this.findOne({ playlistId });
   }
 
   async getLookupMap() {

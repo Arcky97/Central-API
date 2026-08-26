@@ -18,6 +18,7 @@ export interface YoutubeVideo {
   publishedAt: Date;
   channelId: string;
   channelTitle: string;
+  playlistIds: string[];
   views: number;
   likes: number;
   comments: number;
@@ -27,6 +28,16 @@ export interface YoutubeVideo {
   averageViewPercentage?: number
   subscribersGained?: number;
   subscribersLost?: number;
+}
+
+export interface YoutubePlaylist {
+  id: string;
+  channelId: string;
+  title: string;
+  description: string;
+  thumbnailUrl: string;
+  publishedAt: Date;
+  itemCount: number;
 }
 
 export interface YoutubeSyncResult {
