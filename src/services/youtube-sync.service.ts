@@ -66,7 +66,8 @@ export class YoutubeSyncService {
         });
       }
 
-      await this.syncAnalytics(youtubeAnalyticsClient, trackedVideos);
+      const retentionCutoff = this.getRetentionCutoff();
+      await this.syncAnalytics(youtubeAnalyticsClient, trackedVideos, formatLocalDate(retentionCutoff));
       await this.createSnapShots(trackedVideos, lookup, new Date());
 
       if (jobId) {
@@ -96,16 +97,21 @@ export class YoutubeSyncService {
     const lookup = await this.saveVideos(channel, videos);
     const trackedVideos = videos.filter(video => lookup.get(video.id)?.trackAnalytics);
 
-    const retentionCutoff = new Date();
-    retentionCutoff.setFullYear(retentionCutoff.getFullYear() - env.YOUTUBE_SNAPSHOT_RETENTION_YEARS);
+    const retentionCutoff = this.getRetentionCutoff();
 
     const earliestPublished = trackedVideos.reduce(
       (earliest, video) => video.publishedAt < earliest ? video.publishedAt : earliest,
       new Date()
     );
 
-    const effectiveStartDate = startDate ?? formatLocalDate(
-      earliestPublished > retentionCutoff ? earliestPublished : retentionCutoff
+    const requestedStartDate = startDate
+      ? new Date(`${startDate}T00:00:00`)
+      : (earliestPublished > retentionCutoff ? earliestPublished : retentionCutoff);
+
+    // Videos are always fetched from all time, but analytics/snapshots never go further
+    // back than the retention window, even if an older date was explicitly requested.
+    const effectiveStartDate = formatLocalDate(
+      requestedStartDate > retentionCutoff ? requestedStartDate : retentionCutoff
     );
 
     let current = new Date(effectiveStartDate);
@@ -465,10 +471,15 @@ export class YoutubeSyncService {
   }
 
   async pruneExpiredSnapshots() {
-    const cutoff = new Date();
-    cutoff.setFullYear(cutoff.getFullYear() - env.YOUTUBE_SNAPSHOT_RETENTION_YEARS);
+    const cutoff = this.getRetentionCutoff();
 
     await snapshotRepo.deleteOlderThan(cutoff);
     console.log(`[YouTube] Pruned snapshots older than ${formatLocalDate(cutoff)}.`);
+  }
+
+  private getRetentionCutoff(): Date {
+    const cutoff = new Date();
+    cutoff.setFullYear(cutoff.getFullYear() - env.YOUTUBE_SNAPSHOT_RETENTION_YEARS);
+    return cutoff;
   }
 }

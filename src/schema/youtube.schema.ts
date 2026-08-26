@@ -12,11 +12,8 @@ export const getYoutubeSyncSchema = z.object({
       return !Number.isNaN(date.getTime()) && date.toISOString().startsWith(value);
     }, "Date is invalid")
     .refine(value => value <= new Date().toISOString().slice(0, 10), "Date cannot be in the future")
-    .refine(value => {
-      const minimum = new Date();
-      minimum.setUTCFullYear(minimum.getUTCFullYear() - 5);
-      return value >= minimum.toISOString().slice(0, 10);
-    }, "Backfill range cannot exceed five years")
+    // No minimum: videos are always fetched from all time, analytics/snapshots are clamped
+    // to the retention window server-side in YoutubeSyncService regardless of this date.
 })
 
 export const getYoutubeVideoUpdateSchema = z.object({

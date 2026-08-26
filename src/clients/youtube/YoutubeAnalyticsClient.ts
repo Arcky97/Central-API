@@ -56,7 +56,7 @@ export class YoutubeAnalyticsClient {
           "subscribersLost"
         ].join(","),
         sort: "-views",
-        maxResults: 200,
+        maxResults: 250,
         startIndex
       });
 
