@@ -24,6 +24,10 @@ export const getYoutubeVideoUpdateSchema = z.object({
   trackAnalytics: z.boolean().optional()
 })
 
+export const getGoalAllProfilesSchema = z.object({
+  channelId: z.string().min(1)
+})
+
 export const getGoalProfileSchema = z.object({
   goalProfileId: z.coerce.number().int().positive()
 });

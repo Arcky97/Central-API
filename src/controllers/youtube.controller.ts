@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { YoutubeSyncService } from "../services/youtube-sync.service";
 import { YoutubeService } from "../services/youtube.service";
-import { getGoalProfileSchema, getGoalProfileUpdateSchema, getYoutubeSyncSchema, getYoutubeVideoSchema, getYoutubeVideoUpdateSchema } from "../schema/youtube.schema";
+import { getGoalAllProfilesSchema, getGoalProfileSchema, getGoalProfileUpdateSchema, getYoutubeSyncSchema, getYoutubeVideoSchema, getYoutubeVideoUpdateSchema } from "../schema/youtube.schema";
 import { removeUndefined } from "../database/utils/removeUndefined";
 import { AuthRequest } from "../middleware/jwt";
 import { YoutubeAccountRepository } from "../database/repositories/auth/youtubeAccountRepository";
@@ -93,6 +93,16 @@ export class YoutubeController {
       success: true,
       message: `Youtube video with id: "${videoId}" updated successfully!`
     });
+  }
+
+  static async getAllProfilesByChannelId(req: AuthRequest, res: Response) {
+    const account = await YoutubeController.getAccount(req, res);
+    if (!account) return;
+
+    const profiles = await YoutubeService.getAllGoalProfiles(account.channelId);
+
+    res.json(profiles);
+
   }
 
   static async getGoalProfile(req: AuthRequest, res: Response) {

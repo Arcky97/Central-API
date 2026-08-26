@@ -16,6 +16,7 @@ router.use("/channel", authenticateJWT);
 router.use("/videos", authenticateJWT);
 router.use("/video", authenticateJWT);
 router.use("/profile", authenticateJWT);
+router.use("/profiles", authenticateJWT);
 
 // Sync endpoints (job-based)
 router.post(
@@ -58,6 +59,11 @@ router.patch(
   "/video/:videoId",
   asyncHandler(YoutubeController.updateVideo)
 )
+
+router.get(
+  "/profiles", 
+  asyncHandler(YoutubeController.getAllProfilesByChannelId)
+);
 
 router.get(
   "/profile/:goalProfileId",

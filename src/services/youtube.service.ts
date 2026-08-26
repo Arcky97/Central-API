@@ -77,6 +77,16 @@ export class YoutubeService {
     return true;
   }
 
+  static async getAllGoalProfiles(channelId: string): Promise<PublicYoutubeGoalProfile[] | null> {
+    const channel = await channelRepo.getByChannelId(channelId);
+    if (!channel) return null;
+
+    return goalProfileRepo.findMany({
+      channelId: channel.id
+    })
+
+  }
+
   static async getGoalProfile(goalProfileId: number, channelId: string): Promise<PublicYoutubeGoalProfile | null> {
     const channel = await channelRepo.getByChannelId(channelId);
     if (!channel) return null;
