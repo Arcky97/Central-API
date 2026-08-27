@@ -42,7 +42,7 @@ export const youtubeSyncWorker = new Worker<YoutubeSyncJob>(
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       
-      console.error(`[YouTube Sync Worker] Job ${jobId} failed:`, errorMessage);
+      console.error(`[YouTube Sync Worker] Job ${jobId} failed:`, errorMessage, error);
       
       await SyncJobsService.failJob(jobId, errorMessage);
       
@@ -63,7 +63,7 @@ youtubeSyncWorker.on("completed", (job) => {
 youtubeSyncWorker.on("failed", (job, error) => {
   console.error(
     `[YouTube Sync Worker] Job ${job?.id} failed:`,
-    error.message
+    error
   );
 });
 

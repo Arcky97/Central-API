@@ -19,22 +19,22 @@ export const youtubeVideoSnapshotsSchema: TableSchema = {
     },
 
     views: {
-      type: "BIGINT UNSIGNED",
+      type: "BIGINT",
       default: "0"
     },
 
     likes: {
-      type: "BIGINT UNSIGNED",
+      type: "BIGINT",
       default: "0"
     },
 
     comments: {
-      type: "BIGINT UNSIGNED",
+      type: "BIGINT",
       default: "0",
     },
 
     shares: {
-      type: "BIGINT UNSIGNED",
+      type: "BIGINT",
       default: "0"
     },
 

@@ -57,31 +57,102 @@ export class Repository<DBRow, CreateInput = Partial<DBRow>, UpdateInput = Parti
     return row as unknown as PublicOutput;
   }
 
+  /**
+   * Scans an array of records for potential database issues:
+   * - Missing / undefined fields
+   * - NaN numeric values
+   * - Invalid Date objects
+   * Converts `undefined` and `NaN` to `null` to avoid SQL execution errors.
+   */
+  protected scanAndSanitizeRows<T extends Record<string, any>>(
+    rows: T[],
+    context: string = "bulkOperation"
+  ): { sanitizedRows: T[]; columns: string[] } {
+    if (rows.length === 0) {
+      return { sanitizedRows: [], columns: [] };
+    }
+
+    // Collect all unique columns across all rows
+    const columnSet = new Set<string>();
+    for (const row of rows) {
+      if (row && typeof row === "object") {
+        for (const key of Object.keys(row)) {
+          columnSet.add(key);
+        }
+      }
+    }
+    const columns = Array.from(columnSet);
+
+    const sanitizedRows: T[] = [];
+    const issues: string[] = [];
+
+    for (let i = 0; i < rows.length; i++) {
+      const originalRow = rows[i] as Record<string, any>;
+      const sanitizedRow: Record<string, any> = {};
+
+      for (const col of columns) {
+        let val = originalRow[col];
+
+        if (val === undefined) {
+          issues.push(`Row index ${i}: column "${col}" is undefined (converted to NULL).`);
+          val = null;
+        } else if (typeof val === "number" && isNaN(val)) {
+          issues.push(`Row index ${i}: column "${col}" is NaN (converted to NULL).`);
+          val = null;
+        } else if (val instanceof Date && isNaN(val.getTime())) {
+          issues.push(`Row index ${i}: column "${col}" is an Invalid Date (converted to NULL).`);
+          val = null;
+        }
+
+        sanitizedRow[col] = val;
+      }
+
+      sanitizedRows.push(sanitizedRow as T);
+    }
+
+    if (issues.length > 0) {
+      console.warn(
+        `[Repository:${this.tableName}] ${context} scan detected ${issues.length} issue(s) across ${rows.length} row(s):\n` +
+        issues.slice(0, 10).map(issue => `  - ${issue}`).join("\n") +
+        (issues.length > 10 ? `\n  ...and ${issues.length - 10} more issue(s)` : "")
+      );
+    }
+
+    return { sanitizedRows, columns };
+  }
+
   async bulkUpsert(
     rows: CreateInput[], 
     updateColumns: (keyof UpdateInput)[]
   ) {
     if (rows.length === 0) return;
 
-    const columns = Object.keys(rows[0] as object);
+    const { sanitizedRows, columns } = this.scanAndSanitizeRows(
+      rows as Record<string, any>[],
+      "bulkUpsert"
+    );
 
-    const placeholders = rows
+    if (columns.length === 0) return;
+
+    const placeholders = sanitizedRows
       .map(() =>
         `(${columns.map(() => "?").join(",")})`
       )
       .join(",");
 
-    const values = rows.flatMap(row =>
+    const values = sanitizedRows.flatMap(row =>
       columns.map(column => 
         (row as any)[column]
       )
     );
 
-    const updates = updateColumns
-      .map(column =>
-        `${String(column)} = VALUES(${String(column)})`
-      )
-      .join(",");
+    const validUpdateColumns = updateColumns
+      .map(column => String(column))
+      .filter(column => columns.includes(column));
+
+    const updates = validUpdateColumns.length > 0
+      ? validUpdateColumns.map(column => `${column} = VALUES(${column})`).join(",")
+      : `${columns[0]} = VALUES(${columns[0]})`;
 
     await query(
       this.db,

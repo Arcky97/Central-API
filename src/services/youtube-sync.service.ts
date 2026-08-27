@@ -13,6 +13,7 @@ import { YoutubeClient } from "../clients/youtube/YoutubeClient";
 import { YoutubeAccountRow } from "../database/types/youtube-accounts.type";
 import { formatLocalDate } from "../utils/dateTimeStringifier";
 import { SyncJobsService } from "./sync-jobs.service";
+import { tryCatch } from "bullmq";
 
 const channelRepo =
   new YoutubeChannelRepository();
@@ -388,29 +389,43 @@ export class YoutubeSyncService {
         firstVideo.publishedAt
       )
     );
+    console.log([startDate, endDate]);
+
     const analytics = await youtubeAnalyticsClient.getVideoAnalytics(
       startDate ?? firstPublishedDate,
       endDate
     );
     let synced = 0;
+    let skipped = 0;
 
     for (const video of videos) {
-      const data = analytics.get(video.id);
+      try {
+        const data = analytics.get(video.id);
 
-      if (!data) continue;
+        if (!data) continue;
 
-      video.watchHours = data.watchHours;
-      video.averageViewDuration = data.averageViewDuration;
-      video.averageViewPercentage = data.averageViewPercentage;
-      video.subscribersGained = data.subscribersGained;
-      video.subscribersLost = data.subscribersLost;
+        video.watchHours = data.watchHours;
+        video.averageViewDuration = data.averageViewDuration;
+        video.averageViewPercentage = data.averageViewPercentage;
+        video.subscribersGained = data.subscribersGained;
+        video.subscribersLost = data.subscribersLost;
 
-      video.views = data.views,
-      video.likes = data.likes;
-      video.comments = data.comments;
-      video.shares = data.shares;
+        video.views = data.views,
+        video.likes = data.likes;
+        video.comments = data.comments;
+        video.shares = data.shares;
 
-      synced++;
+        synced++;
+      } catch (error) {
+        console.error(
+          `[YouTube] Failed to sync analytics for video ${video.id}`, 
+          error
+        );
+
+        skipped++;
+
+        continue;
+      }
     }
 
     console.log(
@@ -435,24 +450,27 @@ export class YoutubeSyncService {
     for (const video of videos) {
       const databaseVideo = lookup.get(video.id);
 
-      if (!databaseVideo) continue;
+      if (!databaseVideo) {
+        console.warn(`[YouTube] Snapshot skipped for video ${video.id} ("${video.title}"): not found in database lookup.`);
+        continue;
+      }
 
       snapshots.push({
         videoId: databaseVideo.id,
-        views: video.views,
-        likes: video.likes,
-        comments: video.comments,
-        shares: video.shares,
-        watchHours: video.watchHours ?? 0,
-        averageViewDuration: video.averageViewDuration ?? 0,
-        averageViewPercentage: video.averageViewPercentage ?? 0,
-        subscribersGained: video.subscribersGained ?? 0,
-        subscribersLost: video.subscribersLost ?? 0,
-        snapshotDate
+        views: Number.isFinite(video.views) ? video.views : 0,
+        likes: Number.isFinite(video.likes) ? video.likes : 0,
+        comments: Number.isFinite(video.comments) ? video.comments : 0,
+        shares: Number.isFinite(video.shares) ? video.shares : 0,
+        watchHours: Number.isFinite(video.watchHours) ? (video.watchHours as number) : 0,
+        averageViewDuration: Number.isFinite(video.averageViewDuration) ? (video.averageViewDuration as number) : 0,
+        averageViewPercentage: Number.isFinite(video.averageViewPercentage) ? (video.averageViewPercentage as number) : 0,
+        subscribersGained: Number.isFinite(video.subscribersGained) ? (video.subscribersGained as number) : 0,
+        subscribersLost: Number.isFinite(video.subscribersLost) ? (video.subscribersLost as number) : 0,
+        snapshotDate: new Date(snapshotDate)
       });
     }
 
-    console.log(`[YouTube] Creating ${snapshots.length} snapshots.`);
+    console.log(`[YouTube] Creating ${snapshots.length} snapshot(s).`);
 
     await snapshotRepo.bulkUpsert(
       snapshots,

@@ -14,9 +14,17 @@ export async function query<T = any>(
   try {
     const [rows] = await connection.query(sql, params);
     return rows as T;
-  } catch (error) {
+  } catch (error: any) {
+    console.error(`[Database Error] Query failed on database "${database}":`, {
+      message: error?.message,
+      code: error?.code,
+      sql: typeof sql === "string" ? sql : (sql as any)?.sql,
+      params
+    });
+
     throw new DatabaseError("Failed to execute database query.", {
       query: sql,
+      params,
       originalError: error
     });
   } finally {
