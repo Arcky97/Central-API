@@ -4,7 +4,8 @@ import { redis } from "../redis";
 export interface YoutubeSyncJob {
   jobId: string;
   authUserId: number;
-  type: "sync" | "backfill";
+  type: "sync" | "backfill" | "videosync";
+  videoId?: string;
   startDate?: string;
 }
 

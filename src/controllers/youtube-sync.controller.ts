@@ -2,7 +2,8 @@ import { Request, Response } from "express";
 import { SyncJobsService } from "../services/sync-jobs.service";
 import { youtubeSyncQueue } from "../queue/youtube-sync.queue";
 import { AuthRequest } from "../middleware/jwt";
-import { getYoutubeSyncSchema } from "../schema/youtube.schema";
+import { getYoutubeSyncSchema, getYoutubeVideoSyncSchema } from "../schema/youtube.schema";
+import { getStringifiedTimeStamp } from "../utils/dateTimeStringifier";
 
 export class YoutubeSyncController {
   /**
@@ -93,6 +94,42 @@ export class YoutubeSyncController {
         message: "Failed to start backfill job",
         error: error instanceof Error ? error.message : "Unknown error"
       });
+    }
+  }
+
+  static async syncVideoByDate(req: AuthRequest, res: Response) {
+    try {
+      if (!req.authUserId) {
+        return res.status(401).json({ success: false, message: "Authentication required" });
+      }
+
+      const { videoId, date } = getYoutubeVideoSyncSchema.parse(req.params);
+
+      const parsedDate = getYoutubeSyncSchema.safeParse({ date: date || getStringifiedTimeStamp() });
+      if (!parsedDate.success) {
+        return res.status(400).json({
+          success: false,
+          message: parsedDate.error.issues[0]?.message ?? "Invalid backfill date"
+        });
+      }
+
+      const job = await SyncJobsService.createJob(
+        req.authUserId,
+        "youtube_video_backfill",
+        `YouTube backfill from ${date} for video ${videoId} queued.`
+      );
+
+      await youtubeSyncQueue.add("backfill", {
+        jobId: job.id,
+        authUserId: req.authUserId,
+        type: "backfill",
+        videoId,
+        startDate: parsedDate.data.date
+      });
+
+
+    } catch (error) {
+      console.error(`[YouTube Sync Controller] Error starting Backfill Sync for video ${req.params.videoId}:`, error);
     }
   }
 

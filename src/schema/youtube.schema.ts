@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { nullable, z } from "zod";
 
 export const getYoutubeVideoSchema = z.object({
   videoId: z.string().min(1)
@@ -14,7 +14,12 @@ export const getYoutubeSyncSchema = z.object({
     .refine(value => value <= new Date().toISOString().slice(0, 10), "Date cannot be in the future")
     // No minimum: videos are always fetched from all time, analytics/snapshots are clamped
     // to the retention window server-side in YoutubeSyncService regardless of this date.
-})
+});
+
+export const getYoutubeVideoSyncSchema = z.object({
+  videoId: z.string().min(1),
+  date: z.string().nullable().optional()
+});
 
 export const getYoutubeVideoUpdateSchema = z.object({
   goalProfileId: z.number().nullable().optional(),

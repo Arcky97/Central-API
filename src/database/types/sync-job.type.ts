@@ -1,6 +1,6 @@
 import { RowDataPacket } from "mysql2";
 
-export type SyncJobType = "youtube_sync" | "youtube_backfill";
+export type SyncJobType = "youtube_sync" | "youtube_backfill" | "youtube_video_backfill";
 export type SyncJobStatus = "queued" | "running" | "completed" | "failed";
 
 export interface SyncJobRow extends RowDataPacket {

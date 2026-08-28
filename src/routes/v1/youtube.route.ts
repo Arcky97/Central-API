@@ -24,10 +24,18 @@ router.post(
   asyncHandler(YoutubeSyncController.startSync)
 );
 
+/*
+// Old backfill, not used but kept for reference.
 router.post(
   "/sync/fill/:date",
   asyncHandler(YoutubeSyncController.startBackfill)
 );
+*/
+
+router.get(
+  "/sync/fill/:videoId/:date?",
+  asyncHandler(YoutubeSyncController.syncVideoByDate)
+)
 
 router.get(
   "/sync/jobs/:jobId",
