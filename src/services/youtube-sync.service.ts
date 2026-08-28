@@ -28,6 +28,9 @@ const playlistRepo =
   new YoutubePlaylistRepository();
 
 export class YoutubeSyncService {
+  private static readonly MAX_BACKFILL_YEARS_WITH_DATE = 5;
+  private static readonly MAX_BACKFILL_YEARS_WITHOUT_DATE = 2;
+
   async sync(account: Pick<YoutubeAccountRow, "channelId" | "channelName" | "refreshToken">, jobId?: string) {
     try {
       const youtubeClient = new YoutubeClient(env.YOUTUBE_API_KEY);
@@ -88,7 +91,12 @@ export class YoutubeSyncService {
 
   }
 
-  async backfillSync(account: Pick<YoutubeAccountRow, "channelId" | "channelName" | "refreshToken">, startDate?: string, jobId?: string) {
+  async backfillSync(
+    account: Pick<YoutubeAccountRow, "channelId" | "channelName" | "refreshToken">,
+    options: { videoId?: string | undefined; startDate?: string | undefined; jobId?: string | undefined } = {}
+  ) {
+    const { videoId, startDate, jobId } = options;
+
     const youtubeClient = new YoutubeClient(env.YOUTUBE_API_KEY);
     const youtubeAnalyticsClient = new YoutubeAnalyticsClient(account.refreshToken);
     const channel = await this.syncChannel(youtubeClient, account.channelId);
@@ -98,22 +106,72 @@ export class YoutubeSyncService {
     const lookup = await this.saveVideos(channel, videos);
     const trackedVideos = videos.filter(video => lookup.get(video.id)?.trackAnalytics);
 
+    // A videoId restricts analytics/snapshots to a single video, so the database
+    // isn't filled with historical snapshots for videos nobody has asked about.
+    const targetVideos = videoId
+      ? trackedVideos.filter(video => video.id === videoId)
+      : trackedVideos;
+
+    if (videoId && targetVideos.length === 0) {
+      throw new Error(`Video ${videoId} was not found or is not tracked for analytics.`);
+    }
+
+    if (videoId) {
+      const dbVideo = lookup.get(videoId);
+      const alreadyBackfilled = dbVideo && await snapshotRepo.hasSnapshots(dbVideo.id);
+
+      if (alreadyBackfilled) {
+        console.log(`[YouTube] Skipping backfill for video ${videoId}; snapshots already exist.`);
+
+        if (jobId) {
+          await SyncJobsService.updateJob(jobId, {
+            status: "running",
+            message: "Snapshots already exist for this video; skipping backfill",
+            progress: 100,
+            currentItem: videoId
+          });
+        }
+
+        return;
+      }
+    }
+
     const retentionCutoff = this.getRetentionCutoff();
+    let requestedStartDate: Date;
 
-    const earliestPublished = trackedVideos.reduce(
-      (earliest, video) => video.publishedAt < earliest ? video.publishedAt : earliest,
-      new Date()
-    );
+    if (videoId) {
+      // On-demand per-video backfill: an explicit date is capped at 5 years back,
+      // otherwise fall back to the video's publish date, capped at 2 years back.
+      if (startDate) {
+        const maxExplicitLookback = new Date();
+        maxExplicitLookback.setFullYear(maxExplicitLookback.getFullYear() - YoutubeSyncService.MAX_BACKFILL_YEARS_WITH_DATE);
 
-    const requestedStartDate = startDate
-      ? new Date(`${startDate}T00:00:00`)
-      : (earliestPublished > retentionCutoff ? earliestPublished : retentionCutoff);
+        const requested = new Date(`${startDate}T00:00:00`);
+        requestedStartDate = requested < maxExplicitLookback ? maxExplicitLookback : requested;
+      } else {
+        const maxDefaultLookback = new Date();
+        maxDefaultLookback.setFullYear(maxDefaultLookback.getFullYear() - YoutubeSyncService.MAX_BACKFILL_YEARS_WITHOUT_DATE);
 
-    // Videos are always fetched from all time, but analytics/snapshots never go further
-    // back than the retention window, even if an older date was explicitly requested.
-    const effectiveStartDate = formatLocalDate(
-      requestedStartDate > retentionCutoff ? requestedStartDate : retentionCutoff
-    );
+        const publishedAt = targetVideos[0]!.publishedAt;
+        requestedStartDate = publishedAt > maxDefaultLookback ? publishedAt : maxDefaultLookback;
+      }
+    } else {
+      // Channel-wide catch-up (e.g. the scheduled analytics-delay sync): never go
+      // further back than the snapshot retention window, even if an older date
+      // was explicitly requested.
+      const earliestPublished = targetVideos.reduce(
+        (earliest, video) => video.publishedAt < earliest ? video.publishedAt : earliest,
+        new Date()
+      );
+
+      const requested = startDate
+        ? new Date(`${startDate}T00:00:00`)
+        : (earliestPublished > retentionCutoff ? earliestPublished : retentionCutoff);
+
+      requestedStartDate = requested > retentionCutoff ? requested : retentionCutoff;
+    }
+
+    const effectiveStartDate = formatLocalDate(requestedStartDate);
 
     let current = new Date(effectiveStartDate);
     current.setHours(0, 0, 0, 0);
@@ -126,7 +184,7 @@ export class YoutubeSyncService {
 
     while (formatLocalDate(current) <= formatLocalDate(today)) {
       const currentDate = formatLocalDate(current);
-      const availableVideos = trackedVideos.filter(video => 
+      const availableVideos = targetVideos.filter(video => 
         video.publishedAt <= current
       );
 

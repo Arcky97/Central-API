@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { YoutubeSyncService } from "../services/youtube-sync.service";
 import { YoutubeService } from "../services/youtube.service";
-import { getGoalAllProfilesSchema, getGoalProfileSchema, getGoalProfileUpdateSchema, getYoutubeSyncSchema, getYoutubeVideoSchema, getYoutubeVideoUpdateSchema } from "../schema/youtube.schema";
+import { getGoalProfileSchema, getGoalProfileUpdateSchema, getYoutubeSyncSchema, getYoutubeVideoSchema, getYoutubeVideoUpdateSchema } from "../schema/youtube.schema";
 import { removeUndefined } from "../database/utils/removeUndefined";
 import { AuthRequest } from "../middleware/jwt";
 import { YoutubeAccountRepository } from "../database/repositories/auth/youtubeAccountRepository";
@@ -43,7 +43,7 @@ export class YoutubeController {
 
     console.log("Backfill sync request received");
     const { date } = getYoutubeSyncSchema.parse(req.params);
-    await service.backfillSync(account, date);
+    await service.backfillSync(account, { startDate: date });
 
     res.json({
       success: true,

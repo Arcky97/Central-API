@@ -33,7 +33,7 @@ router.post(
 */
 
 router.get(
-  "/sync/fill/:videoId/:date?",
+  "/sync/fill/:videoId{/:date}",
   asyncHandler(YoutubeSyncController.syncVideoByDate)
 )
 
