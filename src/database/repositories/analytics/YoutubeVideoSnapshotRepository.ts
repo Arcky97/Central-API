@@ -60,4 +60,9 @@ export class YoutubeVideoSnapshotRepository extends Repository<YoutubeVideoSnaps
       sql: `DELETE FROM ${this.tableName} WHERE snapshotDate < ?`
     }, [formatLocalDate(cutoffDate)]);
   }
+
+  async hasSnapshots(videoId: number): Promise<boolean> {
+    const existing = await this.findOne({ videoId });
+    return existing !== null;
+  }
 }

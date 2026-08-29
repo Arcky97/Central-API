@@ -23,22 +23,22 @@ export const youtubeGoalProfilesSchema: TableSchema = {
       nullable: false
     },
 
-    goalViews: {
+    views : {
       type: "INT",
       default: "0"
     },
 
-    goalWatchHours: {
+    watchHours: {
       type: "INT",
       default: "0"
     },
 
-    goalLikes: {
+    likes: {
       type: "INT",
       default: "0"
     },
 
-    goalComments: {
+    comments: {
       type: "INT",
       default: "0"
     },

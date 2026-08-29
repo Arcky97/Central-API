@@ -22,7 +22,7 @@ cron.schedule('0 0 * * *', async () => {
     if (!credentials) continue;
 
     try {
-      await service.backfillSync(credentials, formatLocalDate(startDate));
+      await service.backfillSync(credentials, { startDate: formatLocalDate(startDate) });
     } catch (error) {
       console.error(`[YouTube] Scheduled sync failed for channel ${account.channelId}.`, error);
     }

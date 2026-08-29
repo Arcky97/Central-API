@@ -36,8 +36,8 @@ export const getGoalProfileSchema = z.object({
 
 export const getGoalProfileUpdateSchema = z.object({
   name: z.string().min(1),
-  goalViews: z.number(),
-  goalWatchHours: z.number().nullable().optional(),
-  goalLikes: z.number().nullable().optional(),
-  goalComments: z.number().nullable().optional()
+  views: z.number(),
+  watchHours: z.number().nullable().optional(),
+  likes: z.number().nullable().optional(),
+  comments: z.number().nullable().optional()
 })

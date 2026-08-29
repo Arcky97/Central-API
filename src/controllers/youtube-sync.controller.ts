@@ -3,7 +3,6 @@ import { SyncJobsService } from "../services/sync-jobs.service";
 import { youtubeSyncQueue } from "../queue/youtube-sync.queue";
 import { AuthRequest } from "../middleware/jwt";
 import { getYoutubeSyncSchema, getYoutubeVideoSyncSchema } from "../schema/youtube.schema";
-import { getStringifiedTimeStamp } from "../utils/dateTimeStringifier";
 
 export class YoutubeSyncController {
   /**
@@ -97,6 +96,12 @@ export class YoutubeSyncController {
     }
   }
 
+  /**
+   * GET /v1/youtube/sync/fill/:videoId/:date?
+   * Start a YouTube backfill job for a single video. Without a date, the backfill
+   * goes back to the video's publish date (capped at 2 years); with a date, it is
+   * capped at 5 years back.
+   */
   static async syncVideoByDate(req: AuthRequest, res: Response) {
     try {
       if (!req.authUserId) {
@@ -105,18 +110,22 @@ export class YoutubeSyncController {
 
       const { videoId, date } = getYoutubeVideoSyncSchema.parse(req.params);
 
-      const parsedDate = getYoutubeSyncSchema.safeParse({ date: date || getStringifiedTimeStamp() });
-      if (!parsedDate.success) {
-        return res.status(400).json({
-          success: false,
-          message: parsedDate.error.issues[0]?.message ?? "Invalid backfill date"
-        });
+      if (date) {
+        const parsedDate = getYoutubeSyncSchema.safeParse({ date });
+        if (!parsedDate.success) {
+          return res.status(400).json({
+            success: false,
+            message: parsedDate.error.issues[0]?.message ?? "Invalid backfill date"
+          });
+        }
       }
 
       const job = await SyncJobsService.createJob(
         req.authUserId,
         "youtube_video_backfill",
-        `YouTube backfill from ${date} for video ${videoId} queued.`
+        date
+          ? `YouTube backfill from ${date} for video ${videoId} queued.`
+          : `YouTube backfill for video ${videoId} queued.`
       );
 
       await youtubeSyncQueue.add("backfill", {
@@ -124,12 +133,24 @@ export class YoutubeSyncController {
         authUserId: req.authUserId,
         type: "backfill",
         videoId,
-        startDate: parsedDate.data.date
+        startDate: date ?? undefined
       });
 
-
+      res.status(202).json({
+        success: true,
+        jobId: job.id,
+        status: job.status,
+        message: date
+          ? `Backfill job from ${date} for video ${videoId} queued`
+          : `Backfill job for video ${videoId} queued`
+      });
     } catch (error) {
       console.error(`[YouTube Sync Controller] Error starting Backfill Sync for video ${req.params.videoId}:`, error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to start backfill job",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
     }
   }
 

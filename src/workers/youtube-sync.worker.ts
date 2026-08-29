@@ -11,7 +11,7 @@ const youtubeAccountRepo = new YoutubeAccountRepository();
 export const youtubeSyncWorker = new Worker<YoutubeSyncJob>(
   "youtube-sync",
   async (job) => {
-    const { jobId, authUserId, type, startDate } = job.data;
+    const { jobId, authUserId, type, startDate, videoId } = job.data;
 
     try {
       console.log(`[YouTube Sync Worker] Processing job ${jobId} (${type})`);
@@ -29,10 +29,10 @@ export const youtubeSyncWorker = new Worker<YoutubeSyncJob>(
         await SyncJobsService.updateProgress(jobId, 100, "Sync completed");
       } else if (type === "backfill") {
         console.log(
-          `[YouTube Sync Worker] Starting backfill from ${startDate} for job ${jobId}`
+          `[YouTube Sync Worker] Starting backfill${videoId ? ` for video ${videoId}` : ""} from ${startDate ?? "video publish date"} for job ${jobId}`
         );
 
-        await syncService.backfillSync(account, startDate, jobId);
+        await syncService.backfillSync(account, { videoId, startDate, jobId });
         await SyncJobsService.updateProgress(jobId, 100, `Backfill completed`);
       }
 
