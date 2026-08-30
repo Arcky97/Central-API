@@ -24,6 +24,8 @@ export type TableName =
   | "reactionRoles"
   | "userStats"
   | "youtubeChannels"
+  | "youtubeChannelSnapshots"
+  | "youtubeChannelAnalyticsSnapshots"
   | "youtubeGoalProfiles"
   | "youtubePlaylists"
   | "youtubeVideoSnapshots"

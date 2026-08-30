@@ -15,3 +15,11 @@ export interface YoutubeVideoAnalytics {
   comments: number;
   shares: number;
 }
+
+export interface YoutubeChannelAnalytics {
+  date: string;
+  views: number;
+  watchHours: number;
+  subscribersGained: number;
+  subscribersLost: number;
+}

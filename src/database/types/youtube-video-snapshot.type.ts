@@ -19,6 +19,9 @@ export interface YoutubeVideoSnapshotRow {
   subscribersGained: number;
 
   subscribersLost: number;
+
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // Create DTO

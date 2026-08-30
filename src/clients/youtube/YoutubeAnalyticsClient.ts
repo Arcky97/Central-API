@@ -1,6 +1,6 @@
 import { google } from "googleapis";
 import { env } from "../../config/env";
-import { YoutubeVideoAnalytics } from "./youtube-analytics.type";
+import { YoutubeChannelAnalytics, YoutubeVideoAnalytics } from "./youtube-analytics.type";
 
 export class YoutubeAnalyticsClient {
   private oauth2 = new google.auth.OAuth2(
@@ -93,5 +93,42 @@ export class YoutubeAnalyticsClient {
     } while (true);
 
     return lookup;
+  }
+
+  async getChannelAnalytics(startDate: string, endDate: string) {
+    const analytics = this.getAnalytics();
+
+
+    const response = await analytics.reports.query({
+      ids: "channel==MINE",
+      startDate,
+      endDate,
+      dimensions: "day",
+      metrics: [
+        "views",
+        "estimatedMinutesWatched",
+        "subscribersGained",
+        "subscribersLost"
+      ].join(","),
+      sort: "day"
+    });
+
+    return (response.data.rows ?? []).map(row => {
+      const [
+        date,
+        views,
+        estimatedMinutesWatched,
+        subscribersGained,
+        subscribersLost
+      ] = row;
+
+      return {
+        date: date as string,
+        views: Number(views),
+        watchHours: Number(estimatedMinutesWatched) / 60,
+        subscribersGained: Number(subscribersGained),
+        subscribersLost: Number(subscribersLost)
+      };
+    });
   }
 }

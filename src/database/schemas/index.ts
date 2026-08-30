@@ -19,6 +19,8 @@ import { apiAuthFailuresSchema } from "./analytics/apiAuthFailures";
 import { apiRequestsSchema } from "./analytics/apiRequests";
 import { syncJobsSchema } from "./analytics/syncJobs";
 import { youtubeChannelsSchema } from "./analytics/youtubeChannels";
+import { youtubeChannelSnapshotsSchema } from "./analytics/youtubeChannelSnapshots";
+import { youtubeChannelAnalyticsSnapshotsSchema } from "./analytics/youtubeChannelAnalyticsSnapshots";
 import { youtubeGoalProfilesSchema } from "./analytics/youtubeGoalProfiles";
 import { youtubePlaylistsSchema } from "./analytics/youtubePlaylists";
 import { youtubeVideoSnapshotsSchema } from "./analytics/youtubeVideoSnapshots";
@@ -51,6 +53,8 @@ export const schemas = [
   pageVisitsSchema,
 
   youtubeChannelsSchema,
+  youtubeChannelSnapshotsSchema,
+  youtubeChannelAnalyticsSnapshotsSchema,
   youtubeGoalProfilesSchema,
   youtubePlaylistsSchema,
   youtubeVideosSchema,

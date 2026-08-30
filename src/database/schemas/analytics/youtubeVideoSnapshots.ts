@@ -71,6 +71,11 @@ export const youtubeVideoSnapshotsSchema: TableSchema = {
     createdAt: {
       type: "TIMESTAMP",
       default: "CURRENT_TIMESTAMP"
+    },
+
+    updatedAt: {
+      type: "TIMESTAMP",
+      default: "CURRENT_TIMESTAMP"
     }
   },
 
