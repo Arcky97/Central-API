@@ -8,12 +8,15 @@ import { PublicYoutubeChannel } from "../database/types/youtube-channel.type";
 import { CreateYoutubeVideo, PublicYoutubeVideo, UpdateYoutubeVideo } from "../database/types/youtube-video.type";
 import { CreateYoutubeVideoSnapshot } from "../database/types/youtube-video-snapshot.type";
 import { YoutubeVideoSnapshotRepository } from "../database/repositories/analytics/YoutubeVideoSnapshotRepository";
+import { CreateYoutubeChannelSnapshot } from "../database/types/youtube-channel-snapshots.type";
+import { CreateYoutubeChannelAnalyticsSnapshot } from "../database/types/youtube-channel-analytics-snapshots.type";
+import { YoutubeChannelSnapshotRepository } from "../database/repositories/analytics/YoutubeChannelSnapshotRepository";
+import { YoutubeChannelAnalyticsSnapshotRepository } from "../database/repositories/analytics/YoutubeChannelAnalyticsSnapshotRepository";
 import { YoutubeAnalyticsClient } from "../clients/youtube/YoutubeAnalyticsClient";
 import { YoutubeClient } from "../clients/youtube/YoutubeClient";
 import { YoutubeAccountRow } from "../database/types/youtube-accounts.type";
 import { formatLocalDate } from "../utils/dateTimeStringifier";
 import { SyncJobsService } from "./sync-jobs.service";
-import { tryCatch } from "bullmq";
 
 const channelRepo =
   new YoutubeChannelRepository();
@@ -24,6 +27,12 @@ const videoRepo =
 const snapshotRepo =
   new YoutubeVideoSnapshotRepository();
 
+const channelSnapshotRepo =
+  new YoutubeChannelSnapshotRepository();
+
+const channelAnalyticsSnapshotRepo =
+  new YoutubeChannelAnalyticsSnapshotRepository();
+
 const playlistRepo =
   new YoutubePlaylistRepository();
 
@@ -31,6 +40,10 @@ export class YoutubeSyncService {
   private static readonly MAX_BACKFILL_YEARS_WITH_DATE = 5;
   private static readonly MAX_BACKFILL_YEARS_WITHOUT_DATE = 2;
 
+  /**
+   * Performs the regular sync: refresh stored channel/video metadata and save one
+   * snapshot for today. This never creates historical records.
+   */
   async sync(account: Pick<YoutubeAccountRow, "channelId" | "channelName" | "refreshToken">, jobId?: string) {
     try {
       const youtubeClient = new YoutubeClient(env.YOUTUBE_API_KEY);
@@ -46,7 +59,11 @@ export class YoutubeSyncService {
         });
       }
 
-      const channel = await this.syncChannel(youtubeClient, account.channelId);
+      const { channel, videos, lookup, trackedVideos } = await this.prepareChannelData(
+        youtubeClient,
+        account.channelId
+      );
+
       if (jobId) {
         await SyncJobsService.updateJob(jobId, {
           status: "running",
@@ -55,11 +72,6 @@ export class YoutubeSyncService {
           currentItem: channel.channelName
         });
       }
-
-      const videos = await this.fetchVideos(youtubeClient, account.channelId);
-      await this.syncPlaylists(youtubeClient, channel, videos);
-      const lookup = await this.saveVideos(channel, videos);
-      const trackedVideos = videos.filter(video => lookup.get(video.id)?.trackAnalytics);
 
       if (jobId) {
         await SyncJobsService.updateJob(jobId, {
@@ -72,7 +84,8 @@ export class YoutubeSyncService {
 
       const retentionCutoff = this.getRetentionCutoff();
       await this.syncAnalytics(youtubeAnalyticsClient, trackedVideos, formatLocalDate(retentionCutoff));
-      await this.createSnapShots(trackedVideos, lookup, new Date());
+      await this.createVideoSnapshots(trackedVideos, lookup, new Date());
+      await this.createCurrentChannelSnapshot(channel);
 
       if (jobId) {
         await SyncJobsService.updateJob(jobId, {
@@ -91,6 +104,11 @@ export class YoutubeSyncService {
 
   }
 
+  /**
+   * Creates daily historical snapshots. A single-video request stops when that
+   * video's snapshots exist; channel history is independently skipped when either
+   * channel snapshot table already contains rows for the channel.
+   */
   async backfillSync(
     account: Pick<YoutubeAccountRow, "channelId" | "channelName" | "refreshToken">,
     options: { videoId?: string | undefined; startDate?: string | undefined; jobId?: string | undefined } = {}
@@ -99,12 +117,10 @@ export class YoutubeSyncService {
 
     const youtubeClient = new YoutubeClient(env.YOUTUBE_API_KEY);
     const youtubeAnalyticsClient = new YoutubeAnalyticsClient(account.refreshToken);
-    const channel = await this.syncChannel(youtubeClient, account.channelId);
-    const videos = await this.fetchVideos(youtubeClient, account.channelId);
-    await this.syncPlaylists(youtubeClient, channel, videos);
-
-    const lookup = await this.saveVideos(channel, videos);
-    const trackedVideos = videos.filter(video => lookup.get(video.id)?.trackAnalytics);
+    const { channel, lookup, trackedVideos } = await this.prepareChannelData(
+      youtubeClient,
+      account.channelId
+    );
 
     // A videoId restricts analytics/snapshots to a single video, so the database
     // isn't filled with historical snapshots for videos nobody has asked about.
@@ -136,42 +152,10 @@ export class YoutubeSyncService {
       }
     }
 
-    const retentionCutoff = this.getRetentionCutoff();
-    let requestedStartDate: Date;
-
-    if (videoId) {
-      // On-demand per-video backfill: an explicit date is capped at 5 years back,
-      // otherwise fall back to the video's publish date, capped at 2 years back.
-      if (startDate) {
-        const maxExplicitLookback = new Date();
-        maxExplicitLookback.setFullYear(maxExplicitLookback.getFullYear() - YoutubeSyncService.MAX_BACKFILL_YEARS_WITH_DATE);
-
-        const requested = new Date(`${startDate}T00:00:00`);
-        requestedStartDate = requested < maxExplicitLookback ? maxExplicitLookback : requested;
-      } else {
-        const maxDefaultLookback = new Date();
-        maxDefaultLookback.setFullYear(maxDefaultLookback.getFullYear() - YoutubeSyncService.MAX_BACKFILL_YEARS_WITHOUT_DATE);
-
-        const publishedAt = targetVideos[0]!.publishedAt;
-        requestedStartDate = publishedAt > maxDefaultLookback ? publishedAt : maxDefaultLookback;
-      }
-    } else {
-      // Channel-wide catch-up (e.g. the scheduled analytics-delay sync): never go
-      // further back than the snapshot retention window, even if an older date
-      // was explicitly requested.
-      const earliestPublished = targetVideos.reduce(
-        (earliest, video) => video.publishedAt < earliest ? video.publishedAt : earliest,
-        new Date()
-      );
-
-      const requested = startDate
-        ? new Date(`${startDate}T00:00:00`)
-        : (earliestPublished > retentionCutoff ? earliestPublished : retentionCutoff);
-
-      requestedStartDate = requested > retentionCutoff ? requested : retentionCutoff;
-    }
-
-    const effectiveStartDate = formatLocalDate(requestedStartDate);
+    const effectiveStartDate = this.getBackfillStartDate(targetVideos, videoId, startDate);
+    // Channel analytics is a one-time historical import. Video backfills remain
+    // independent, including for a single video requested from the dashboard.
+    const shouldBackfillChannelAnalytics = !videoId && !await channelAnalyticsSnapshotRepo.hasSnapshots(channel.channelId);
 
     let current = new Date(effectiveStartDate);
     current.setHours(0, 0, 0, 0);
@@ -199,13 +183,21 @@ export class YoutubeSyncService {
       }
 
       await this.syncAnalytics(youtubeAnalyticsClient, availableVideos, effectiveStartDate, currentDate);
-      await this.createSnapShots(availableVideos, lookup, new Date(current));
+      await this.createVideoSnapshots(availableVideos, lookup, new Date(current));
+
+      if (shouldBackfillChannelAnalytics) {
+        await this.createChannelAnalyticsSnapshot(channel, youtubeAnalyticsClient, currentDate);
+      }
 
       console.log(`[YouTube] Backfill synchronization completed for ${availableVideos.length} video(s) up until ${current}`);
 
       processedDays += 1;
       current.setDate(current.getDate() + 1);
     }
+
+    // Public channel totals are only available as their current values, so retain
+    // one accurate snapshot for today instead of inventing historical totals.
+    await this.createCurrentChannelSnapshot(channel);
 
     if (jobId) {
       await SyncJobsService.updateJob(jobId, {
@@ -215,6 +207,49 @@ export class YoutubeSyncService {
         currentItem: formatLocalDate(today)
       });
     }
+  }
+
+  /** Fetches external data and ensures its database records exist before snapshot work. */
+  private async prepareChannelData(youtubeClient: YoutubeClient, channelId: string) {
+    const channel = await this.syncChannel(youtubeClient, channelId);
+    const videos = await this.fetchVideos(youtubeClient, channelId);
+    await this.syncPlaylists(youtubeClient, channel, videos);
+
+    const lookup = await this.saveVideos(channel, videos);
+    const trackedVideos = videos.filter(video => lookup.get(video.id)?.trackAnalytics);
+
+    return { channel, videos, lookup, trackedVideos };
+  }
+
+  /** Calculates the earliest allowed date for the requested backfill scope. */
+  private getBackfillStartDate(videos: YoutubeVideo[], videoId?: string, startDate?: string): string {
+    const retentionCutoff = this.getRetentionCutoff();
+    let requestedStartDate: Date;
+
+    if (videoId) {
+      if (startDate) {
+        const maxLookback = new Date();
+        maxLookback.setFullYear(maxLookback.getFullYear() - YoutubeSyncService.MAX_BACKFILL_YEARS_WITH_DATE);
+        const requested = new Date(`${startDate}T00:00:00`);
+        requestedStartDate = requested < maxLookback ? maxLookback : requested;
+      } else {
+        const maxLookback = new Date();
+        maxLookback.setFullYear(maxLookback.getFullYear() - YoutubeSyncService.MAX_BACKFILL_YEARS_WITHOUT_DATE);
+        const publishedAt = videos[0]!.publishedAt;
+        requestedStartDate = publishedAt > maxLookback ? publishedAt : maxLookback;
+      }
+    } else {
+      const earliestPublished = videos.reduce(
+        (earliest, video) => video.publishedAt < earliest ? video.publishedAt : earliest,
+        new Date()
+      );
+      const requested = startDate
+        ? new Date(`${startDate}T00:00:00`)
+        : (earliestPublished > retentionCutoff ? earliestPublished : retentionCutoff);
+      requestedStartDate = requested > retentionCutoff ? requested : retentionCutoff;
+    }
+
+    return formatLocalDate(requestedStartDate);
   }
 
   private async syncChannel(youtubeClient: YoutubeClient, channelId: string): Promise<PublicYoutubeChannel> {
@@ -251,22 +286,31 @@ export class YoutubeSyncService {
       return created;
     } 
 
-      await channelRepo.updateWhere(
-        {
-          channelId: channel.id
-        },
-        {
-          channelName: channel.title
-        }
-      );
-
-      const updated = await channelRepo.getByChannelId(channel.id);
-
-      if (!updated) {
-        throw new Error("Failed to load YouTube channel.");
+    // Keep the database channel record aligned with the public metadata used by
+    // current-day snapshots.
+    await channelRepo.updateWhere(
+      {
+        channelId: channel.id
+      },
+      {
+        channelName: channel.title,
+        description: channel.description ?? null,
+        thumbnailUrl: channel.thumbnailUrl ?? null,
+        customUrl: channel.customUrl ?? null,
+        publishedAt: channel.publishedAt ?? null,
+        subscriberCount: channel.subscriberCount ?? null,
+        viewCount: channel.viewCount ?? null,
+        videoCount: channel.videoCount ?? null
       }
+    );
 
-      return updated;
+    const updated = await channelRepo.getByChannelId(channel.id);
+
+    if (!updated) {
+      throw new Error("Failed to load YouTube channel.");
+    }
+
+    return updated;
   }
 
   private async fetchVideos(youtubeClient: YoutubeClient, channelId: string, filter?: (video: YoutubeVideo) => boolean): Promise<YoutubeVideo[]> {
@@ -491,7 +535,8 @@ export class YoutubeSyncService {
     );
   }
 
-  private async createSnapShots(
+  /** Saves one per-video snapshot for the supplied day, updating the row on retry. */
+  private async createVideoSnapshots(
     videos: YoutubeVideo[],
     lookup: Map<string, PublicYoutubeVideo>,
     snapshotDate: Date
@@ -543,6 +588,49 @@ export class YoutubeSyncService {
         "subscribersGained",
         "subscribersLost",
       ]
+    );
+  }
+
+  /** Saves today's public channel totals; YouTube does not expose historical totals. */
+  private async createCurrentChannelSnapshot(channel: PublicYoutubeChannel) {
+    const snapshot: CreateYoutubeChannelSnapshot = {
+      channelId: channel.channelId,
+      subscriberCount: Number(channel.subscriberCount ?? 0),
+      viewCount: Number(channel.viewCount ?? 0),
+      videoCount: Number(channel.videoCount ?? 0),
+      snapshotDate: new Date()
+    };
+
+    await channelSnapshotRepo.bulkUpsert(
+      [snapshot],
+      ["subscriberCount", "viewCount", "videoCount"]
+    );
+  }
+
+  /** Saves the daily channel-wide analytics returned by YouTube for one date. */
+  private async createChannelAnalyticsSnapshot(
+    channel: PublicYoutubeChannel,
+    youtubeAnalyticsClient: YoutubeAnalyticsClient,
+    snapshotDate: string
+  ) {
+    const analytics = await youtubeAnalyticsClient.getChannelAnalytics(snapshotDate, snapshotDate);
+    const data = analytics.find(row => row.date === snapshotDate);
+
+    // Analytics can lag behind the current date, in which case no row is written.
+    if (!data) return;
+
+    const snapshot: CreateYoutubeChannelAnalyticsSnapshot = {
+      channelId: channel.channelId,
+      views: data.views,
+      watchHours: data.watchHours,
+      subscribersGained: data.subscribersGained,
+      subscribersLost: data.subscribersLost,
+      snapshotDate: new Date(`${snapshotDate}T00:00:00`)
+    };
+
+    await channelAnalyticsSnapshotRepo.bulkUpsert(
+      [snapshot],
+      ["views", "watchHours", "subscribersGained", "subscribersLost"]
     );
   }
 

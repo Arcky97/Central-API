@@ -5,4 +5,8 @@ export class YoutubeChannelSnapshotRepository extends Repository<YoutubeChannelS
   constructor() {
     super("youtubeChannelSnapshots", "analytics");
   }
+
+  async hasSnapshots(channelId: string): Promise<boolean> {
+    return (await this.findOne({ channelId })) !== null;
+  }
 }

@@ -4,7 +4,7 @@ export interface YoutubeChannelSnapshotRow {
   subscriberCount: number;
   viewCount: number;
   videoCount: number;
-  snapShotDate: Date;
+  snapshotDate: Date;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -15,8 +15,7 @@ export const youtubeChannelAnalyticsSnapshotsSchema: TableSchema = {
 
     channelId: {
       type: "VARCHAR(50)",
-      nullable: false,
-      unique: true
+      nullable: false
     },
 
     views: {
@@ -25,7 +24,7 @@ export const youtubeChannelAnalyticsSnapshotsSchema: TableSchema = {
     },
 
     watchHours: {
-      type: "INT",
+      type: "DECIMAL(10,2)",
       nullable: false
     },
 

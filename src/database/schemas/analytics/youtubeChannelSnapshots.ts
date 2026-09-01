@@ -15,8 +15,7 @@ export const youtubeChannelSnapshotsSchema: TableSchema = {
 
     channelId: {
       type: "VARCHAR(50)",
-      nullable: false,
-      unique: true
+      nullable: false
     },
 
     subscriberCount: {

@@ -7,11 +7,13 @@ import { randomBytes, timingSafeEqual } from "node:crypto";
 import { env } from "../config/env";
 import { SyncJobsService } from "../services/sync-jobs.service";
 import { youtubeSyncQueue } from "../queue/youtube-sync.queue";
+import { YoutubeChannelRepository } from "../database/repositories/analytics/YoutubeChannelRepository";
 
 const stateCookieName = "youtube_oauth_state";
 const redirectCookieName = "youtube_oauth_redirect";
 const sessionCookieName = "auth_session";
 const allowedRedirects = new Set(["/"]);
+const youtubeChannelRepo = new YoutubeChannelRepository();
 
 function serializeCookie(name: string, value: string, maxAge?: number) {
   const attributes = ["Path=/", "HttpOnly", "SameSite=Lax"];
@@ -104,7 +106,11 @@ export class AuthController {
       });
     }
 
-    if (authUser.isNewAccount) {
+    // The auth account can outlive analytics data after a database reset. Queue
+    // the initial sync whenever this channel has not yet been persisted.
+    const existingChannel = await youtubeChannelRepo.getByChannelId(youtubeAuthData.channelId);
+
+    if (authUser.isNewAccount || !existingChannel) {
       const job = await SyncJobsService.createJob(
         authUser.user.id,
         "youtube_backfill",

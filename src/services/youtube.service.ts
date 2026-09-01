@@ -12,8 +12,6 @@ const channelRepo = new YoutubeChannelRepository();
 const videoRepo = new YoutubeVideoRepository();
 const snapshotRepo = new YoutubeVideoSnapshotRepository();
 const goalProfileRepo = new YoutubeGoalProfileRepository();
-const channelSnapshotRepo = new YoutubeChannelSnapshotRepository();
-const channelAnylticsSnapshotRepo = new YoutubeChannelAnalyticsSnapshotRepository();
 
 export class YoutubeService {
   static async getChannel(channelId: string) {
