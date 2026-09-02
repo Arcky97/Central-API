@@ -491,7 +491,6 @@ export class YoutubeSyncService {
         firstVideo.publishedAt
       )
     );
-    console.log([startDate, endDate]);
 
     const analytics = await youtubeAnalyticsClient.getVideoAnalytics(
       startDate ?? firstPublishedDate,

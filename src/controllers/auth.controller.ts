@@ -110,8 +110,10 @@ export class AuthController {
     // the initial sync whenever this channel has not yet been persisted.
     const existingChannel = await youtubeChannelRepo.getByChannelId(youtubeAuthData.channelId);
 
+    let job;
+
     if (authUser.isNewAccount || !existingChannel) {
-      const job = await SyncJobsService.createJob(
+      job = await SyncJobsService.createJob(
         authUser.user.id,
         "youtube_backfill",
         "Initial sync"
@@ -131,7 +133,7 @@ export class AuthController {
       serializeCookie(redirectCookieName, "", 0),
       serializeCookie(sessionCookieName, token)
     ]);
-    res.redirect(`${env.FRONTEND_URL}${redirectPath}`);
+    res.redirect(`${env.FRONTEND_URL}${redirectPath}?initialSyncJobId=${job?.id || "0"}`);
   }
 
   static async logout(_req: Request, res: Response) {
