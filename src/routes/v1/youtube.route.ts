@@ -49,6 +49,11 @@ router.get(
 );
 
 router.get(
+  "/channel/snapshots",
+  asyncHandler(YoutubeController.getChannelSnapshots)
+);
+
+router.get(
   "/videos", 
   asyncHandler(YoutubeController.getVideos)
 );
@@ -60,7 +65,7 @@ router.get(
 
 router.get(
   "/videos/:videoId/snapshots", 
-  asyncHandler(YoutubeController.getSnapshots)
+  asyncHandler(YoutubeController.getVideoSnapshots)
 );
 
 router.patch(

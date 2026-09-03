@@ -10,8 +10,10 @@ import { UpdateYoutubeVideo } from "../database/types/youtube-video.type";
 
 const channelRepo = new YoutubeChannelRepository();
 const videoRepo = new YoutubeVideoRepository();
-const snapshotRepo = new YoutubeVideoSnapshotRepository();
+const videoSnapshotRepo = new YoutubeVideoSnapshotRepository();
+const channelSnapshotRepo = new YoutubeChannelAnalyticsSnapshotRepository();
 const goalProfileRepo = new YoutubeGoalProfileRepository();
+
 
 export class YoutubeService {
   static async getChannel(channelId: string) {
@@ -25,7 +27,7 @@ export class YoutubeService {
     const videos = await videoRepo.getByChannelId(channel.id);
 
     const snapshotLookup =
-      await snapshotRepo.getLatestSnapshotLookup(channel.id);
+      await videoSnapshotRepo.getLatestSnapshotLookup(channel.id);
 
     return videos.map(video => {
       const snapshot =
@@ -123,7 +125,7 @@ export class YoutubeService {
     return true;
   }
 
-  static async getSnapshots(videoId: string, channelId: string) {
+  static async getVideoSnapshots(videoId: string, channelId: string) {
     const channel = await channelRepo.getByChannelId(channelId);
     if (!channel) return [];
 
@@ -131,8 +133,17 @@ export class YoutubeService {
 
     if (!video) return [];
 
-    return snapshotRepo.findMany({
+    return videoSnapshotRepo.findMany({
       videoId: video.id
+    });
+  }
+
+  static async getChannelSnapshots(channelId: string) {
+    const channel = await channelRepo.getByChannelId(channelId);
+    if (!channel) return [];
+
+    return channelSnapshotRepo.findMany({
+      channelId
     });
   }
 }

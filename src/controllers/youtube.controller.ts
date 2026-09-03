@@ -154,12 +154,21 @@ export class YoutubeController {
     res.json({ success: true, message: "Youtube goal profile removed successfully!" });
   }
 
-  static async getSnapshots(req: Request, res: Response) {
+  static async getVideoSnapshots(req: Request, res: Response) {
     const { videoId } = getYoutubeVideoSchema.parse(req.params);
     const account = await YoutubeController.getAccount(req, res);
     if (!account) return;
 
-    const snapshots = await YoutubeService.getSnapshots(videoId, account.channelId);
+    const snapshots = await YoutubeService.getVideoSnapshots(videoId, account.channelId);
+
+    res.json(snapshots);
+  }
+
+  static async getChannelSnapshots(req: Request, res: Response) {
+    const account = await YoutubeController.getAccount(req, res);
+    if (!account) return;
+
+    const snapshots = await YoutubeService.getChannelSnapshots(account.channelId);
 
     res.json(snapshots);
   }
