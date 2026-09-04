@@ -64,6 +64,11 @@ router.get(
 );
 
 router.get(
+  "/videos/:days",
+  asyncHandler(YoutubeController.getVideosByLastDays)
+)
+
+router.get(
   "/videos/:videoId/snapshots", 
   asyncHandler(YoutubeController.getVideoSnapshots)
 );

@@ -1,8 +1,12 @@
-import { nullable, z } from "zod";
+import { z } from "zod";
 
 export const getYoutubeVideoSchema = z.object({
   videoId: z.string().min(1)
 });
+
+export const getYoutubeVideoLastDaysSchema = z.object({
+  days: z.number()
+})
 
 export const getYoutubeSyncSchema = z.object({
   date: z.string()

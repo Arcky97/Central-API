@@ -1,4 +1,5 @@
 import { toBoolean } from "../../mapper/toBoolean";
+import { query } from "../../query";
 import { CreateYoutubeVideo, PublicYoutubeVideo, UpdateYoutubeVideo, YoutubeVideoRow } from "../../types/youtube-video.type";
 import { Repository } from "../base/Repository";
 
@@ -77,5 +78,25 @@ export class YoutubeVideoRepository extends Repository<YoutubeVideoRow, CreateYo
         video
       ])
     );
+  }
+
+  async getVideosBeforeDays(channelId: number, days: number) {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+
+    const rows = query(
+      this.db,
+      {
+        sql: `
+          SELECT COUNT(*) AS uploads
+          FROM ${this.tableName}
+          WHERE channelId = ?
+            AND publishedAt = ?
+        `
+      },
+      { channelId, publishedAt: cutoffDate }
+    )
+
+    return rows;
   }
 }

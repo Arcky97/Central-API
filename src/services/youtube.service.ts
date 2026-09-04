@@ -1,6 +1,5 @@
 import { YoutubeChannelAnalyticsSnapshotRepository } from "../database/repositories/analytics/YoutubeChannelAnalyticsSnapshotRepository";
 import { YoutubeChannelRepository } from "../database/repositories/analytics/YoutubeChannelRepository";
-import { YoutubeChannelSnapshotRepository } from "../database/repositories/analytics/YoutubeChannelSnapshotRepository";
 import { YoutubeGoalProfileRepository } from "../database/repositories/analytics/YoutubeGoalProfileRepository";
 import { YoutubeVideoRepository } from "../database/repositories/analytics/YoutubeVideoRepository";
 import { YoutubeVideoSnapshotRepository } from "../database/repositories/analytics/YoutubeVideoSnapshotRepository";
@@ -60,6 +59,15 @@ export class YoutubeService {
     if (!channel) return null;
 
     return videoRepo.findOne({ videoId, channelId: channel.id });
+  }
+
+  static async getVideosByLastDays(days: number, channelId: string) {
+    const channel = await channelRepo.getByChannelId(channelId);
+    if (!channel) return [];
+
+    const result: number = await videoRepo.getVideosBeforeDays(channel.id, days);
+
+    return result;
   }
 
   static async updateVideo(videoId: string, channelId: string, data: UpdateYoutubeVideo) {

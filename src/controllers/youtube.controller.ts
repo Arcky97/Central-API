@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { YoutubeSyncService } from "../services/youtube-sync.service";
 import { YoutubeService } from "../services/youtube.service";
-import { getGoalProfileSchema, getGoalProfileUpdateSchema, getYoutubeSyncSchema, getYoutubeVideoSchema, getYoutubeVideoUpdateSchema } from "../schema/youtube.schema";
+import { getGoalProfileSchema, getGoalProfileUpdateSchema, getYoutubeSyncSchema, getYoutubeVideoLastDaysSchema, getYoutubeVideoSchema, getYoutubeVideoUpdateSchema } from "../schema/youtube.schema";
 import { removeUndefined } from "../database/utils/removeUndefined";
 import { AuthRequest } from "../middleware/jwt";
 import { YoutubeAccountRepository } from "../database/repositories/auth/youtubeAccountRepository";
@@ -77,6 +77,16 @@ export class YoutubeController {
     const video = await YoutubeService.getVideo(videoId, account.channelId);
 
     res.json(video);
+  }
+
+  static async getVideosByLastDays(req: Request, res: Response) {
+    const { days } = getYoutubeVideoLastDaysSchema.parse(req.params);
+    const account = await YoutubeController.getAccount(req, res);
+    if (!account) return;
+
+    const data = await YoutubeService.getVideosByLastDays(days, account.channelId);
+
+    res.json(data);
   }
 
   static async updateVideo(req: AuthRequest, res: Response) {
