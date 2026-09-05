@@ -17,6 +17,7 @@ import { YoutubeClient } from "../clients/youtube/YoutubeClient";
 import { YoutubeAccountRow } from "../database/types/youtube-accounts.type";
 import { formatLocalDate } from "../utils/dateTimeStringifier";
 import { SyncJobsService } from "./sync-jobs.service";
+import { getProgressMessage } from "../utils/getProgressMessage";
 
 const channelRepo =
   new YoutubeChannelRepository();
@@ -176,7 +177,7 @@ export class YoutubeSyncService {
         const progress = Math.min(99, Math.round((processedDays / totalDays) * 100));
         await SyncJobsService.updateJob(jobId, {
           status: "running",
-          message: `Backfilling YouTube analytics for ${currentDate}`,
+          message: getProgressMessage(progress),
           progress,
           currentItem: currentDate
         });

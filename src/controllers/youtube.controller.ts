@@ -81,10 +81,12 @@ export class YoutubeController {
 
   static async getVideosByLastDays(req: Request, res: Response) {
     const { days } = getYoutubeVideoLastDaysSchema.parse(req.params);
+    console.log(days);
     const account = await YoutubeController.getAccount(req, res);
     if (!account) return;
 
     const data = await YoutubeService.getVideosByLastDays(days, account.channelId);
+    console.log(data);
 
     res.json(data);
   }
