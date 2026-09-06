@@ -5,7 +5,7 @@ export const getYoutubeVideoSchema = z.object({
 });
 
 export const getYoutubeVideoLastDaysSchema = z.object({
-  days: z.number()
+  days: z.coerce.number()
 })
 
 export const getYoutubeSyncSchema = z.object({

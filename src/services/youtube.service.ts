@@ -63,11 +63,9 @@ export class YoutubeService {
 
   static async getVideosByLastDays(days: number, channelId: string) {
     const channel = await channelRepo.getByChannelId(channelId);
-    if (!channel) return [];
+    if (!channel) return { uploads: 0 };
 
-    const result: number = await videoRepo.getVideosBeforeDays(channel.id, days);
-
-    return result;
+    return videoRepo.getVideosBeforeDays(channel.id, days);
   }
 
   static async updateVideo(videoId: string, channelId: string, data: UpdateYoutubeVideo) {

@@ -84,19 +84,19 @@ export class YoutubeVideoRepository extends Repository<YoutubeVideoRow, CreateYo
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - days);
 
-    const rows = query(
+    const rows = await query<Array<{ uploads: number | string }>>(
       this.db,
       {
         sql: `
           SELECT COUNT(*) AS uploads
           FROM ${this.tableName}
           WHERE channelId = ?
-            AND publishedAt = ?
+            AND publishedAt >= ?
         `
       },
-      { channelId, publishedAt: cutoffDate }
-    )
+      [channelId, cutoffDate]
+    );
 
-    return rows;
+    return { uploads: Number(rows[0]?.uploads ?? 0) };
   }
 }

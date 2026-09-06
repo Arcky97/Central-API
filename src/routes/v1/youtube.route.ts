@@ -64,7 +64,7 @@ router.get(
 );
 
 router.get(
-  "/videos/:days",
+  "/videos/days/:days",
   asyncHandler(YoutubeController.getVideosByLastDays)
 )
 
