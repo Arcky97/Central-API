@@ -15,7 +15,8 @@ const pools: Record<DatabaseName, Pool> = {
     password: env.DB_PASS,
     database: env.DB_NAME_CORE,
     port: env.DB_PORT,
-    connectionLimit: 10
+    connectionLimit: 10,
+    decimalNumbers: true
   }),
 
   analytics: createPool({
@@ -24,7 +25,8 @@ const pools: Record<DatabaseName, Pool> = {
     password: env.DB_PASS,
     database: env.DB_NAME_ANALYTICS,
     port: env.DB_PORT,
-    connectionLimit: 10
+    connectionLimit: 10,
+    decimalNumbers: true
   }),
 
   auth: createPool({
@@ -33,7 +35,8 @@ const pools: Record<DatabaseName, Pool> = {
     password: env.DB_PASS,
     database: env.DB_NAME_AUTH,
     port: env.DB_PORT,
-    connectionLimit: 10
+    connectionLimit: 10,
+    decimalNumbers: true
   })
 };
 
