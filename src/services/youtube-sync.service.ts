@@ -154,9 +154,6 @@ export class YoutubeSyncService {
     }
 
     const effectiveStartDate = this.getBackfillStartDate(targetVideos, videoId, startDate);
-    // Channel analytics is a one-time historical import. Video backfills remain
-    // independent, including for a single video requested from the dashboard.
-    const shouldBackfillChannelAnalytics = !videoId && !await channelAnalyticsSnapshotRepo.hasSnapshots(channel.channelId);
 
     let current = new Date(effectiveStartDate);
     current.setHours(0, 0, 0, 0);
@@ -186,7 +183,7 @@ export class YoutubeSyncService {
       await this.syncAnalytics(youtubeAnalyticsClient, availableVideos, effectiveStartDate, currentDate);
       await this.createVideoSnapshots(availableVideos, lookup, new Date(current));
 
-      if (shouldBackfillChannelAnalytics) {
+      if (!videoId) {
         await this.createChannelAnalyticsSnapshot(channel, youtubeAnalyticsClient, currentDate);
       }
 
@@ -223,6 +220,29 @@ export class YoutubeSyncService {
   }
 
   /** Calculates the earliest allowed date for the requested backfill scope. */
+  async getStaleBackfillStartDate(channel: PublicYoutubeChannel): Promise<string | null> {
+    const latestVideoSnapshotDate = await snapshotRepo.getLatestSnapshotDateByChannelId(channel.id);
+    const latestChannelAnalyticsDate = await channelAnalyticsSnapshotRepo.getLatestSnapshotDateByChannelId(channel.channelId);
+
+    const latestDates = [latestVideoSnapshotDate, latestChannelAnalyticsDate].filter((date): date is Date => date !== null);
+
+    if (latestDates.length === 0) {
+      return null;
+    }
+
+    const latest = new Date(Math.min(...latestDates.map(date => date.getTime())));
+    latest.setHours(0, 0, 0, 0);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (formatLocalDate(latest) >= formatLocalDate(today)) {
+      return null;
+    }
+
+    return formatLocalDate(latest);
+  }
+
   private getBackfillStartDate(videos: YoutubeVideo[], videoId?: string, startDate?: string): string {
     const retentionCutoff = this.getRetentionCutoff();
     let requestedStartDate: Date;
@@ -593,13 +613,32 @@ export class YoutubeSyncService {
 
   /** Saves today's public channel totals; YouTube does not expose historical totals. */
   private async createCurrentChannelSnapshot(channel: PublicYoutubeChannel) {
+    const snapshotDate = new Date(`${formatLocalDate(new Date())}T00:00:00`);
     const snapshot: CreateYoutubeChannelSnapshot = {
       channelId: channel.channelId,
       subscriberCount: Number(channel.subscriberCount ?? 0),
       viewCount: Number(channel.viewCount ?? 0),
       videoCount: Number(channel.videoCount ?? 0),
-      snapshotDate: new Date()
+      snapshotDate
     };
+
+    const hasSnapshot = await channelSnapshotRepo.hasSnapshotForDate(channel.channelId, snapshotDate);
+
+    if (hasSnapshot) {
+      await channelSnapshotRepo.updateWhere(
+        {
+          channelId: channel.channelId,
+          snapshotDate: formatLocalDate(snapshotDate)
+        },
+        {
+          subscriberCount: snapshot.subscriberCount,
+          viewCount: snapshot.viewCount,
+          videoCount: snapshot.videoCount
+        }
+      );
+
+      return;
+    }
 
     await channelSnapshotRepo.bulkUpsert(
       [snapshot],
@@ -619,14 +658,34 @@ export class YoutubeSyncService {
     // Analytics can lag behind the current date, in which case no row is written.
     if (!data) return;
 
+    const snapshotDateAsDate = new Date(`${snapshotDate}T00:00:00`);
     const snapshot: CreateYoutubeChannelAnalyticsSnapshot = {
       channelId: channel.channelId,
       views: data.views,
       watchHours: data.watchHours,
       subscribersGained: data.subscribersGained,
       subscribersLost: data.subscribersLost,
-      snapshotDate: new Date(`${snapshotDate}T00:00:00`)
+      snapshotDate: snapshotDateAsDate
     };
+
+    const hasSnapshot = await channelAnalyticsSnapshotRepo.hasSnapshotForDate(channel.channelId, snapshotDateAsDate);
+
+    if (hasSnapshot) {
+      await channelAnalyticsSnapshotRepo.updateWhere(
+        {
+          channelId: channel.channelId,
+          snapshotDate: formatLocalDate(snapshotDateAsDate)
+        },
+        {
+          views: snapshot.views,
+          watchHours: snapshot.watchHours,
+          subscribersGained: snapshot.subscribersGained,
+          subscribersLost: snapshot.subscribersLost
+        }
+      );
+
+      return;
+    }
 
     await channelAnalyticsSnapshotRepo.bulkUpsert(
       [snapshot],

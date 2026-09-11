@@ -55,6 +55,27 @@ export class YoutubeVideoSnapshotRepository extends Repository<YoutubeVideoSnaps
     return lookup;
   }
 
+  async getLatestSnapshotDateByChannelId(channelId: number): Promise<Date | null> {
+    const rows = await query<{ maxDate: Date | string }[]>(
+      this.db,
+      {
+        sql: `
+          SELECT MAX(s.snapshotDate) AS maxDate
+          FROM youtubeVideoSnapshots s
+          INNER JOIN youtubeVideos v ON v.id = s.videoId
+          WHERE v.channelId = ?
+          LIMIT 1
+        `
+      },
+      [channelId]
+    );
+
+    const value = rows[0]?.maxDate;
+    if (!value) return null;
+
+    return new Date(value);
+  }
+
   async deleteOlderThan(cutoffDate: Date) {
     await query(this.db, {
       sql: `DELETE FROM ${this.tableName} WHERE snapshotDate < ?`

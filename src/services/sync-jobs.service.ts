@@ -28,6 +28,11 @@ export class SyncJobsService {
     return job;
   }
 
+  static async hasActiveBackfillJob(authUserId: number): Promise<boolean> {
+    const jobs = await repo.getActiveByAuthUserId(authUserId);
+    return jobs.some(job => job.type === "youtube_backfill" || job.type === "youtube_video_backfill");
+  }
+
   /**
    * Get job status
    */
