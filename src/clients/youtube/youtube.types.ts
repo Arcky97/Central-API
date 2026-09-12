@@ -23,6 +23,8 @@ export interface YoutubeVideo {
   likes: number;
   comments: number;
   shares: number;
+  durationSeconds: number;
+  isShort: boolean;
   watchHours?: number;
   averageViewDuration?: number;
   averageViewPercentage?: number

@@ -54,6 +54,20 @@ export class YoutubeService {
     });
   }
 
+  static async getLatestVideos(limit: number, channelId: string) {
+    const channel = await channelRepo.getByChannelId(channelId);
+    if (!channel) return null;
+
+    return videoRepo.getByVideoType(channel.id, "video", { limit });
+  }
+
+  static async getLatestShorts(limit: number, channelId: string) {
+    const channel = await channelRepo.getByChannelId(channelId);
+    if (!channel) return null;
+
+    return videoRepo.getByVideoType(channel.id, "short", { limit });
+  }
+
   static async getVideo(videoId: string, channelId: string) {
     const channel = await channelRepo.getByChannelId(channelId);
     if (!channel) return null;

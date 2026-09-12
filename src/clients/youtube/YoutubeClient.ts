@@ -2,6 +2,15 @@ import axios, { AxiosInstance } from "axios";
 import { env } from "../../config/env";
 import { YoutubeChannel, YoutubePagedResult, YoutubePlaylist, YoutubeVideo } from "./youtube.types";
 
+// Parses ISO 8601 durations (e.g. "PT1M30S") returned by the YouTube Data API into seconds.
+function parseIso8601Duration(duration: string): number {
+  const match = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/.exec(duration);
+  if (!match) return 0;
+
+  const [, hours, minutes, seconds] = match;
+  return (Number(hours) || 0) * 3600 + (Number(minutes) || 0) * 60 + (Number(seconds) || 0);
+}
+
 export class YoutubeClient {
   private readonly client: AxiosInstance;
 
@@ -89,6 +98,8 @@ export class YoutubeClient {
         views: 0,
         likes: 0,
         comments: 0,
+        durationSeconds: 0,
+        isShort: false
       }))
     };
   }
@@ -141,25 +152,34 @@ export class YoutubeClient {
     likes: number;
     comments: number;
     shares: number;
+    durationSeconds: number;
+    isShort: boolean;
   }>> {
     const data = await this.get<any>(
       "/videos",
       {
-        part: "statistics",
+        part: "statistics,contentDetails",
         id: ids.join(",")
       }
     );
 
     return new Map(
-      data.items.map((item: any) => [
-        item.id,
-        {
-          views: Number(item.statistics.viewCount),
-          likes: Number(item.statistics.likeCount ?? 0),
-          comments: Number(item.statistics.commentCount ?? 0),
-          shares: 0
-        }
-      ])
+      data.items.map((item: any) => {
+        const durationSeconds = parseIso8601Duration(item.contentDetails.duration);
+
+        return [
+          item.id,
+          {
+            views: Number(item.statistics.viewCount),
+            likes: Number(item.statistics.likeCount ?? 0),
+            comments: Number(item.statistics.commentCount ?? 0),
+            shares: 0,
+            durationSeconds,
+            // Matches YouTube's current Shorts eligibility window; not authoritative.
+            isShort: durationSeconds > 0 && durationSeconds <= 180
+          }
+        ];
+      })
     );
   }
 

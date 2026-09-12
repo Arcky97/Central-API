@@ -362,6 +362,8 @@ export class YoutubeSyncService {
           video.likes=  stats.likes;
           video.comments = stats.comments;
           video.shares = stats.shares;
+          video.durationSeconds = stats.durationSeconds;
+          video.isShort = stats.isShort;
         }
 
         videos.push(video);
@@ -468,6 +470,8 @@ export class YoutubeSyncService {
           description: video.description,
           playlistIds: video.playlistIds,
           publishedAt: video.publishedAt,
+          durationSeconds: video.durationSeconds,
+          isShort: video.isShort,
           trackAnalytics: true
         });
 
@@ -484,7 +488,9 @@ export class YoutubeSyncService {
           title: video.title,
           thumbnailUrl: video.thumbnailUrl,
           playlistIds: video.playlistIds,
-          publishedAt: video.publishedAt
+          publishedAt: video.publishedAt,
+          durationSeconds: video.durationSeconds,
+          isShort: video.isShort
         }
       });
     }

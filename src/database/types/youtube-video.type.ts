@@ -9,6 +9,11 @@ export interface YoutubeVideoRow {
   title: string;
   thumbnailUrl: string | null;
 
+  durationSeconds: number;
+
+  isShort: number;
+  isShortOverride: number | null;
+
   description: string | null;
 
   playlistIds: string[] | null;
@@ -31,6 +36,11 @@ export interface CreateYoutubeVideo {
   title: string;
   thumbnailUrl: string | null;
 
+  durationSeconds: number;
+
+  isShort: boolean;
+  isShortOverride?: boolean | null;
+
   description?: string | null;
 
   playlistIds?: string[] | null;
@@ -47,6 +57,8 @@ export interface CreateYoutubeVideo {
 export type UpdateYoutubeVideo = Partial<CreateYoutubeVideo>;
 
 // Public DTO
-export type PublicYoutubeVideo = Omit<YoutubeVideoRow, "trackAnalytics"> & {
+export type PublicYoutubeVideo = Omit<YoutubeVideoRow, "trackAnalytics" | "isShort" | "isShortOverride"> & {
   trackAnalytics: boolean;
+  isShort: boolean;
+  isShortOverride: boolean | null;
 }

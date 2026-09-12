@@ -49,6 +49,21 @@ export const youtubeVideosSchema: TableSchema = {
       nullable: true
     },
 
+    durationSeconds: {
+      type: "INT",
+      nullable: false
+    },
+
+    isShort: {
+      type: "TINYINT",
+      default: "0"
+    },
+
+    isShortOverride: {
+      type: "TINYINT",
+      nullable: true
+    },
+
     publishedAt: {
       type: "TIMESTAMP",
       nullable: false

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { YoutubeSyncService } from "../services/youtube-sync.service";
 import { YoutubeService } from "../services/youtube.service";
-import { getGoalProfileSchema, getGoalProfileUpdateSchema, getYoutubeSyncSchema, getYoutubeVideoLastDaysSchema, getYoutubeVideoSchema, getYoutubeVideoUpdateSchema } from "../schema/youtube.schema";
+import { getGoalProfileSchema, getGoalProfileUpdateSchema, getLatestYoutubeVideos, getYoutubeSyncSchema, getYoutubeVideoLastDaysSchema, getYoutubeVideoSchema, getYoutubeVideoUpdateSchema } from "../schema/youtube.schema";
 import { removeUndefined } from "../database/utils/removeUndefined";
 import { AuthRequest } from "../middleware/jwt";
 import { YoutubeAccountRepository } from "../database/repositories/auth/youtubeAccountRepository";
@@ -69,8 +69,22 @@ export class YoutubeController {
     res.json(videos);
   }
 
+  static async getLatestVideosAndShorts(req: Request, res: Response) {
+    const { limit } = getLatestYoutubeVideos.parse(req.params);
+
+    const account = await YoutubeController.getAccount(req, res);
+    if (!account) return;
+
+    const videos = await YoutubeService.getLatestVideos(limit, account.channelId);
+
+    const shorts = await YoutubeService.getLatestShorts(limit, account.channelId);
+    
+    res.json({ videos, shorts });
+  }
+
   static async getVideo(req: Request, res: Response) {
     const { videoId } = getYoutubeVideoSchema.parse(req.params);
+
     const account = await YoutubeController.getAccount(req, res);
     if (!account) return;
 
@@ -81,6 +95,7 @@ export class YoutubeController {
 
   static async getVideosByLastDays(req: Request, res: Response) {
     const { days } = getYoutubeVideoLastDaysSchema.parse(req.params);
+
     const account = await YoutubeController.getAccount(req, res);
     if (!account) return;
 
@@ -91,6 +106,7 @@ export class YoutubeController {
 
   static async updateVideo(req: AuthRequest, res: Response) {
     const { videoId } = getYoutubeVideoSchema.parse(req.params);
+
     const account = await YoutubeController.getAccount(req, res);
     if (!account) return;
 

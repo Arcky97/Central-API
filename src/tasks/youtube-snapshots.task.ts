@@ -6,7 +6,7 @@ import { YoutubeAccountRepository } from "../database/repositories/auth/youtubeA
 
 console.log(`[YouTube] Synchronization Cron Job initialized.`);
 
-cron.schedule('0 0 * * *', async () => {
+cron.schedule('0 3 * * *', async () => {
   console.log("[YouTube] Cron job started.");
 
   const startDate = new Date();
@@ -32,7 +32,7 @@ cron.schedule('0 0 * * *', async () => {
 
 console.log(`[YouTube] Snapshot cleanup Cron Job initialized.`);
 
-cron.schedule('0 0 * * *', async () => {
+cron.schedule('0 3 * * *', async () => {
   console.log(`[YouTube] Cron job started.`);
 
   const service = new YoutubeSyncService();

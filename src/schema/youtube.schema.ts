@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+export const getLatestYoutubeVideos = z.object({
+  limit: z.coerce.number().int().min(1).max(50)
+});
+
 export const getYoutubeVideoSchema = z.object({
   videoId: z.string().min(1)
 });
@@ -27,7 +31,8 @@ export const getYoutubeVideoSyncSchema = z.object({
 
 export const getYoutubeVideoUpdateSchema = z.object({
   goalProfileId: z.number().nullable().optional(),
-  trackAnalytics: z.boolean().optional()
+  trackAnalytics: z.boolean().optional(),
+  isShortOverride: z.boolean().nullable().optional()
 })
 
 export const getGoalAllProfilesSchema = z.object({

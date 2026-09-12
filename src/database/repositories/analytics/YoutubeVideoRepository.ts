@@ -45,7 +45,9 @@ export class YoutubeVideoRepository extends Repository<YoutubeVideoRow, CreateYo
       playlistIds: typeof row.playlistIds === "string"
         ? JSON.parse(row.playlistIds)
         : row.playlistIds ?? [],
-      trackAnalytics: toBoolean(row.trackAnalytics)
+      trackAnalytics: toBoolean(row.trackAnalytics),
+      isShort: toBoolean(row.isShort),
+      isShortOverride: row.isShortOverride === null ? null : toBoolean(row.isShortOverride)
     }
   }
 
@@ -98,5 +100,46 @@ export class YoutubeVideoRepository extends Repository<YoutubeVideoRow, CreateYo
     );
 
     return { uploads: Number(rows[0]?.uploads ?? 0) };
+  }
+
+  // limit omitted returns every matching video, e.g. for paged listing pass { limit, offset }
+  async getByVideoType(channelId: number, type: "video" | "short", options: { limit?: number; offset?: number } = {}): Promise<PublicYoutubeVideo[]> {
+    const { limit, offset = 0 } = options;
+    const params: unknown[] = [channelId, type === "short" ? 1 : 0];
+
+    let sql = `
+      SELECT * FROM ${this.tableName}
+      WHERE channelId = ? AND COALESCE(isShortOverride, isShort) = ?
+      ORDER BY publishedAt DESC
+    `;
+
+    if (limit !== undefined) {
+      sql += " LIMIT ? OFFSET ?";
+      params.push(limit, offset);
+    }
+
+    const rows = await query<YoutubeVideoRow[]>(
+      this.db,
+      { sql },
+      params
+    );
+
+    return rows.map(row => this.mapRow(row));
+  }
+
+  async countByVideoType(channelId: number, type: "video" | "short"): Promise<number> {
+    const rows = await query<Array<{ total: number | string }>>(
+      this.db,
+      {
+        sql: `
+          SELECT COUNT(*) AS total
+          FROM ${this.tableName}
+          WHERE channelId = ? AND COALESCE(isShortOverride, isShort) = ?
+        `
+      },
+      [channelId, type === "short" ? 1 : 0]
+    );
+
+    return Number(rows[0]?.total ?? 0);
   }
 }

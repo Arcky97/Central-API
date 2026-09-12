@@ -54,8 +54,13 @@ router.get(
 );
 
 router.get(
-  "/videos", 
+  "/videos",
   asyncHandler(YoutubeController.getVideos)
+);
+
+router.get(
+  "/videos/latest/:limit",
+  asyncHandler(YoutubeController.getLatestVideosAndShorts)
 );
 
 router.get(
