@@ -1,4 +1,5 @@
 import { query } from "../../query";
+import { formatLocalDate } from "../../../utils/dateTimeStringifier";
 import { CreateYoutubeChannelAnalyticsSnapshot, PublicYoutubeChannelAnalyticsSnapshot, UpdateYoutubeChannelAnalyticsSnapshot, YoutubeChannelAnalyticsSnapshotRow } from "../../types/youtube-channel-analytics-snapshots.type";
 import { Repository } from "../base/Repository";
 
@@ -22,7 +23,7 @@ export class YoutubeChannelAnalyticsSnapshotRepository extends Repository<Youtub
   }
 
   async hasSnapshotForDate(channelId: string, snapshotDate: Date | string): Promise<boolean> {
-    const value = snapshotDate instanceof Date ? snapshotDate.toISOString().slice(0, 10) : snapshotDate;
+    const value = snapshotDate instanceof Date ? formatLocalDate(snapshotDate) : snapshotDate;
 
     const rows = await query<{ id: number }[]>(
       this.db,

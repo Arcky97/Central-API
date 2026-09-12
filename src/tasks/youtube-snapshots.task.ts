@@ -1,6 +1,7 @@
 import cron from "node-cron";
 import { env } from "../config/env";
 import { YoutubeSyncService } from "../services/youtube-sync.service";
+import { YoutubeService } from "../services/youtube.service";
 import { formatLocalDate } from "../utils/dateTimeStringifier";
 import { YoutubeAccountRepository } from "../database/repositories/auth/youtubeAccountRepository";
 
@@ -22,7 +23,17 @@ cron.schedule('0 3 * * *', async () => {
     if (!credentials) continue;
 
     try {
-      await service.backfillSync(credentials, { startDate: formatLocalDate(startDate) });
+      const fallbackStartDate = formatLocalDate(startDate);
+      const channel = await YoutubeService.getChannel(account.channelId);
+
+      // Reaches further back than the delay window when a prior run left a gap, instead of
+      // permanently skipping any date that scrolls out of the fixed startDate..today window.
+      const staleStartDate = channel ? await service.getStaleBackfillStartDate(channel) : null;
+      const effectiveStartDate = staleStartDate && staleStartDate < fallbackStartDate
+        ? staleStartDate
+        : fallbackStartDate;
+
+      await service.backfillSync(credentials, { startDate: effectiveStartDate });
     } catch (error) {
       console.error(`[YouTube] Scheduled sync failed for channel ${account.channelId}.`, error);
     }
