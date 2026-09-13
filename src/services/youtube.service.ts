@@ -1,10 +1,12 @@
 import { YoutubeChannelAnalyticsSnapshotRepository } from "../database/repositories/analytics/YoutubeChannelAnalyticsSnapshotRepository";
 import { YoutubeChannelRepository } from "../database/repositories/analytics/YoutubeChannelRepository";
 import { YoutubeGoalProfileRepository } from "../database/repositories/analytics/YoutubeGoalProfileRepository";
+import { YoutubePlaylistRepository } from "../database/repositories/analytics/YoutubePlaylistRepository";
 import { YoutubeVideoRepository } from "../database/repositories/analytics/YoutubeVideoRepository";
 import { YoutubeVideoSnapshotRepository } from "../database/repositories/analytics/YoutubeVideoSnapshotRepository";
 import { YoutubeVideoResponse } from "../database/types/api/youtube-response.type";
 import { CreateYoutubeGoalProfile, PublicYoutubeGoalProfile, UpdateYoutubeGoalProfile } from "../database/types/youtube-goal-profile.type";
+import { PublicYoutubePlaylist } from "../database/types/youtube-playlist.type";
 import { UpdateYoutubeVideo } from "../database/types/youtube-video.type";
 
 const channelRepo = new YoutubeChannelRepository();
@@ -12,6 +14,7 @@ const videoRepo = new YoutubeVideoRepository();
 const videoSnapshotRepo = new YoutubeVideoSnapshotRepository();
 const channelSnapshotRepo = new YoutubeChannelAnalyticsSnapshotRepository();
 const goalProfileRepo = new YoutubeGoalProfileRepository();
+const playlistRepo = new YoutubePlaylistRepository();
 
 
 export class YoutubeService {
@@ -99,6 +102,13 @@ export class YoutubeService {
 
     await videoRepo.updateWhere({ id: video.id, channelId: channel.id }, data);
     return true;
+  }
+
+  static async getPlaylists(channelId: string): Promise<PublicYoutubePlaylist[]> {
+    const channel = await channelRepo.getByChannelId(channelId);
+    if (!channel) return [];
+
+    return await playlistRepo.findMany({ channelId });
   }
 
   static async getAllGoalProfiles(channelId: string): Promise<PublicYoutubeGoalProfile[] | null> {

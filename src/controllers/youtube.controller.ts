@@ -51,7 +51,7 @@ export class YoutubeController {
     })
   }
 
-  static async getChannel(req: Request, res: Response) {
+  static async getChannel(req: AuthRequest, res: Response) {
     const account = await YoutubeController.getAccount(req, res);
     if (!account) return;
 
@@ -60,7 +60,7 @@ export class YoutubeController {
     res.json(channel);
   }
 
-  static async getVideos(req: Request, res: Response) {
+  static async getVideos(req: AuthRequest, res: Response) {
     const account = await YoutubeController.getAccount(req, res);
     if (!account) return;
 
@@ -69,7 +69,7 @@ export class YoutubeController {
     res.json(videos);
   }
 
-  static async getLatestVideosAndShorts(req: Request, res: Response) {
+  static async getLatestVideosAndShorts(req: AuthRequest, res: Response) {
     const { limit } = getLatestYoutubeVideos.parse(req.params);
 
     const account = await YoutubeController.getAccount(req, res);
@@ -82,7 +82,7 @@ export class YoutubeController {
     res.json({ videos, shorts });
   }
 
-  static async getVideo(req: Request, res: Response) {
+  static async getVideo(req: AuthRequest, res: Response) {
     const { videoId } = getYoutubeVideoSchema.parse(req.params);
 
     const account = await YoutubeController.getAccount(req, res);
@@ -93,7 +93,7 @@ export class YoutubeController {
     res.json(video);
   }
 
-  static async getVideosByLastDays(req: Request, res: Response) {
+  static async getVideosByLastDays(req: AuthRequest, res: Response) {
     const { days } = getYoutubeVideoLastDaysSchema.parse(req.params);
 
     const account = await YoutubeController.getAccount(req, res);
@@ -119,6 +119,15 @@ export class YoutubeController {
       success: true,
       message: `Youtube video with id: "${videoId}" updated successfully!`
     });
+  }
+
+  static async getPlaylists(req: AuthRequest, res: Response) {
+    const account = await YoutubeController.getAccount(req, res);
+    if (!account) return;
+
+    const playlists= YoutubeService.getPlaylists(account.channelId);
+
+    return res.json(playlists);
   }
 
   static async getAllProfilesByChannelId(req: AuthRequest, res: Response) {
@@ -180,7 +189,7 @@ export class YoutubeController {
     res.json({ success: true, message: "Youtube goal profile removed successfully!" });
   }
 
-  static async getVideoSnapshots(req: Request, res: Response) {
+  static async getVideoSnapshots(req: AuthRequest, res: Response) {
     const { videoId } = getYoutubeVideoSchema.parse(req.params);
     const account = await YoutubeController.getAccount(req, res);
     if (!account) return;
@@ -190,7 +199,7 @@ export class YoutubeController {
     res.json(snapshots);
   }
 
-  static async getChannelSnapshots(req: Request, res: Response) {
+  static async getChannelSnapshots(req: AuthRequest, res: Response) {
     const account = await YoutubeController.getAccount(req, res);
     if (!account) return;
 
@@ -206,7 +215,7 @@ export class YoutubeController {
     })
   }
 
-  private static async getAccount(req: Request, res: Response) {
+  private static async getAccount(req: AuthRequest, res: Response) {
     const authUserId = (req as AuthRequest).authUserId;
     if (!authUserId) {
       res.status(401).json({ success: false, message: "Authentication required" });

@@ -15,6 +15,7 @@ router.use("/sync", authenticateJWT);
 router.use("/channel", authenticateJWT);
 router.use("/videos", authenticateJWT);
 router.use("/video", authenticateJWT);
+router.use("/playlists", authenticateJWT);
 router.use("/profile", authenticateJWT);
 router.use("/profiles", authenticateJWT);
 
@@ -81,7 +82,12 @@ router.get(
 router.patch(
   "/video/:videoId",
   asyncHandler(YoutubeController.updateVideo)
-)
+);
+
+router.get(
+  "/playlists",
+  asyncHandler(YoutubeController.getPlaylists)
+);
 
 router.get(
   "/profiles", 
