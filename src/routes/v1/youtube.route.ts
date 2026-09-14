@@ -72,16 +72,16 @@ router.get(
 router.get(
   "/videos/days/:days",
   asyncHandler(YoutubeController.getVideosByLastDays)
-)
-
-router.get(
-  "/videos/:videoId/snapshots", 
-  asyncHandler(YoutubeController.getVideoSnapshots)
 );
 
 router.get(
   "/videos/latest/snapshots",
   asyncHandler(YoutubeController.getLatestVideosSnapshots)
+);
+
+router.get(
+  "/videos/:videoId/snapshots", 
+  asyncHandler(YoutubeController.getVideoSnapshots)
 );
 
 router.patch(
