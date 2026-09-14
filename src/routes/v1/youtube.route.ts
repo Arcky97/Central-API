@@ -79,6 +79,11 @@ router.get(
   asyncHandler(YoutubeController.getVideoSnapshots)
 );
 
+router.get(
+  "/videos/latest/snapshots",
+  asyncHandler(YoutubeController.getLatestVideosSnapshots)
+);
+
 router.patch(
   "/video/:videoId",
   asyncHandler(YoutubeController.updateVideo)

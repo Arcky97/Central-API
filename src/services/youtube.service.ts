@@ -108,7 +108,9 @@ export class YoutubeService {
     const channel = await channelRepo.getByChannelId(channelId);
     if (!channel) return [];
 
-    return await playlistRepo.findMany({ channelId });
+    const playlists = await playlistRepo.findMany({ channelId: channel.id });
+    
+    return playlists;
   }
 
   static async getAllGoalProfiles(channelId: string): Promise<PublicYoutubeGoalProfile[] | null> {
@@ -166,6 +168,17 @@ export class YoutubeService {
     return videoSnapshotRepo.findMany({
       videoId: video.id
     });
+  }
+
+  static async getLatestVideosSnapshots(channelId: string) {
+    const channel = await channelRepo.getByChannelId(channelId);
+    if (!channel) return [];
+
+    const snapshotLookup = await videoSnapshotRepo.getLatestSnapshotLookup(channel.id);
+
+    console.log(Array.from(snapshotLookup.values()));
+
+    return Array.from(snapshotLookup.values());
   }
 
   static async getChannelSnapshots(channelId: string) {

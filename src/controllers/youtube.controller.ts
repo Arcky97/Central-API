@@ -125,7 +125,7 @@ export class YoutubeController {
     const account = await YoutubeController.getAccount(req, res);
     if (!account) return;
 
-    const playlists= YoutubeService.getPlaylists(account.channelId);
+    const playlists = await YoutubeService.getPlaylists(account.channelId);
 
     return res.json(playlists);
   }
@@ -195,6 +195,15 @@ export class YoutubeController {
     if (!account) return;
 
     const snapshots = await YoutubeService.getVideoSnapshots(videoId, account.channelId);
+
+    res.json(snapshots);
+  }
+
+  static async getLatestVideosSnapshots(req: AuthRequest, res: Response) {
+    const account = await YoutubeController.getAccount(req, res);
+    if (!account) return;
+
+    const snapshots = await YoutubeService.getLatestVideosSnapshots(account.channelId);
 
     res.json(snapshots);
   }
