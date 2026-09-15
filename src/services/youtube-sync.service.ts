@@ -83,8 +83,11 @@ export class YoutubeSyncService {
         });
       }
 
-      const retentionCutoff = this.getRetentionCutoff();
-      await this.syncAnalytics(youtubeAnalyticsClient, trackedVideos, formatLocalDate(retentionCutoff));
+      const today = formatLocalDate(new Date());
+      // Video snapshots are stored as daily deltas. The dashboard sums those rows
+      // for a desired time window; channel totals remain separate as current-value snapshots.
+      await this.syncAnalytics(youtubeAnalyticsClient, trackedVideos, today, today);
+      await this.persistCurrentVideoTotals(trackedVideos);
       await this.createVideoSnapshots(trackedVideos, lookup, new Date());
       await this.createCurrentChannelSnapshot(channel);
 
@@ -180,7 +183,9 @@ export class YoutubeSyncService {
         });
       }
 
-      await this.syncAnalytics(youtubeAnalyticsClient, availableVideos, effectiveStartDate, currentDate);
+      // Each video snapshot represents the delta for that exact day. The dashboard
+      // sums the daily rows for any period it wants to show.
+      await this.syncAnalytics(youtubeAnalyticsClient, availableVideos, currentDate, currentDate);
       await this.createVideoSnapshots(availableVideos, lookup, new Date(current));
 
       if (!videoId) {
@@ -471,6 +476,15 @@ export class YoutubeSyncService {
           playlistIds: video.playlistIds,
           publishedAt: video.publishedAt,
           durationSeconds: video.durationSeconds,
+          views: Number(video.views ?? 0),
+          likes: Number(video.likes ?? 0),
+          comments: Number(video.comments ?? 0),
+          shares: Number(video.shares ?? 0),
+          watchHours: Number(video.watchHours ?? 0),
+          averageViewDuration: Number(video.averageViewDuration ?? 0),
+          averageViewPercentage: Number(video.averageViewPercentage ?? 0),
+          subscribersGained: Number(video.subscribersGained ?? 0),
+          subscribersLost: Number(video.subscribersLost ?? 0),
           isShort: video.isShort,
           trackAnalytics: true
         });
@@ -490,7 +504,16 @@ export class YoutubeSyncService {
           playlistIds: video.playlistIds,
           publishedAt: video.publishedAt,
           durationSeconds: video.durationSeconds,
-          isShort: video.isShort
+          isShort: video.isShort,
+          views: Number(video.views ?? 0),
+          likes: Number(video.likes ?? 0),
+          comments: Number(video.comments ?? 0),
+          shares: Number(video.shares ?? 0),
+          watchHours: Number(video.watchHours ?? 0),
+          averageViewDuration: Number(video.averageViewDuration ?? 0),
+          averageViewPercentage: Number(video.averageViewPercentage ?? 0),
+          subscribersGained: Number(video.subscribersGained ?? 0),
+          subscribersLost: Number(video.subscribersLost ?? 0)
         }
       });
     }
@@ -538,7 +561,7 @@ export class YoutubeSyncService {
         video.subscribersGained = data.subscribersGained;
         video.subscribersLost = data.subscribersLost;
 
-        video.views = data.views,
+        video.views = data.views;
         video.likes = data.likes;
         video.comments = data.comments;
         video.shares = data.shares;
@@ -559,6 +582,31 @@ export class YoutubeSyncService {
     console.log(
       `[YouTube] synced analytics for ${synced} video(s).`
     );
+  }
+
+  private async persistCurrentVideoTotals(videos: YoutubeVideo[]) {
+    if (videos.length === 0) return;
+
+    const updates = videos
+      .filter(video => Number.isFinite(video.views) && Number.isFinite(video.likes))
+      .map(video => ({
+        where: { videoId: video.id },
+        data: {
+          views: Number(video.views ?? 0),
+          likes: Number(video.likes ?? 0),
+          comments: Number(video.comments ?? 0),
+          shares: Number(video.shares ?? 0),
+          watchHours: Number(video.watchHours ?? 0),
+          averageViewDuration: Number(video.averageViewDuration ?? 0),
+          averageViewPercentage: Number(video.averageViewPercentage ?? 0),
+          subscribersGained: Number(video.subscribersGained ?? 0),
+          subscribersLost: Number(video.subscribersLost ?? 0)
+        }
+      }));
+
+    if (updates.length === 0) return;
+
+    await videoRepo.bulkUpdate(updates);
   }
 
   /** Saves one per-video snapshot for the supplied day, updating the row on retry. */

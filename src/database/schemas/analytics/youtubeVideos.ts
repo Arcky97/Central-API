@@ -64,6 +64,51 @@ export const youtubeVideosSchema: TableSchema = {
       nullable: true
     },
 
+    views: {
+      type: "BIGINT",
+      default: "0"
+    },
+
+    likes: {
+      type: "BIGINT",
+      default: "0"
+    },
+
+    comments: {
+      type: "BIGINT",
+      default: "0",
+    },
+
+    shares: {
+      type: "BIGINT",
+      default: "0"
+    },
+
+    watchHours: {
+      type: "DECIMAL(10,2)",
+      default: "0"
+    },
+
+    averageViewDuration: {
+      type: "INT",
+      default: "0"
+    },
+
+    averageViewPercentage: {
+      type: "DECIMAL(10,2)",
+      default: "0"
+    },
+
+    subscribersGained: {
+      type: "INT",
+      default: "0"
+    },
+
+    subscribersLost: {
+      type: "INT",
+      default: "0"
+    },
+
     publishedAt: {
       type: "TIMESTAMP",
       nullable: false

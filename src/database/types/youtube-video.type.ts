@@ -18,6 +18,21 @@ export interface YoutubeVideoRow {
 
   playlistIds: string[] | null;
 
+  views: number;
+  likes: number;
+  comments: number;
+  shares: number;
+
+  watchHours: number;
+
+  averageViewDuration: number;
+
+  averageViewPercentage: number;
+
+  subscribersGained: number;
+
+  subscribersLost: number;
+
   publishedAt: Date;
 
   trackAnalytics: number;
@@ -45,8 +60,20 @@ export interface CreateYoutubeVideo {
 
   playlistIds?: string[] | null;
 
-  series?: string | null;
-  episodeNumber?: number | null;
+  views: number;
+  likes: number;
+  comments: number;
+  shares: number;
+
+  watchHours?: number | null;
+
+  averageViewDuration?: number | null;
+
+  averageViewPercentage?: number | null;
+
+  subscribersGained?: number | null;
+
+  subscribersLost?: number | null;
 
   publishedAt: Date;
 
