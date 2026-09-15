@@ -60,13 +60,13 @@ router.get(
 );
 
 router.get(
-  "/videos/latest/:limit",
-  asyncHandler(YoutubeController.getLatestVideosAndShorts)
+  "/videos/latest/snapshots",
+  asyncHandler(YoutubeController.getLatestVideosSnapshots)
 );
 
 router.get(
-  "/videos/:videoId", 
-  asyncHandler(YoutubeController.getVideo)
+  "/videos/latest/:limit",
+  asyncHandler(YoutubeController.getLatestVideosAndShorts)
 );
 
 router.get(
@@ -75,13 +75,13 @@ router.get(
 );
 
 router.get(
-  "/videos/latest/snapshots",
-  asyncHandler(YoutubeController.getLatestVideosSnapshots)
+  "/videos/:videoId/snapshots", 
+  asyncHandler(YoutubeController.getVideoSnapshots)
 );
 
 router.get(
-  "/videos/:videoId/snapshots", 
-  asyncHandler(YoutubeController.getVideoSnapshots)
+  "/videos/:videoId", 
+  asyncHandler(YoutubeController.getVideo)
 );
 
 router.patch(

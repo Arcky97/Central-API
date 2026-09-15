@@ -9,6 +9,7 @@ import { SyncJobsService } from "../services/sync-jobs.service";
 import { youtubeSyncQueue } from "../queue/youtube-sync.queue";
 import { YoutubeChannelRepository } from "../database/repositories/analytics/YoutubeChannelRepository";
 import { YoutubeSyncService } from "../services/youtube-sync.service";
+import { formatLocalDate } from "../utils/dateTimeStringifier";
 
 const stateCookieName = "youtube_oauth_state";
 const redirectCookieName = "youtube_oauth_redirect";
@@ -130,8 +131,12 @@ export class AuthController {
     } else if (existingChannel && !hasActiveBackfillJob) {
       const staleStartDate = await youtubeSyncService.getStaleBackfillStartDate(existingChannel);
 
-      if (staleStartDate) {
-        console.log(`[YouTube] Detected stale analytics for ${existingChannel.channelId}. Backfill starting from ${staleStartDate}.`);
+      const startDate = env.NODE_ENV === "development"
+        ? formatLocalDate(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000))
+        : staleStartDate;
+
+      if (startDate) {
+        console.log(`[YouTube] Detected stale analytics for ${existingChannel.channelId}. Backfill starting from ${startDate}.`);
 
         job = await SyncJobsService.createJob(
           authUser.user.id,
@@ -143,7 +148,7 @@ export class AuthController {
           jobId: job.id,
           authUserId: authUser.user.id,
           type: "backfill",
-          startDate: staleStartDate
+          startDate
         });
       }
     }
