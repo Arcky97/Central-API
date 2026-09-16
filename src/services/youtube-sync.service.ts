@@ -62,6 +62,7 @@ export class YoutubeSyncService {
 
       const { channel, videos, lookup, trackedVideos } = await this.prepareChannelData(
         youtubeClient,
+        youtubeAnalyticsClient,
         account.channelId
       );
 
@@ -123,6 +124,7 @@ export class YoutubeSyncService {
     const youtubeAnalyticsClient = new YoutubeAnalyticsClient(account.refreshToken);
     const { channel, lookup, trackedVideos } = await this.prepareChannelData(
       youtubeClient,
+      youtubeAnalyticsClient,
       account.channelId
     );
 
@@ -213,12 +215,12 @@ export class YoutubeSyncService {
   }
 
   /** Fetches external data and ensures its database records exist before snapshot work. */
-  private async prepareChannelData(youtubeClient: YoutubeClient, channelId: string) {
+  private async prepareChannelData(youtubeClient: YoutubeClient, youtubeAnalyticsClient: YoutubeAnalyticsClient, channelId: string) {
     const channel = await this.syncChannel(youtubeClient, channelId);
     const videos = await this.fetchVideos(youtubeClient, channelId);
     await this.syncPlaylists(youtubeClient, channel, videos);
 
-    const lookup = await this.saveVideos(channel, videos);
+    const lookup = await this.saveVideos(channel, videos, youtubeAnalyticsClient);
     const trackedVideos = videos.filter(video => lookup.get(video.id)?.trackAnalytics);
 
     return { channel, videos, lookup, trackedVideos };
@@ -448,9 +450,14 @@ export class YoutubeSyncService {
     console.log(`[YouTube] Synced ${playlists.length} playlist(s).`);
   }
 
-  private async saveVideos(channel: PublicYoutubeChannel, videos: YoutubeVideo[]): Promise<Map<string, PublicYoutubeVideo>> {
+  private async saveVideos(channel: PublicYoutubeChannel, videos: YoutubeVideo[], youtubeAnalyticsClient: YoutubeAnalyticsClient): Promise<Map<string, PublicYoutubeVideo>> {
     let created = 0;
     let updated = 0;
+
+    // Populates each video's watchHours/averageViewDuration/averageViewPercentage/
+    // subscribersGained/subscribersLost (lifetime, since no startDate here spans
+    // publish date through today) before the rows below are built.
+    await this.syncAnalytics(youtubeAnalyticsClient, videos);
 
     const lookup = await videoRepo.getLookupMap();
 
