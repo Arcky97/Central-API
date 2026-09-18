@@ -171,8 +171,6 @@ export class YoutubeService {
 
     const snapshotLookup = await videoSnapshotRepo.getLatestSnapshotLookup(channel.id);
 
-    console.log(Array.from(snapshotLookup.values()));
-
     return Array.from(snapshotLookup.values());
   }
 
