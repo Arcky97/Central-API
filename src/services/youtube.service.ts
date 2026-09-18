@@ -28,13 +28,7 @@ export class YoutubeService {
 
     const videos = await videoRepo.getByChannelId(channel.id);
 
-    const snapshotLookup =
-      await videoSnapshotRepo.getLatestSnapshotLookup(channel.id);
-
     return videos.map(video => {
-      const snapshot =
-        snapshotLookup.get(video.id);
-
       return {
         videoId: video.videoId,
         title: video.title,
@@ -42,17 +36,18 @@ export class YoutubeService {
         description: video.description ?? "",
         publishedAt: video.publishedAt,
         playlistIds: video.playlistIds ?? [],
-
-        statistics: {
-          views: snapshot?.views ?? 0,
-          likes: snapshot?.likes ?? 0,
-          comments: snapshot?.comments ?? 0,
-          watchHours: snapshot?.watchHours ?? 0,
-          averageViewDuration: snapshot?.averageViewDuration ?? 0,
-          averageViewPercentage: snapshot?.averageViewPercentage ?? 0,
-          subscribersGained: snapshot?.subscribersGained ?? 0,
-          subscribersLost: snapshot?.subscribersLost ?? 0
-        }
+        durationSeconds: video.durationSeconds,
+        isShort: video.isShort,
+        isShortOverride: video.isShortOverride,
+        views: video?.views ?? 0,
+        likes: video?.likes ?? 0,
+        comments: video?.comments ?? 0,
+        shares: video?.shares ?? 0,
+        watchHours: video?.watchHours ?? 0,
+        averageViewDuration: video?.averageViewDuration ?? 0,
+        averageViewPercentage: video?.averageViewPercentage ?? 0,
+        subscribersGained: video?.subscribersGained ?? 0,
+        subscribersLost: video?.subscribersLost ?? 0
       };
     });
   }
