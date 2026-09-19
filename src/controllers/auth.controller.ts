@@ -120,7 +120,7 @@ export class AuthController {
       job = await SyncJobsService.createJob(
         authUser.user.id,
         "youtube_backfill",
-        "Initial sync"
+        "Initial sync, this can take some time, please wait..."
       );
 
       await youtubeSyncQueue.add("backfill", {
@@ -141,7 +141,7 @@ export class AuthController {
         job = await SyncJobsService.createJob(
           authUser.user.id,
           "youtube_backfill",
-          "Syncing your data"
+          "Syncing your data, please wait..."
         );
 
         await youtubeSyncQueue.add("backfill", {

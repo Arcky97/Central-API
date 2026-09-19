@@ -123,9 +123,7 @@ export class YoutubeSyncController {
       const job = await SyncJobsService.createJob(
         req.authUserId,
         "youtube_video_backfill",
-        date
-          ? `YouTube backfill from ${date} for video ${videoId} queued.`
-          : `YouTube backfill for video ${videoId} queued.`
+        "Loading Video Data, Please Wait"
       );
 
       await youtubeSyncQueue.add("backfill", {

@@ -8,6 +8,26 @@ import { YoutubeAccountRepository } from "../database/repositories/auth/youtubeA
 const syncService = new YoutubeSyncService();
 const youtubeAccountRepo = new YoutubeAccountRepository();
 
+// Bounds how long a single job may run; concurrency is 1, so a hung external
+// call (YouTube API/OAuth) would otherwise block every later job forever.
+const JOB_TIMEOUT_MS = 2 * 60 * 1000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`${label} timed out after ${Math.round(ms / 1000)}s`)), ms);
+
+    promise
+      .then((result) => {
+        clearTimeout(timer);
+        resolve(result);
+      })
+      .catch((error) => {
+        clearTimeout(timer);
+        reject(error);
+      });
+  });
+}
+
 export const youtubeSyncWorker = new Worker<YoutubeSyncJob>(
   "youtube-sync",
   async (job) => {
@@ -25,14 +45,14 @@ export const youtubeSyncWorker = new Worker<YoutubeSyncJob>(
 
       if (type === "sync") {
         console.log(`[YouTube Sync Worker] Starting full sync for job ${jobId}`);
-        await syncService.sync(account, jobId);
+        await withTimeout(syncService.sync(account, jobId), JOB_TIMEOUT_MS, "Sync");
         await SyncJobsService.updateProgress(jobId, 100, "Sync completed");
       } else if (type === "backfill") {
         console.log(
           `[YouTube Sync Worker] Starting backfill${videoId ? ` for video ${videoId}` : ""} from ${startDate ?? "video publish date"} for job ${jobId}`
         );
 
-        await syncService.backfillSync(account, { videoId, startDate, jobId });
+        await withTimeout(syncService.backfillSync(account, { videoId, startDate, jobId }), JOB_TIMEOUT_MS, "Backfill");
         await SyncJobsService.updateProgress(jobId, 100, `Backfill completed`);
       }
 

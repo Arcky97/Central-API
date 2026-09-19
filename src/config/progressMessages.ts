@@ -32,15 +32,15 @@ export const progressMessages = [
     message: "Almost there..."
   },
   {
-    value: 92,
+    value: 90,
     message: "Wrapping things up..."
   },
   {
-    value: 97,
+    value: 93,
     message: "Putting the finishing touches on..."
   },
   {
-    value: 99,
+    value: 97,
     message: "All done! Your YouTube data is ready."
   }
 ]

@@ -86,4 +86,24 @@ export class YoutubeVideoSnapshotRepository extends Repository<YoutubeVideoSnaps
     const existing = await this.findOne({ videoId });
     return existing !== null;
   }
+
+  async getLatestSnapshotDateByVideoId(videoId: number): Promise<Date | null> {
+    const rows = await query<{ maxDate: Date | string }[]>(
+      this.db,
+      {
+        sql: `
+          SELECT MAX(snapshotDate) AS maxDate
+          FROM ${this.tableName}
+          WHERE videoId = ?
+          LIMIT 1
+        `
+      },
+      [videoId]
+    );
+
+    const value = rows[0]?.maxDate;
+    if (!value) return null;
+
+    return new Date(value);
+  }
 }
