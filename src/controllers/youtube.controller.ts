@@ -5,6 +5,7 @@ import { getGoalProfileSchema, getGoalProfileUpdateSchema, getLatestYoutubeVideo
 import { removeUndefined } from "../database/utils/removeUndefined";
 import { AuthRequest } from "../middleware/jwt";
 import { YoutubeAccountRepository } from "../database/repositories/auth/youtubeAccountRepository";
+import { logSuccess } from "../database/sync/logger";
 
 const youtubeAccountRepo = new YoutubeAccountRepository();
 
@@ -41,7 +42,7 @@ export class YoutubeController {
 
     const service = new YoutubeSyncService();
 
-    console.log("Backfill sync request received");
+    logSuccess("Backfill sync request received");
     const { date } = getYoutubeSyncSchema.parse(req.params);
     await service.backfillSync(account, { startDate: date });
 

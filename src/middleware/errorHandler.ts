@@ -3,6 +3,7 @@ import { ApiError } from "../core/errors/ApiError";
 import { DatabaseError } from "../core/errors/DatabaseError";
 import { ZodError } from "zod";
 import { API_ERRORS } from "../core/constants/apiErrors";
+import { logError } from "../database/sync/logger";
 
 export function errorHandler(err: unknown, _req: Request, res: Response, _next: NextFunction) {
   // 1. Zod validation errors
@@ -25,7 +26,7 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
 
   // 3. Database errors (internal system failures)
   if (err instanceof DatabaseError) {
-    console.error("DB ERROR:", err);
+    logError("[DB ERROR]:", err);
 
     return res.status(500).json({
       success: false,
@@ -35,7 +36,7 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
   }
 
   // 4. Unknown errors
-  console.error("UNKNOWN ERROR:", err);
+  logError("[UNKNOWN ERROR]:", err);
 
   return res.status(500).json({
     success: false,

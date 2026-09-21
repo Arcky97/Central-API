@@ -14,7 +14,6 @@ router.use(requireScope("website", "admin"));
 router.use("/sync", authenticateJWT);
 router.use("/channel", authenticateJWT);
 router.use("/videos", authenticateJWT);
-router.use("/video", authenticateJWT);
 router.use("/playlists", authenticateJWT);
 router.use("/profile", authenticateJWT);
 router.use("/profiles", authenticateJWT);
@@ -85,7 +84,7 @@ router.get(
 );
 
 router.patch(
-  "/video/:videoId",
+  "/videos/:videoId",
   asyncHandler(YoutubeController.updateVideo)
 );
 

@@ -2,24 +2,25 @@ import "dotenv/config";
 import { env } from "./config/env";
 import app from "./app";
 import { initializeDatabases } from "./database/init";
+import { logError, logInfo, logSuccess } from "./database/sync/logger";
 
 const PORT = env.PORT;
 
 async function bootstrap() {
   try {
-    console.log("Starting ArckyTech API...");
+    logInfo("Starting ArckyTech API...");
 
     await initializeDatabases();
 
-    console.log("Database initialization complete.");
+    logSuccess("Database initialization complete.");
 
     app.listen(PORT, () => {
-      console.log(
+      logInfo(
         `Central API is running on port ${PORT}`
       );
     });
   } catch (error) {
-    console.error(
+    logError(
       "Failed to start API:",
       error
     );

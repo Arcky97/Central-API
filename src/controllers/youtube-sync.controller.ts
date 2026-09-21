@@ -3,6 +3,7 @@ import { SyncJobsService } from "../services/sync-jobs.service";
 import { youtubeSyncQueue } from "../queue/youtube-sync.queue";
 import { AuthRequest } from "../middleware/jwt";
 import { getYoutubeSyncSchema, getYoutubeVideoSyncSchema } from "../schema/youtube.schema";
+import { logError } from "../database/sync/logger";
 
 export class YoutubeSyncController {
   /**
@@ -36,7 +37,7 @@ export class YoutubeSyncController {
         message: "Sync job queued"
       });
     } catch (error) {
-      console.error("[YouTube Sync Controller] Error starting sync:", error);
+      logError("[YouTube Sync Controller] Error starting sync:", error);
       res.status(500).json({
         success: false,
         message: "Failed to start sync job",
@@ -87,7 +88,7 @@ export class YoutubeSyncController {
         message: `Backfill job from ${date} queued`
       });
     } catch (error) {
-      console.error("[YouTube Sync Controller] Error starting backfill:", error);
+      logError("[YouTube Sync Controller] Error starting backfill:", error);
       res.status(500).json({
         success: false,
         message: "Failed to start backfill job",
@@ -143,7 +144,7 @@ export class YoutubeSyncController {
           : `Backfill job for video ${videoId} queued`
       });
     } catch (error) {
-      console.error(`[YouTube Sync Controller] Error starting Backfill Sync for video ${req.params.videoId}:`, error);
+      logError(`[YouTube Sync Controller] Error starting Backfill Sync for video ${req.params.videoId}:`, error);
       res.status(500).json({
         success: false,
         message: "Failed to start backfill job",
@@ -195,7 +196,7 @@ export class YoutubeSyncController {
         updatedAt: job.updatedAt
       });
     } catch (error) {
-      console.error("[YouTube Sync Controller] Error getting job status:", error);
+      logError("[YouTube Sync Controller] Error getting job status:", error);
       res.status(500).json({
         success: false,
         message: "Failed to get job status",

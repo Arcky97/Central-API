@@ -4,6 +4,7 @@ import { YoutubeSyncJob } from "../queue/youtube-sync.queue";
 import { YoutubeSyncService } from "../services/youtube-sync.service";
 import { SyncJobsService } from "../services/sync-jobs.service";
 import { YoutubeAccountRepository } from "../database/repositories/auth/youtubeAccountRepository";
+import { logError, logFailure, logInfo, logSuccess } from "../database/sync/logger";
 
 const syncService = new YoutubeSyncService();
 const youtubeAccountRepo = new YoutubeAccountRepository();
@@ -34,7 +35,7 @@ export const youtubeSyncWorker = new Worker<YoutubeSyncJob>(
     const { jobId, authUserId, type, startDate, videoId } = job.data;
 
     try {
-      console.log(`[YouTube Sync Worker] Processing job ${jobId} (${type})`);
+      logInfo(`[YouTube Sync Worker] Processing job ${jobId} (${type})`);
 
       await SyncJobsService.startJob(jobId);
 
@@ -44,11 +45,11 @@ export const youtubeSyncWorker = new Worker<YoutubeSyncJob>(
       }
 
       if (type === "sync") {
-        console.log(`[YouTube Sync Worker] Starting full sync for job ${jobId}`);
+        logInfo(`[YouTube Sync Worker] Starting full sync for job ${jobId}`);
         await withTimeout(syncService.sync(account, jobId), JOB_TIMEOUT_MS, "Sync");
         await SyncJobsService.updateProgress(jobId, 100, "Sync completed");
       } else if (type === "backfill") {
-        console.log(
+        logInfo(
           `[YouTube Sync Worker] Starting backfill${videoId ? ` for video ${videoId}` : ""} from ${startDate ?? "video publish date"} for job ${jobId}`
         );
 
@@ -58,11 +59,11 @@ export const youtubeSyncWorker = new Worker<YoutubeSyncJob>(
 
       await SyncJobsService.completeJob(jobId, "Sync job completed successfully");
       
-      console.log(`[YouTube Sync Worker] Job ${jobId} completed successfully`);
+      logSuccess(`[YouTube Sync Worker] Job ${jobId} completed successfully`);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       
-      console.error(`[YouTube Sync Worker] Job ${jobId} failed:`, errorMessage, error);
+      logFailure(`[YouTube Sync Worker] Job ${jobId} failed:`, errorMessage, error);
       
       await SyncJobsService.failJob(jobId, errorMessage);
       
@@ -77,16 +78,16 @@ export const youtubeSyncWorker = new Worker<YoutubeSyncJob>(
 
 // Log worker events for debugging
 youtubeSyncWorker.on("completed", (job) => {
-  console.log(`[YouTube Sync Worker] Job ${job.id} completed`);
+  logSuccess(`[YouTube Sync Worker] Job ${job.id} completed`);
 });
 
 youtubeSyncWorker.on("failed", (job, error) => {
-  console.error(
+  logFailure(
     `[YouTube Sync Worker] Job ${job?.id} failed:`,
     error
   );
 });
 
 youtubeSyncWorker.on("error", (error) => {
-  console.error("[YouTube Sync Worker] Error:", error);
+  logError("[YouTube Sync Worker] Error:", error);
 });

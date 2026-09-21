@@ -2,6 +2,7 @@ import { Response, NextFunction } from "express";
 import { ScopedRequest } from "./apiKey";
 import { apiRequestsQueue } from "../queue/api-requests.queue";
 import { getStringifiedTimeStamp } from "../utils/dateTimeStringifier";
+import { logFailure, logInfo, logSuccess } from "../database/sync/logger";
 
 export function requestLogger(
   req: ScopedRequest,
@@ -29,15 +30,15 @@ export function requestLogger(
       userAgent: req.get("user-agent") ?? "unknown"
     };
 
-    console.log(
+    logInfo(
       `[REQUEST LOG] ${log.status} ${log.method} ${log.route} | ip=${log.ip} | scope=${log.scope} | ${log.durationMs}ms`
     );
 
     try {
       await apiRequestsQueue.add("api-request", log);
-      console.log("[SUCCESS] api-request queue add.");
+      logSuccess("api-request queue add.");
     } catch (err) {
-      console.error("[FAILED] api-request queue add:", err);
+      logFailure("api-request queue add:", err);
     }
   });
 

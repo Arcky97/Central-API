@@ -3,6 +3,7 @@ import { getProjectUpdatesSchema } from "../schema/project-updates.schema";
 import { projectUpdatesQueue } from "../queue/project-updates.queue";
 import { dateTimeStringifier } from "../utils/dateTimeStringifier";
 import { ProjectUpdatesService } from "../services/project-updates.service";
+import { logError, logFailure, logSuccess } from "../database/sync/logger";
 
 export class ProjectUpdatesController {
   static async registerBulkUpdates(req: Request, res: Response) {
@@ -30,15 +31,15 @@ export class ProjectUpdatesController {
 
       await projectUpdatesQueue.addBulk(jobs);
 
-      console.log(
-        `[SUCCESS] queued ${jobs.length} project-updates.`
+      logSuccess(
+        `queued ${jobs.length} project-updates.`
       );
 
       return res.json({
         success: true
       });
     } catch (err) {
-      console.error("[FAILED] project-updates bulk queue add:", err);
+      logFailure("project-updates bulk queue add:", err);
 
       return res.status(500).json({
         success: false

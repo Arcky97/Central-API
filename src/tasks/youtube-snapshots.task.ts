@@ -4,11 +4,12 @@ import { YoutubeSyncService } from "../services/youtube-sync.service";
 import { YoutubeService } from "../services/youtube.service";
 import { formatLocalDate } from "../utils/dateTimeStringifier";
 import { YoutubeAccountRepository } from "../database/repositories/auth/youtubeAccountRepository";
+import { logFailure, logInfo, logSuccess } from "../database/sync/logger";
 
-console.log(`[YouTube] Synchronization Cron Job initialized.`);
+logInfo(`[YouTube] Synchronization Cron Job initialized.`);
 
 cron.schedule('0 3 * * *', async () => {
-  console.log("[YouTube] Cron job started.");
+  logInfo("[YouTube] Cron job started.");
 
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - env.YOUTUBE_ANALYTICS_DELAY_DAYS);
@@ -16,7 +17,7 @@ cron.schedule('0 3 * * *', async () => {
   const service = new YoutubeSyncService();
   const accountRepo = new YoutubeAccountRepository();
   const accounts = await accountRepo.getAll();
-  console.log(`[YouTube] Requesting backfill synchronization for ${accounts.length} account(s) starting on ${startDate}.`);
+  logInfo(`[YouTube] Requesting backfill synchronization for ${accounts.length} account(s) starting on ${startDate}.`);
 
   for (const account of accounts) {
     const credentials = await accountRepo.getCredentialsByAuthUserId(account.authUserId);
@@ -35,24 +36,24 @@ cron.schedule('0 3 * * *', async () => {
 
       await service.backfillSync(credentials, { startDate: effectiveStartDate });
     } catch (error) {
-      console.error(`[YouTube] Scheduled sync failed for channel ${account.channelId}.`, error);
+      logFailure(`[YouTube] Scheduled sync failed for channel ${account.channelId}.`, error);
     }
   }
-  console.log(`[YouTube] Cron job completed!`);
+  logSuccess(`[YouTube] Cron job completed!`);
 });
 
-console.log(`[YouTube] Snapshot cleanup Cron Job initialized.`);
+logInfo(`[YouTube] Snapshot cleanup Cron Job initialized.`);
 
 cron.schedule('0 3 * * *', async () => {
-  console.log(`[YouTube] Cron job started.`);
+  logInfo(`[YouTube] Cron job started.`);
 
   const service = new YoutubeSyncService();
 
   try {
     await service.pruneExpiredSnapshots();
   } catch (error) {
-    console.error(`[YouTube] Snapshot cleanup failed.`, error);
+    logFailure(`[YouTube] Snapshot cleanup failed.`, error);
   }
 
-  console.log(`[YouTube] Cron job completed!`);
+  logSuccess(`[YouTube] Cron job completed!`);
 })

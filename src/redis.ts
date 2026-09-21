@@ -1,5 +1,6 @@
 import { Redis } from "ioredis";
 import { env } from "./config/env";
+import { logError, logInfo, logSuccess } from "./database/sync/logger";
 
 export const redis = new Redis({
   host: env.REDIS_HOST,
@@ -7,7 +8,7 @@ export const redis = new Redis({
   maxRetriesPerRequest: null
 });
 
-redis.on("connect", () => console.log("Redis connected"));
-redis.on("ready", () => console.log("Redis ready"));
-redis.on("error", err => console.error("Redis error:", err));
-redis.on("end", () => console.log("Redis connection closed"));
+redis.on("connect", () => logSuccess("Redis connected"));
+redis.on("ready", () => logInfo("Redis ready"));
+redis.on("error", err => logError("Redis error:", err));
+redis.on("end", () => logInfo("Redis connection closed"));

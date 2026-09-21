@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { oauth2Client } from "../clients/youtube/oauth";
+import { logInfo, logSuccess } from "../database/sync/logger";
 
 export class YoutubeOAuthController {
   static async getAuthUrl(req: Request, res: Response) {
@@ -24,8 +25,8 @@ export class YoutubeOAuthController {
 
     const { tokens } = await oauth2Client.getToken(code);
 
-    console.log("[YouTube OAuth] Tokens received:");
-    console.log({
+    logSuccess("[YouTube OAuth] Tokens received:");
+    logInfo({
       ...tokens,
       access_token: tokens.access_token ? "[REDACTED]" : undefined,
       refresh_token: tokens.refresh_token 

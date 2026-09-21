@@ -2,6 +2,7 @@ import { Worker } from "bullmq";
 import { ProjectUpdatesRepository } from "../database/repositories/core/ProjectUpdatesRepository";
 import { CreateProjectUpdate } from "../database/types/project-updates.type";
 import { redis } from "../redis";
+import { logFailure, logInfo, logSuccess } from "../database/sync/logger";
 
 const repo = new ProjectUpdatesRepository();
 
@@ -13,7 +14,7 @@ const FLUSH_INTERVAL = 5000;
 async function flush() {
   if (buffer.length === 0) return;
 
-  console.log(`[SUCCESS] flushing ${buffer.length} project-update request(s).`);
+  logInfo(`flushing ${buffer.length} project-update request(s).`);
 
   const batch = buffer.splice(0, buffer.length);
 
@@ -22,13 +23,13 @@ async function flush() {
 
 setInterval(() => {
   flush().catch(err => {
-    console.error("Failed to flush project updates batch:", err);
+    logFailure("Failed to flush project updates batch:", err);
   })
 }, FLUSH_INTERVAL);
 
 export const projectUpdatesWorker = new Worker<CreateProjectUpdate>("project-updates",
   async job => {
-    console.log("[SUCCESS] job received for project-updates");
+    logSuccess("job received for project-updates");
     buffer.push(job.data);
 
     if (buffer.length >= FLUSH_SIZE) {

@@ -1,6 +1,7 @@
 import { ResultSetHeader } from "mysql2";
 import { query } from "../../query";
 import { DatabaseName, TableName } from "../../types/schema";
+import { logWarning } from "../../sync/logger";
 
 export class Repository<DBRow, CreateInput = Partial<DBRow>, UpdateInput = Partial<DBRow>, PublicOutput = Partial<DBRow>> {
   tableName: TableName;
@@ -111,7 +112,7 @@ export class Repository<DBRow, CreateInput = Partial<DBRow>, UpdateInput = Parti
     }
 
     if (issues.length > 0) {
-      console.warn(
+      logWarning(
         `[Repository:${this.tableName}] ${context} scan detected ${issues.length} issue(s) across ${rows.length} row(s):\n` +
         issues.slice(0, 10).map(issue => `  - ${issue}`).join("\n") +
         (issues.length > 10 ? `\n  ...and ${issues.length - 10} more issue(s)` : "")

@@ -1,6 +1,7 @@
 import { Request } from "express";
 import { apiAuthFailuresQueue } from "../queue/api-auth-failure.queue";
 import { getStringifiedTimeStamp } from "../utils/dateTimeStringifier";
+import { logFailure, logSuccess, logWarning } from "../database/sync/logger";
 
 export async function LogAuthFailure(
   req: Request,
@@ -16,14 +17,14 @@ export async function LogAuthFailure(
     userAgent: req.get("user-agent") ?? "unknown"
   };
 
-  console.warn(
+  logWarning(
     `[AUTH FAIL] ${log.reason} | ${log.method} ${log.route} | ip=${log.ip} | ua=${log.userAgent}`
   );
 
   try {
     await apiAuthFailuresQueue.add("api-auth-failure", log);
-    console.log("[SUCCESS] api-auth-failure queue add.");
+    logSuccess("api-auth-failure queue add.");
   } catch (err) {
-    console.error("[FAILED] api-auth-failure queue add:", err);
+    logFailure("api-auth-failure queue add:", err);
   }
 }

@@ -45,7 +45,8 @@ export const youtubeChannelSnapshotsSchema: TableSchema = {
 
     updatedAt: {
       type: "TIMESTAMP",
-      default: "CURRENT_TIMESTAMP"
+      default: "CURRENT_TIMESTAMP",
+      onUpdate: "CURRENT_TIMESTAMP"
     }
   },
 

@@ -10,6 +10,7 @@ import { youtubeSyncQueue } from "../queue/youtube-sync.queue";
 import { YoutubeChannelRepository } from "../database/repositories/analytics/YoutubeChannelRepository";
 import { YoutubeSyncService } from "../services/youtube-sync.service";
 import { formatLocalDate } from "../utils/dateTimeStringifier";
+import { logInfo } from "../database/sync/logger";
 
 const stateCookieName = "youtube_oauth_state";
 const redirectCookieName = "youtube_oauth_redirect";
@@ -136,7 +137,7 @@ export class AuthController {
         : staleStartDate;
 
       if (startDate) {
-        console.log(`[YouTube] Detected stale analytics for ${existingChannel.channelId}. Backfill starting from ${startDate}.`);
+        logInfo(`[YouTube] Detected stale analytics for ${existingChannel.channelId}. Backfill starting from ${startDate}.`);
 
         job = await SyncJobsService.createJob(
           authUser.user.id,

@@ -2,10 +2,11 @@ import { Request, Response } from "express";
 //import { PageVisitsService } from "../services/page-visits.service";
 import { getPageVisitsSchema } from "../schema/page-visits.schema";
 import { pageVisitsQueue } from "../queue/page-visits.queue";
+import { logFailure, logSuccess } from "../database/sync/logger";
 
 export class PageVisitsController {
   static async registerVisit(req: Request, res: Response) {
-    console.log(`[PAGE-VISITS] New Page Visit register request received.`)
+    logSuccess(`[PAGE-VISITS] New Page Visit register request received.`)
     const { path, userAgent, referrer } = getPageVisitsSchema.parse(req.body);
 
     void pageVisitsQueue
@@ -16,7 +17,7 @@ export class PageVisitsController {
         referrer: referrer ?? null
       })
       .catch(err => {
-        console.error("[FAILED] page-visits queue add:", err);
+        logFailure("[PAGE_VISITS] queue add:", err);
       });
   }
 }

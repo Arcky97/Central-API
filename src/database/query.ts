@@ -2,6 +2,7 @@ import type { Pool, QueryOptions, QueryResult, QueryValues, RowDataPacket } from
 import { getPool } from "./pools";
 import type { DatabaseName } from "./types/schema";
 import { DatabaseError } from "../core/errors/DatabaseError";
+import { logError } from "./sync/logger";
 
 export async function query<T = any>(
   database: DatabaseName,
@@ -15,7 +16,7 @@ export async function query<T = any>(
     const [rows] = await connection.query(sql, params);
     return rows as T;
   } catch (error: any) {
-    console.error(`[Database Error] Query failed on database "${database}":`, {
+    logError(`[Database Error] Query failed on database "${database}":`, {
       message: error?.message,
       code: error?.code,
       sql: typeof sql === "string" ? sql : (sql as any)?.sql,

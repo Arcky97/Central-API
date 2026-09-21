@@ -4,18 +4,22 @@ export function logSection(title: string) {
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 }
 
-export function logInfo(message: string) {
-  console.log(`[INFO] ${message}`);
+export function logInfo(...message: any[]) {
+  console.info(`[INFO] ${message}`);
 }
 
-export function logSuccess(message: string) {
+export function logSuccess(...message: any[]) {
   console.log(`[SUCCESS] ${message}`);
 }
 
-export function logWarning(message: string) {
-  console.log(`[WARNING] ${message}`);
+export function logWarning(...message: any[]) {
+  console.warn(`[WARNING] ${message}`);
 }
 
-export function logError(message: string) {
-  console.log(`[ERROR] ${message}`);
+export function logError(...message: any[]) {
+  console.error(`[ERROR] ${message}`);
+}
+
+export function logFailure(...message: any[]) {
+  console.error(`[FAILED] ${message}`);
 }

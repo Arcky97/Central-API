@@ -19,6 +19,7 @@ import { YoutubeAccountRow } from "../database/types/youtube-accounts.type";
 import { formatLocalDate } from "../utils/dateTimeStringifier";
 import { SyncJobsService } from "./sync-jobs.service";
 import { getProgressMessage } from "../utils/getProgressMessage";
+import { logFailure, logInfo, logSuccess, logWarning } from "../database/sync/logger";
 
 const channelRepo =
   new YoutubeChannelRepository();
@@ -51,7 +52,7 @@ export class YoutubeSyncService {
     try {
       const youtubeClient = new YoutubeClient(env.YOUTUBE_API_KEY);
       const youtubeAnalyticsClient = new YoutubeAnalyticsClient(account.refreshToken);
-      console.log("[YouTube] Starting synchronization...");
+      logInfo("[YouTube] Starting synchronization...");
 
       if (jobId) {
         await SyncJobsService.updateJob(jobId, {
@@ -103,9 +104,9 @@ export class YoutubeSyncService {
         });
       }
 
-      console.log("[YouTube] Synchronization completed.");
+      logSuccess("[YouTube] Synchronization completed.");
     } catch (error: any) {
-      console.error("[YouTube] Synchronization failed.", error.response?.data);
+      logFailure("[YouTube] Synchronization failed.", error.response?.data);
       throw error;
     }
 
@@ -159,7 +160,7 @@ export class YoutubeSyncService {
       const latestSnapshotDate = await snapshotRepo.getLatestSnapshotDateByVideoId(dbVideo.id);
 
       if (latestSnapshotDate && formatLocalDate(latestSnapshotDate) >= formatLocalDate(today)) {
-        console.log(`[YouTube] Skipping backfill for video ${videoId}; already backfilled today.`);
+        logInfo(`[YouTube] Skipping backfill for video ${videoId}; already backfilled today.`);
 
         if (jobId) {
           await SyncJobsService.updateJob(jobId, {
@@ -215,7 +216,7 @@ export class YoutubeSyncService {
       await this.syncAnalytics(youtubeAnalyticsClient, availableVideos, currentDate, currentDate);
       await this.createVideoSnapshots(availableVideos, lookup, new Date(current));
 
-      console.log(`[YouTube] Backfill synchronization completed for ${availableVideos.length} video(s) up until ${current}`);
+      logSuccess(`[YouTube] Backfill synchronization completed for ${availableVideos.length} video(s) up until ${current}`);
 
       processedDays += 1;
       current.setDate(current.getDate() + 1);
@@ -461,7 +462,7 @@ export class YoutubeSyncService {
 
     } while (pageToken);
 
-    console.log(`[YouTube] Downloaded ${videos.length} videos from YouTube.`);
+    logInfo(`[YouTube] Downloaded ${videos.length} videos from YouTube.`);
 
     const orderedVideos = videos.reverse();
 
@@ -528,7 +529,7 @@ export class YoutubeSyncService {
       video.playlistIds = videoPlaylistIds.get(video.id) ?? [];
     }
 
-    console.log(`[YouTube] Synced ${playlists.length} playlist(s).`);
+    logSuccess(`[YouTube] Synced ${playlists.length} playlist(s).`);
   }
 
   private async saveVideos(channel: PublicYoutubeChannel, videos: YoutubeVideo[], youtubeAnalyticsClient: YoutubeAnalyticsClient): Promise<Map<string, PublicYoutubeVideo>> {
@@ -614,7 +615,7 @@ export class YoutubeSyncService {
       await videoRepo.bulkUpdate(updatedVideos);
     }
 
-    console.log(`[YouTube] ${created} new video(s), ${updated} updated.`);
+    logSuccess(`[YouTube] ${created} new video(s), ${updated} updated.`);
 
     return await videoRepo.getLookupMap();
   }
@@ -649,14 +650,12 @@ export class YoutubeSyncService {
         video.subscribersGained = data.subscribersGained;
         video.subscribersLost = data.subscribersLost;
 
-        video.views = data.views;
-        video.likes = data.likes;
-        video.comments = data.comments;
-        video.shares = data.shares;
+        // views/likes/comments/shares are left as the real-time Data API values set in
+        // fetchVideos, since the Analytics API's counterparts lag by up to a few days.
 
         synced++;
       } catch (error) {
-        console.error(
+        logFailure(
           `[YouTube] Failed to sync analytics for video ${video.id}`, 
           error
         );
@@ -667,7 +666,7 @@ export class YoutubeSyncService {
       }
     }
 
-    console.log(
+    logInfo(
       `[YouTube] synced analytics for ${synced} video(s).`
     );
   }
@@ -716,7 +715,7 @@ export class YoutubeSyncService {
       const databaseVideo = lookup.get(video.id);
 
       if (!databaseVideo) {
-        console.warn(`[YouTube] Snapshot skipped for video ${video.id} ("${video.title}"): not found in database lookup.`);
+        logWarning(`[YouTube] Snapshot skipped for video ${video.id} ("${video.title}"): not found in database lookup.`);
         continue;
       }
 
@@ -735,7 +734,7 @@ export class YoutubeSyncService {
       });
     }
 
-    console.log(`[YouTube] Creating ${snapshots.length} snapshot(s).`);
+    logInfo(`[YouTube] Creating ${snapshots.length} snapshot(s).`);
 
     await snapshotRepo.bulkUpsert(
       snapshots,
@@ -833,7 +832,7 @@ export class YoutubeSyncService {
     const cutoff = this.getRetentionCutoff();
 
     await snapshotRepo.deleteOlderThan(cutoff);
-    console.log(`[YouTube] Pruned snapshots older than ${formatLocalDate(cutoff)}.`);
+    logInfo(`[YouTube] Pruned snapshots older than ${formatLocalDate(cutoff)}.`);
   }
 
   private getRetentionCutoff(): Date {
