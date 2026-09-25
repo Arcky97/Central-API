@@ -644,14 +644,15 @@ export class YoutubeSyncService {
 
         if (!data) continue;
 
+        video.views = data.views,
+        video.likes = data.likes,
+        video.comments = data.comments,
+        video.shares = data.shares,
         video.watchHours = data.watchHours;
         video.averageViewDuration = data.averageViewDuration;
         video.averageViewPercentage = data.averageViewPercentage;
         video.subscribersGained = data.subscribersGained;
         video.subscribersLost = data.subscribersLost;
-
-        // views/likes/comments/shares are left as the real-time Data API values set in
-        // fetchVideos, since the Analytics API's counterparts lag by up to a few days.
 
         synced++;
       } catch (error) {
