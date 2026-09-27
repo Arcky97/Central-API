@@ -36,6 +36,7 @@ export class YoutubeService {
         description: video.description ?? "",
         publishedAt: video.publishedAt,
         playlistIds: video.playlistIds ?? [],
+        goalProfileId: video.goalProfileId ?? null,
         durationSeconds: video.durationSeconds,
         isShort: video.isShort,
         isShortOverride: video.isShortOverride,
@@ -81,6 +82,8 @@ export class YoutubeService {
   }
 
   static async updateVideo(videoId: string, channelId: string, data: UpdateYoutubeVideo) {
+    if (Object.keys(data).length === 0) return false;
+
     const channel = await channelRepo.getByChannelId(channelId);
     if (!channel) return false;
 

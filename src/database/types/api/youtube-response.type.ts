@@ -5,6 +5,7 @@ export interface YoutubeVideoResponse {
   description: string;
   publishedAt: Date;
   playlistIds: string[];
+  goalProfileId: number | null;
   views: number;
   likes: number;
   comments: number;
