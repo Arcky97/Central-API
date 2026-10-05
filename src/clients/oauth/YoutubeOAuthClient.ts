@@ -19,7 +19,7 @@ export class YoutubeOAuthClient implements OAuthClient<YoutubeOAuthMetadata> {
       access_type: "offline",
       prompt: "consent",
       scope: [
-        "https://www.googleapis.com/auth/userinfo.profile",
+        "openid",
         "https://www.googleapis.com/auth/youtube.readonly",
         "https://www.googleapis.com/auth/yt-analytics.readonly"
       ],
