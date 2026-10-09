@@ -17,7 +17,10 @@ export class YoutubeOAuthClient implements OAuthClient<YoutubeOAuthMetadata> {
   getAuthorizationUrl(state?: string): string {
     return this.oauth2.generateAuthUrl({
       access_type: "offline",
-      prompt: "consent",
+      // No "prompt: consent" here: forcing the consent screen on every login re-triggers
+      // Google's "app was granted access" email even for returning users who already
+      // granted access. Google still shows consent + issues a refresh token the first
+      // time a user authorizes, or after they've revoked access, without this flag.
       scope: [
         "openid",
         "https://www.googleapis.com/auth/youtube.readonly",

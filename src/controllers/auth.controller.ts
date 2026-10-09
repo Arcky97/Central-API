@@ -16,6 +16,23 @@ const stateCookieName = "youtube_oauth_state";
 const redirectCookieName = "youtube_oauth_redirect";
 const sessionCookieName = "auth_session";
 const allowedRedirects = new Set(["/"]);
+
+// Keep the cookie's lifetime in sync with the JWT's own expiry so the browser doesn't
+// drop the session (forcing a fresh Google login) before the token actually expires.
+function parseExpiresInToSeconds(expiresIn: string): number {
+  const match = /^(\d+)([smhd])$/.exec(expiresIn.trim());
+
+  if (!match) {
+    return Number(expiresIn) || 7 * 24 * 60 * 60;
+  }
+
+  const value = Number(match[1]);
+  const unitSeconds = { s: 1, m: 60, h: 3600, d: 86400 }[match[2] as "s" | "m" | "h" | "d"];
+
+  return value * unitSeconds;
+}
+
+const sessionCookieMaxAge = parseExpiresInToSeconds(env.JWT_EXPIRES_IN);
 const youtubeChannelRepo = new YoutubeChannelRepository();
 const youtubeSyncService = new YoutubeSyncService();
 
@@ -159,7 +176,7 @@ export class AuthController {
     res.setHeader("Set-Cookie", [
       serializeCookie(stateCookieName, "", 0),
       serializeCookie(redirectCookieName, "", 0),
-      serializeCookie(sessionCookieName, token)
+      serializeCookie(sessionCookieName, token, sessionCookieMaxAge)
     ]);
     res.redirect(`${env.FRONTEND_URL}${redirectPath}?initialSyncJobId=${job?.id || "0"}`);
   }
