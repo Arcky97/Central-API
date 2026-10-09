@@ -13,7 +13,7 @@ export interface OAuthUser<TMetadata  = unknown> {
 }
 
 export interface OAuthClient<TMetadata = unknown> {
-  getAuthorizationUrl(state?: string): string;
+  getAuthorizationUrl(state?: string, forceAccountSelection?: boolean): string;
 
   exchangeCode(code: string): Promise<OAuthTokens>;
 

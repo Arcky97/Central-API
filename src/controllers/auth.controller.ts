@@ -69,7 +69,8 @@ export class AuthController {
     const redirect = typeof req.query.redirect === "string" && allowedRedirects.has(req.query.redirect)
       ? req.query.redirect
       : "/";
-    const url = OAuthService.getAuthorizationUrl("youtube", state);
+    const forceAccountSelection = req.query.account === "change";
+    const url = OAuthService.getAuthorizationUrl("youtube", state, forceAccountSelection);
 
     res.setHeader("Set-Cookie", [
       serializeCookie(stateCookieName, state, 600),

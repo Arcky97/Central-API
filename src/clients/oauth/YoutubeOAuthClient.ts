@@ -14,13 +14,16 @@ export class YoutubeOAuthClient implements OAuthClient<YoutubeOAuthMetadata> {
     env.YOUTUBE_REDIRECT_URI
   );
 
-  getAuthorizationUrl(state?: string): string {
+  getAuthorizationUrl(state?: string, forceAccountSelection?: boolean): string {
     return this.oauth2.generateAuthUrl({
       access_type: "offline",
       // No "prompt: consent" here: forcing the consent screen on every login re-triggers
       // Google's "app was granted access" email even for returning users who already
       // granted access. Google still shows consent + issues a refresh token the first
       // time a user authorizes, or after they've revoked access, without this flag.
+      // "select_account" is only added for the explicit "change account" flow, so Google
+      // shows its account chooser instead of silently reusing the current session.
+      ...(forceAccountSelection ? { prompt: "select_account" } : {}),
       scope: [
         "openid",
         "https://www.googleapis.com/auth/youtube.readonly",

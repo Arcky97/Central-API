@@ -4,11 +4,12 @@ import { OAuthProvider } from "../clients/oauth/oauth.type";
 export class OAuthService {
   static getAuthorizationUrl(
     provider: OAuthProvider,
-    state?: string
+    state?: string,
+    forceAccountSelection?: boolean
   ) {
     const client = getOAuthClient(provider);
 
-    return client.getAuthorizationUrl(state);
+    return client.getAuthorizationUrl(state, forceAccountSelection);
   }
 
   static async authenticate<TMetadata>(
