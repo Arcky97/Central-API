@@ -64,7 +64,7 @@ export class YoutubeService {
     const channel = await channelRepo.getByChannelId(channelId);
     if (!channel) return null;
 
-    return videoRepo.getByVideoType(channel.id, "short", { limit });
+    return videoRepo.getByVideoType(channel.id, "short", { limit: 12 });
   }
 
   static async getVideo(videoId: string, channelId: string) {

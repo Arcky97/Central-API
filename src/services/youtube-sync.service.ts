@@ -615,9 +615,30 @@ export class YoutubeSyncService {
       await videoRepo.bulkUpdate(updatedVideos);
     }
 
-    logSuccess(`[YouTube] ${created} new video(s), ${updated} updated.`);
+    // Any previously tracked video for this channel that YouTube no longer returns in the
+    // uploads playlist has been deleted (or made private/unlisted-but-removed) upstream.
+    const fetchedVideoIds = new Set(videos.map(video => video.id));
+    const removedVideos = Array.from(lookup.values()).filter(
+      existing => existing.channelId === channel.id && !fetchedVideoIds.has(existing.videoId)
+    );
+
+    if (removedVideos.length > 0) {
+      await this.removeDeletedVideos(removedVideos);
+    }
+
+    logSuccess(`[YouTube] ${created} new video(s), ${updated} updated, ${removedVideos.length} removed.`);
 
     return await videoRepo.getLookupMap();
+  }
+
+  /** Deletes videos (and their snapshot history) that no longer exist on YouTube. */
+  private async removeDeletedVideos(videos: PublicYoutubeVideo[]) {
+    for (const video of videos) {
+      await snapshotRepo.deleteWhere({ videoId: video.id });
+      await videoRepo.deleteWhere({ id: video.id });
+    }
+
+    logInfo(`[YouTube] Removed ${videos.length} video(s) no longer found on YouTube.`);
   }
 
   private async syncAnalytics(youtubeAnalyticsClient: YoutubeAnalyticsClient, videos: YoutubeVideo[], startDate?: string, endDate: string = formatLocalDate(new Date())) {
