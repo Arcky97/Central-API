@@ -4,6 +4,7 @@ import { youtubeSyncQueue } from "../queue/youtube-sync.queue";
 import { AuthRequest } from "../middleware/jwt";
 import { getYoutubeSyncSchema, getYoutubeVideoSyncSchema } from "../schema/youtube.schema";
 import { logError } from "../database/sync/logger";
+import { env } from "../config/env";
 import { YoutubeAccountRepository } from "../database/repositories/auth/youtubeAccountRepository";
 import { YoutubeChannelRepository } from "../database/repositories/analytics/YoutubeChannelRepository";
 import { YoutubeSyncService } from "../services/youtube-sync.service";
@@ -58,6 +59,10 @@ export class YoutubeSyncController {
     try {
       if (!req.authUserId) {
         return res.status(401).json({ success: false, message: "Authentication required" });
+      }
+
+      if (env.NODE_ENV !== "production") {
+        return res.json({ success: true, jobId: null });
       }
 
       const account = await new YoutubeAccountRepository().getByAuthUserId(req.authUserId);
