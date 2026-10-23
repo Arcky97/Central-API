@@ -24,6 +24,11 @@ router.post(
   asyncHandler(YoutubeSyncController.startSync)
 );
 
+router.post(
+  "/sync/refresh",
+  asyncHandler(YoutubeSyncController.refreshIfStale)
+);
+
 /*
 // Old backfill, not used but kept for reference.
 router.post(

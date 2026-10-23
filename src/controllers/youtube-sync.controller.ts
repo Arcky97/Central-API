@@ -4,6 +4,9 @@ import { youtubeSyncQueue } from "../queue/youtube-sync.queue";
 import { AuthRequest } from "../middleware/jwt";
 import { getYoutubeSyncSchema, getYoutubeVideoSyncSchema } from "../schema/youtube.schema";
 import { logError } from "../database/sync/logger";
+import { YoutubeAccountRepository } from "../database/repositories/auth/youtubeAccountRepository";
+import { YoutubeChannelRepository } from "../database/repositories/analytics/YoutubeChannelRepository";
+import { YoutubeSyncService } from "../services/youtube-sync.service";
 
 export class YoutubeSyncController {
   /**
@@ -41,6 +44,54 @@ export class YoutubeSyncController {
       res.status(500).json({
         success: false,
         message: "Failed to start sync job",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  }
+
+  /**
+   * POST /v1/youtube/sync/refresh
+   * Queue a backfill only when the stored analytics are older than today.
+   * Returns jobId: null when data is already current or a backfill is running.
+   */
+  static async refreshIfStale(req: AuthRequest, res: Response) {
+    try {
+      if (!req.authUserId) {
+        return res.status(401).json({ success: false, message: "Authentication required" });
+      }
+
+      const account = await new YoutubeAccountRepository().getByAuthUserId(req.authUserId);
+      const channel = account ? await new YoutubeChannelRepository().getByChannelId(account.channelId) : null;
+
+      if (!channel || await SyncJobsService.hasActiveBackfillJob(req.authUserId)) {
+        return res.json({ success: true, jobId: null });
+      }
+
+      const startDate = await new YoutubeSyncService().getStaleBackfillStartDate(channel);
+
+      if (!startDate) {
+        return res.json({ success: true, jobId: null });
+      }
+
+      const job = await SyncJobsService.createJob(
+        req.authUserId,
+        "youtube_backfill",
+        "Syncing your data, please wait..."
+      );
+
+      await youtubeSyncQueue.add("backfill", {
+        jobId: job.id,
+        authUserId: req.authUserId,
+        type: "backfill",
+        startDate
+      });
+
+      res.status(202).json({ success: true, jobId: job.id });
+    } catch (error) {
+      logError("[YouTube Sync Controller] Error refreshing stale data:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to refresh data",
         error: error instanceof Error ? error.message : "Unknown error"
       });
     }
